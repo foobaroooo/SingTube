@@ -1,0 +1,139 @@
+import axios from 'axios';
+import type { Song } from '@/components/SongCard';
+
+// API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
+export interface SavedQueue {
+  id: number;
+  name: string;
+  songs: Song[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SearchHistory {
+  id: number;
+  query: string;
+  gender: string;
+  searchCount: number;
+  lastSearched: string;
+}
+
+// YouTube Search API
+export const searchYouTubeVideos = async (
+  query: string,
+  gender: string = 'all',
+  maxResults: number = 25
+): Promise<Song[]> => {
+  if (!query.trim()) {
+    return [];
+  }
+
+  try {
+    const response = await axios.get<Song[]>(`${API_BASE_URL}/search`, {
+      params: {
+        q: query,
+        gender,
+        maxResults,
+      },
+    });
+
+    // Ensure we always return an array
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('YouTube Search API Error:', error);
+    throw error;
+  }
+};
+
+// Queue Management API
+export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> => {
+  try {
+    await axios.post(`${API_BASE_URL}/queues`, {
+      name,
+      songs,
+    });
+    return true;
+  } catch (error) {
+    console.error('Save queue error:', error);
+    return false;
+  }
+};
+
+export const getSavedQueues = async (): Promise<SavedQueue[]> => {
+  try {
+    const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/queues`);
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('Get saved queues error:', error);
+    return [];
+  }
+};
+
+export const deleteQueue = async (id: number): Promise<boolean> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/queues?id=${id}`);
+    return true;
+  } catch (error) {
+    console.error('Delete queue error:', error);
+    return false;
+  }
+};
+
+// Search History API
+export const saveSearchHistory = async (query: string, gender: string = 'all'): Promise<boolean> => {
+  try {
+    await axios.post(`${API_BASE_URL}/history`, {
+      query,
+      gender,
+    });
+    return true;
+  } catch (error) {
+    console.error('Save search history error:', error);
+    return false;
+  }
+};
+
+export const getSearchHistory = async (): Promise<SearchHistory[]> => {
+  try {
+    const response = await axios.get<SearchHistory[]>(`${API_BASE_URL}/history`);
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('Get search history error:', error);
+    return [];
+  }
+};
+
+// Fallback to localStorage for offline functionality
+export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1): boolean => {
+  try {
+    const queueData = {
+      songs,
+      currentIndex,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('singtube_current_queue', JSON.stringify(queueData));
+    return true;
+  } catch (error) {
+    console.error('Error saving current queue:', error);
+    return false;
+  }
+};
+
+export const loadCurrentQueue = (): { songs: Song[]; currentIndex: number } => {
+  try {
+    const data = localStorage.getItem('singtube_current_queue');
+    if (data) {
+      const parsed = JSON.parse(data);
+      return {
+        songs: parsed.songs || [],
+        currentIndex: parsed.currentIndex || -1,
+      };
+    }
+  } catch (error) {
+    console.error('Error loading current queue:', error);
+  }
+  
+  return { songs: [], currentIndex: -1 };
+};
