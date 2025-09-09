@@ -4,7 +4,12 @@
       "Bash(npm install:*)",
       "Bash(npm run lint)",
       "Bash(npm run build:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(php:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

@@ -14,8 +14,21 @@ define('DB_NAME', 'singtube');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
+// Load environment variables
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) {
+            continue;
+        }
+        list($name, $value) = explode('=', $line, 2);
+        $_ENV[$name] = $value;
+        putenv("$name=$value");
+    }
+}
+
 // YouTube API configuration
-define('YOUTUBE_API_KEY', $_ENV['YOUTUBE_API_KEY'] ?? '');
+define('YOUTUBE_API_KEY', $_ENV['YOUTUBE_API_KEY'] ?? getenv('YOUTUBE_API_KEY') ?? '');
 define('YOUTUBE_API_BASE_URL', 'https://www.googleapis.com/youtube/v3');
 
 // Initialize SQLite database

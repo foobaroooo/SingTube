@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Song } from '@/components/SongCard';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082';
 
 export interface SavedQueue {
   id: number;
@@ -31,7 +31,7 @@ export const searchYouTubeVideos = async (
   }
 
   try {
-    const response = await axios.get<Song[]>(`${API_BASE_URL}/search`, {
+    const response = await axios.get<Song[]>(`${API_BASE_URL}/youtube.php`, {
       params: {
         q: query,
         gender,
@@ -50,7 +50,7 @@ export const searchYouTubeVideos = async (
 // Queue Management API
 export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> => {
   try {
-    await axios.post(`${API_BASE_URL}/queues`, {
+    await axios.post(`${API_BASE_URL}/queues.php`, {
       name,
       songs,
     });
@@ -63,7 +63,7 @@ export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> =
 
 export const getSavedQueues = async (): Promise<SavedQueue[]> => {
   try {
-    const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/queues`);
+    const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/queues.php`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get saved queues error:', error);
@@ -73,7 +73,7 @@ export const getSavedQueues = async (): Promise<SavedQueue[]> => {
 
 export const deleteQueue = async (id: number): Promise<boolean> => {
   try {
-    await axios.delete(`${API_BASE_URL}/queues?id=${id}`);
+    await axios.delete(`${API_BASE_URL}/queues.php?id=${id}`);
     return true;
   } catch (error) {
     console.error('Delete queue error:', error);
@@ -84,7 +84,7 @@ export const deleteQueue = async (id: number): Promise<boolean> => {
 // Search History API
 export const saveSearchHistory = async (query: string, gender: string = 'all'): Promise<boolean> => {
   try {
-    await axios.post(`${API_BASE_URL}/history`, {
+    await axios.post(`${API_BASE_URL}/history.php`, {
       query,
       gender,
     });
@@ -97,7 +97,7 @@ export const saveSearchHistory = async (query: string, gender: string = 'all'): 
 
 export const getSearchHistory = async (): Promise<SearchHistory[]> => {
   try {
-    const response = await axios.get<SearchHistory[]>(`${API_BASE_URL}/history`);
+    const response = await axios.get<SearchHistory[]>(`${API_BASE_URL}/history.php`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get search history error:', error);
