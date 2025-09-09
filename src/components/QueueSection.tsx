@@ -29,6 +29,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
   const [loading, setLoading] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [fadingOutItems, setFadingOutItems] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const loadSavedQueues = async () => {
@@ -138,6 +139,25 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
+
+  const handleRemoveWithFadeOut = (index: number) => {
+    const song = queue[index];
+    const itemKey = `${song.id}-${index}`;
+    
+    // Start fade-out animation
+    setFadingOutItems(prev => new Set(prev).add(itemKey));
+    
+    // Remove item after animation completes
+    setTimeout(() => {
+      onRemove(index);
+      setFadingOutItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemKey);
+        return newSet;
+      });
+    }, 300);
+  };
+
 
   return (
     <>
@@ -268,25 +288,30 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
             <p className="text-sm">Search and add songs to get started!</p>
           </div>
         ) : (
-          (Array.isArray(queue) ? queue : []).map((song, index) => (
-            <div 
-              key={`${song.id}-${index}`}
-              draggable={true}
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, index)}
-              onDragEnd={handleDragEnd}
-              className={`group flex items-center gap-3 p-3 rounded-lg border transition-smooth cursor-pointer
-                ${index === currentIndex 
-                  ? 'bg-primary/10 border-primary' 
-                  : 'bg-secondary/50 border-border hover:bg-secondary'
-                }
-                ${draggedIndex === index ? 'opacity-50' : ''}
-                ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
-              `}
-              onClick={() => onSelect(index)}
-            >
+          (Array.isArray(queue) ? queue : []).map((song, index) => {
+            const itemKey = `${song.id}-${index}`;
+            const isFadingOut = fadingOutItems.has(itemKey);
+            
+            return (
+              <div 
+                key={itemKey}
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
+                  ${index === currentIndex 
+                    ? 'bg-primary/10 border-primary' 
+                    : 'bg-secondary/50 border-border hover:bg-secondary'
+                  }
+                  ${draggedIndex === index ? 'opacity-50' : ''}
+                  ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
+                  ${isFadingOut ? 'opacity-0 scale-95 translate-x-4' : ''}
+                `}
+                onClick={() => onSelect(index)}
+              >
               <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
               
               <img 
@@ -312,14 +337,15 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
                 size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onRemove(index);
+                  handleRemoveWithFadeOut(index);
                 }}
                 className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
-          ))
+            );
+          })
         )}
       </CardContent>
     </Card>
