@@ -115,6 +115,28 @@ const Index = () => {
     }
   };
 
+  const reorderQueue = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || !Array.isArray(queue)) return;
+    
+    const newQueue = [...queue];
+    const [removed] = newQueue.splice(fromIndex, 1);
+    newQueue.splice(toIndex, 0, removed);
+    
+    // Update current index if needed
+    let newCurrentIndex = currentIndex;
+    if (currentIndex === fromIndex) {
+      newCurrentIndex = toIndex;
+    } else if (fromIndex < currentIndex && toIndex >= currentIndex) {
+      newCurrentIndex = currentIndex - 1;
+    } else if (fromIndex > currentIndex && toIndex <= currentIndex) {
+      newCurrentIndex = currentIndex + 1;
+    }
+    
+    setQueue(newQueue);
+    setCurrentIndex(newCurrentIndex);
+    setCurrentQueueName(""); // Clear queue name when reordering
+  };
+
   const selectSong = (index: number) => {
     setCurrentIndex(index);
   };
@@ -368,7 +390,7 @@ const Index = () => {
             <QueueSection
               queue={queue}
               onRemove={removeFromQueue}
-              onReorder={() => {}} // TODO: Implement drag & drop
+              onReorder={reorderQueue}
               onSelect={selectSong}
               currentIndex={currentIndex}
               onLoadQueue={loadQueue}
@@ -396,7 +418,7 @@ const Index = () => {
           <QueueSection
             queue={queue}
             onRemove={removeFromQueue}
-            onReorder={() => {}} // TODO: Implement drag & drop
+            onReorder={reorderQueue}
             onSelect={selectSong}
             currentIndex={currentIndex}
             onLoadQueue={loadQueue}

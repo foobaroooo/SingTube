@@ -21,12 +21,14 @@ interface QueueSectionProps {
   queueName?: string;
 }
 
-export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
   const [savedQueues, setSavedQueues] = useState<SavedQueue[]>([]);
   const [loading, setLoading] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
   const loadSavedQueues = async () => {
@@ -105,6 +107,36 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
         description: `Loaded "${savedQueueName}" with ${Array.isArray(songs) ? songs.length : 0} songs`,
       });
     }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+      onReorder(draggedIndex, dropIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   return (
@@ -239,14 +271,23 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
           (Array.isArray(queue) ? queue : []).map((song, index) => (
             <div 
               key={`${song.id}-${index}`}
+              draggable={true}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
               className={`group flex items-center gap-3 p-3 rounded-lg border transition-smooth cursor-pointer
                 ${index === currentIndex 
                   ? 'bg-primary/10 border-primary' 
                   : 'bg-secondary/50 border-border hover:bg-secondary'
-                }`}
+                }
+                ${draggedIndex === index ? 'opacity-50' : ''}
+                ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
+              `}
               onClick={() => onSelect(index)}
             >
-              <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-smooth" />
+              <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
               
               <img 
                 src={song.thumbnail} 
