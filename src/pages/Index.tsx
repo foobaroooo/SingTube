@@ -15,6 +15,7 @@ const Index = () => {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [refreshHistory, setRefreshHistory] = useState(false);
   const [isQueueMaximized, setIsQueueMaximized] = useState(false);
+  const [currentQueueName, setCurrentQueueName] = useState<string>("");
   const { toast } = useToast();
 
   // Load saved queue on component mount
@@ -75,6 +76,7 @@ const Index = () => {
 
   const addToQueue = (song: Song) => {
     setQueue(prev => [...prev, song]);
+    setCurrentQueueName(""); // Clear queue name when adding individual songs
     toast({
       title: "Song Added",
       description: `${song.title} added to queue`,
@@ -86,6 +88,7 @@ const Index = () => {
     if (currentIndex >= 0) {
       setCurrentIndex(prev => prev + 1);
     }
+    setCurrentQueueName(""); // Clear queue name when adding individual songs
     toast({
       title: "Priority Added",
       description: `${song.title} added to front of queue`,
@@ -117,14 +120,19 @@ const Index = () => {
     }
   };
 
-  const loadQueue = (songs: Song[]) => {
+  const loadQueue = (songs: Song[], queueName: string = "") => {
     const safeSongs = Array.isArray(songs) ? songs : [];
     setQueue(safeSongs);
     setCurrentIndex(safeSongs.length > 0 ? 0 : -1);
+    setCurrentQueueName(queueName);
   };
 
   const toggleQueueMaximize = () => {
     setIsQueueMaximized(prev => !prev);
+  };
+
+  const handleQueueSaved = (queueName: string) => {
+    setCurrentQueueName(queueName);
   };
 
   const currentSong = currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex] ? queue[currentIndex] : null;
@@ -192,8 +200,10 @@ const Index = () => {
               onSelect={selectSong}
               currentIndex={currentIndex}
               onLoadQueue={loadQueue}
+              onQueueSaved={handleQueueSaved}
               isMaximized={isQueueMaximized}
               onToggleMaximize={toggleQueueMaximize}
+              queueName={currentQueueName}
             />
           </div>
 
@@ -218,8 +228,10 @@ const Index = () => {
             onSelect={selectSong}
             currentIndex={currentIndex}
             onLoadQueue={loadQueue}
+            onQueueSaved={handleQueueSaved}
             isMaximized={isQueueMaximized}
             onToggleMaximize={toggleQueueMaximize}
+            queueName={currentQueueName}
           />
         )}
       </div>

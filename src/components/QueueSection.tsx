@@ -14,15 +14,17 @@ interface QueueSectionProps {
   onReorder: (fromIndex: number, toIndex: number) => void;
   onSelect: (index: number) => void;
   currentIndex: number;
-  onLoadQueue?: (songs: Song[]) => void;
+  onLoadQueue?: (songs: Song[], queueName: string) => void;
+  onQueueSaved?: (queueName: string) => void;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
+  queueName?: string;
 }
 
-export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQueue, isMaximized = false, onToggleMaximize }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
-  const [queueName, setQueueName] = useState("");
+  const [saveQueueName, setSaveQueueName] = useState("");
   const [savedQueues, setSavedQueues] = useState<SavedQueue[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -40,7 +42,7 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
   };
 
   const handleSaveQueue = async () => {
-    if (!queueName.trim()) {
+    if (!saveQueueName.trim()) {
       toast({
         title: "Invalid Name",
         description: "Please enter a queue name",
@@ -60,14 +62,21 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
 
     try {
       setLoading(true);
-      const success = await saveQueue(queueName.trim(), queue);
+      const success = await saveQueue(saveQueueName.trim(), queue);
       if (success) {
+        const newQueueName = saveQueueName.trim();
         toast({
           title: "Queue Saved",
-          description: `"${queueName}" has been saved successfully`,
+          description: `"${newQueueName}" has been saved successfully`,
         });
         setSaveDialogOpen(false);
-        setQueueName("");
+        setSaveQueueName("");
+        
+        // Update the queue name in the parent component
+        if (onQueueSaved) {
+          onQueueSaved(newQueueName);
+        }
+        
         await loadSavedQueues(); // Refresh the list
       } else {
         toast({
@@ -87,13 +96,13 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
     }
   };
 
-  const handleLoadQueue = (songs: Song[]) => {
+  const handleLoadQueue = (songs: Song[], savedQueueName: string) => {
     if (onLoadQueue) {
-      onLoadQueue(songs);
+      onLoadQueue(songs, savedQueueName);
       setLoadDialogOpen(false);
       toast({
         title: "Queue Loaded",
-        description: `Loaded ${Array.isArray(songs) ? songs.length : 0} songs`,
+        description: `Loaded "${savedQueueName}" with ${Array.isArray(songs) ? songs.length : 0} songs`,
       });
     }
   };
@@ -108,19 +117,14 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Music className="w-5 h-5 text-primary" />
-            Queue ({Array.isArray(queue) ? queue.length : 0})
+            <div className="flex flex-col">
+              <span>{queueName || 'Queue'} ({Array.isArray(queue) ? queue.length : 0})</span>
+              {queueName && (
+                <span className="text-xs text-muted-foreground font-normal">Saved Queue</span>
+              )}
+            </div>
           </CardTitle>
           <div className="flex gap-2">
-            {onToggleMaximize && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onToggleMaximize}
-                title={isMaximized ? "Restore queue" : "Maximize queue"}
-              >
-                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </Button>
-            )}
             <Dialog open={loadDialogOpen} onOpenChange={(open) => {
               setLoadDialogOpen(open);
               if (open) loadSavedQueues();
@@ -171,7 +175,7 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
                           >
                             Delete
                           </Button>
-                          <Button onClick={() => handleLoadQueue(savedQueue.songs)}>
+                          <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name)}>
                             Load
                           </Button>
                         </div>
@@ -195,8 +199,8 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
                 <div className="space-y-4">
                   <Input
                     placeholder="Enter queue name..."
-                    value={queueName}
-                    onChange={(e) => setQueueName(e.target.value)}
+                    value={saveQueueName}
+                    onChange={(e) => setSaveQueueName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSaveQueue()}
                   />
                   <div className="flex justify-end gap-2">
@@ -210,6 +214,17 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
                 </div>
               </DialogContent>
             </Dialog>
+            
+            {onToggleMaximize && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={onToggleMaximize}
+                title={isMaximized ? "Restore queue" : "Maximize queue"}
+              >
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
