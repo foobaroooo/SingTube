@@ -16,13 +16,16 @@ interface PreviewProps {
   onPauseHandled?: () => void;
   onVideoEnd?: () => void;
   autoAdvance?: boolean;
+  onPlaybackStarted?: (title: string) => void;
 }
 
-export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled, onVideoEnd, autoAdvance = false }: PreviewProps) => {
+export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled, onVideoEnd, autoAdvance = false, onPlaybackStarted }: PreviewProps) => {
   const [iframeKey, setIframeKey] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef<number>(0);
   
   // Force iframe reload when shouldAutoplay changes to ensure fresh player
   useEffect(() => {
@@ -31,36 +34,91 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
     }
   }, [shouldAutoplay, currentSong]);
 
+  // Function to attempt video playback
+  const attemptPlayback = () => {
+    if (iframeRef.current?.contentWindow) {
+      try {
+        console.log(`Attempting playback (attempt ${retryCountRef.current + 1})`);
+        
+        // Enable event listening first
+        iframeRef.current.contentWindow.postMessage(
+          '{"event":"listening","id":"' + currentSong?.youtubeId + '"}',
+          'https://www.youtube.com'
+        );
+        
+        // Then send play command
+        iframeRef.current.contentWindow.postMessage(
+          '{"event":"command","func":"playVideo","args":""}',
+          'https://www.youtube.com'
+        );
+        
+        // Set playing state
+        setIsVideoPlaying(true);
+        
+        // Notify parent that playback started (for success toast)
+        if (onPlaybackStarted && currentSong && retryCountRef.current > 0) {
+          onPlaybackStarted(currentSong.title);
+        }
+        
+        return true;
+      } catch (error) {
+        console.log('PostMessage failed, iframe may not be ready yet');
+        return false;
+      }
+    }
+    return false;
+  };
+
   // Use postMessage to control YouTube player when autoplay is triggered
   useEffect(() => {
     if (shouldAutoplay && currentSong) {
-      // Wait for iframe to load, then send play command and enable listening
-      const timer = setTimeout(() => {
-        if (iframeRef.current?.contentWindow) {
-          try {
-            // Enable event listening first
-            iframeRef.current.contentWindow.postMessage(
-              '{"event":"listening","id":"' + currentSong.youtubeId + '"}',
-              'https://www.youtube.com'
-            );
+      // Reset retry count
+      retryCountRef.current = 0;
+      
+      // Clear any existing retry interval
+      if (retryIntervalRef.current) {
+        clearInterval(retryIntervalRef.current);
+        retryIntervalRef.current = null;
+      }
+      
+      // Initial attempt after 2 seconds
+      const initialTimer = setTimeout(() => {
+        const success = attemptPlayback();
+        
+        if (!success) {
+          // Start retry mechanism - try every 1 second for up to 10 seconds
+          retryIntervalRef.current = setInterval(() => {
+            retryCountRef.current++;
+            console.log(`Retrying playback (attempt ${retryCountRef.current + 1}/10)`);
             
-            // Then send play command
-            iframeRef.current.contentWindow.postMessage(
-              '{"event":"command","func":"playVideo","args":""}',
-              'https://www.youtube.com'
-            );
+            const retrySuccess = attemptPlayback();
             
-            // Set playing state and start monitoring
-            setIsVideoPlaying(true);
-          } catch (error) {
-            console.log('PostMessage failed, iframe may not be ready yet');
-          }
+            if (retrySuccess || retryCountRef.current >= 10) {
+              // Stop retrying if successful or max attempts reached
+              if (retryIntervalRef.current) {
+                clearInterval(retryIntervalRef.current);
+                retryIntervalRef.current = null;
+              }
+              
+              if (!retrySuccess && retryCountRef.current >= 10) {
+                console.log('Max retry attempts reached, giving up on autoplay');
+              }
+            }
+          }, 1000); // Retry every 1 second
         }
+        
         if (onAutoplayHandled) {
           onAutoplayHandled();
         }
-      }, 2000); // Wait longer for iframe to fully load
-      return () => clearTimeout(timer);
+      }, 2000);
+      
+      return () => {
+        clearTimeout(initialTimer);
+        if (retryIntervalRef.current) {
+          clearInterval(retryIntervalRef.current);
+          retryIntervalRef.current = null;
+        }
+      };
     }
   }, [iframeKey, shouldAutoplay, currentSong, onAutoplayHandled]);
 
@@ -130,9 +188,16 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
   // Clean up on component unmount or song change
   useEffect(() => {
     setIsVideoPlaying(false);
+    retryCountRef.current = 0;
+    
     if (checkIntervalRef.current) {
       clearInterval(checkIntervalRef.current);
       checkIntervalRef.current = null;
+    }
+    
+    if (retryIntervalRef.current) {
+      clearInterval(retryIntervalRef.current);
+      retryIntervalRef.current = null;
     }
   }, [currentSong]);
 

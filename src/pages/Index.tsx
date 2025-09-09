@@ -253,23 +253,29 @@ const Index = () => {
     setShouldPause(false);
   };
 
+  const handlePlaybackStarted = (title: string) => {
+    toast({
+      title: "Playback Started",
+      description: `Now playing: ${title}`,
+    });
+  };
+
   const handleVideoEnd = () => {
     if (autoAdvance && Array.isArray(queue) && currentIndex < queue.length - 1) {
       // Auto-advance to next song and start playing it
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       
+      // Show loading toast for auto-advance
+      toast({
+        title: "Auto-advancing",
+        description: `Loading next song: ${queue[nextIndex]?.title || 'Unknown'}`,
+      });
+      
       // Trigger autoplay for the next song
       setTimeout(() => {
         setShouldAutoplay(true);
         setIsPlaying(true);
-        
-        if (queue[nextIndex]) {
-          toast({
-            title: "Auto-advancing",
-            description: `Now playing: ${queue[nextIndex].title}`,
-          });
-        }
       }, 500); // Small delay to allow iframe to update
     } else {
       // End of queue or auto-advance disabled
@@ -538,6 +544,7 @@ const Index = () => {
               onPauseHandled={handlePauseComplete}
               onVideoEnd={handleVideoEnd}
               autoAdvance={autoAdvance}
+              onPlaybackStarted={handlePlaybackStarted}
             />
           </div>
         </div>
