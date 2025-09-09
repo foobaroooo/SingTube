@@ -87,7 +87,6 @@ const Index = () => {
 
   const addToQueue = (song: Song) => {
     setQueue(prev => [...prev, song]);
-    setCurrentQueueName(""); // Clear queue name when adding individual songs
     toast({
       title: "Song Added",
       description: `${song.title} added to queue`,
@@ -99,7 +98,6 @@ const Index = () => {
     if (currentIndex >= 0) {
       setCurrentIndex(prev => prev + 1);
     }
-    setCurrentQueueName(""); // Clear queue name when adding individual songs
     toast({
       title: "Priority Added",
       description: `${song.title} added to front of queue`,
