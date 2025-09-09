@@ -386,7 +386,7 @@ const Index = () => {
               <Mic2 className="w-8 h-8 text-primary" />
               <div className="flex flex-col">
                 <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  SingTube
+                  SingTube <span className="text-sm font-semibold text-white">Beta</span>
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   The Missing Karaoke Player for YouTube
