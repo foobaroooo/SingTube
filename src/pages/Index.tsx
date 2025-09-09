@@ -194,16 +194,21 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Mic2 className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              SingTube
-            </h1>
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                SingTube
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                The Missing Karaoke Player for YouTube
+              </p>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-3">
         {/* Search Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} refreshHistory={refreshHistory} />
         </div>
 

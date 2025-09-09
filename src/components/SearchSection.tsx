@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Mic, Clock, Loader2, X } from "lucide-react";
 import { getSearchHistory, deleteSearchHistory, type SearchHistory } from "@/services/apiService";
@@ -14,7 +13,6 @@ interface SearchSectionProps {
 
 export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false }: SearchSectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [genderFilter, setGenderFilter] = useState("all");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
   const loadHistory = async () => {
@@ -38,7 +36,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      onSearch(searchQuery, genderFilter);
+      onSearch(searchQuery, "all");
     }
   };
 
@@ -50,7 +48,6 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
   const handleHistoryClick = (historyQuery: string, historyGender: string) => {
     setSearchQuery(historyQuery);
-    setGenderFilter(historyGender);
     onSearch(historyQuery, historyGender);
   };
 
@@ -67,10 +64,10 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-card">
-      <div className="flex items-center gap-4 mb-4">
-        <Mic className="w-8 h-8 text-primary" />
-        <h2 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+    <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+      <div className="flex items-center gap-3 mb-3">
+        <Mic className="w-6 h-6 text-primary" />
+        <h2 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           Search Karaoke Songs
         </h2>
       </div>
@@ -85,17 +82,6 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             className="text-lg py-3 bg-input border-border focus:ring-2 focus:ring-primary transition-smooth"
           />
         </div>
-        
-        <Select value={genderFilter} onValueChange={setGenderFilter}>
-          <SelectTrigger className="w-40 bg-input border-border">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            <SelectItem value="all">All Versions</SelectItem>
-            <SelectItem value="male">Male (男声版)</SelectItem>
-            <SelectItem value="female">Female (女声版)</SelectItem>
-          </SelectContent>
-        </Select>
         
         <Button 
           onClick={handleSearch}
@@ -113,8 +99,8 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
       {/* Search History */}
       {Array.isArray(searchHistory) && searchHistory.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-border">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Recent Searches</span>
           </div>
