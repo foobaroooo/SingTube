@@ -13,6 +13,7 @@ const Index = () => {
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [refreshHistory, setRefreshHistory] = useState(false);
   const { toast } = useToast();
 
   // Load saved queue on component mount
@@ -49,7 +50,10 @@ const Index = () => {
       setSearchResults(results);
       
       // Save search to history
-      saveSearchHistory(query, gender);
+      await saveSearchHistory(query, gender);
+      
+      // Trigger history refresh
+      setRefreshHistory(prev => !prev);
       
       toast({
         title: "Search Complete",
@@ -137,7 +141,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-6">
         {/* Search Section */}
         <div className="mb-6">
-          <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} />
+          <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} refreshHistory={refreshHistory} />
         </div>
 
         {/* Main Content Grid */}

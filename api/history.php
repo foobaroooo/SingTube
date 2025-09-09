@@ -5,7 +5,7 @@ $pdo = initDatabase();
 $method = $_SERVER['REQUEST_METHOD'];
 $data = null;
 
-if ($method === 'POST') {
+if ($method === 'POST' || $method === 'DELETE') {
     $data = json_decode(file_get_contents('php://input'), true);
 }
 
@@ -68,6 +68,33 @@ switch ($method) {
         } catch (PDOException $e) {
             error_log('Database error: ' . $e->getMessage());
             sendErrorResponse('Failed to save search history', 500);
+        }
+        break;
+
+    case 'DELETE':
+        // Delete search history item
+        if (!isset($data['id'])) {
+            sendErrorResponse('ID is required');
+        }
+        
+        $id = intval($data['id']);
+        
+        if ($id <= 0) {
+            sendErrorResponse('Invalid ID');
+        }
+        
+        try {
+            $stmt = $pdo->prepare('DELETE FROM search_history WHERE id = ?');
+            $stmt->execute([$id]);
+            
+            if ($stmt->rowCount() > 0) {
+                sendJsonResponse(['message' => 'Search history item deleted']);
+            } else {
+                sendErrorResponse('Search history item not found', 404);
+            }
+        } catch (PDOException $e) {
+            error_log('Database error: ' . $e->getMessage());
+            sendErrorResponse('Failed to delete search history', 500);
         }
         break;
 

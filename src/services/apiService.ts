@@ -105,6 +105,18 @@ export const getSearchHistory = async (): Promise<SearchHistory[]> => {
   }
 };
 
+export const deleteSearchHistory = async (id: number): Promise<boolean> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/history.php`, {
+      data: { id }
+    });
+    return true;
+  } catch (error) {
+    console.error('Delete search history error:', error);
+    return false;
+  }
+};
+
 // Fallback to localStorage for offline functionality
 export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1): boolean => {
   try {

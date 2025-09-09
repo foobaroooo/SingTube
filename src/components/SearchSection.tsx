@@ -3,31 +3,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mic, Clock, Loader2 } from "lucide-react";
-import { getSearchHistory, type SearchHistory } from "@/services/apiService";
+import { Search, Mic, Clock, Loader2, X } from "lucide-react";
+import { getSearchHistory, deleteSearchHistory, type SearchHistory } from "@/services/apiService";
 
 interface SearchSectionProps {
   onSearch: (query: string, gender: string) => void;
   isLoading?: boolean;
+  refreshHistory?: boolean;
 }
 
-export const SearchSection = ({ onSearch, isLoading = false }: SearchSectionProps) => {
+export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false }: SearchSectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [genderFilter, setGenderFilter] = useState("all");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
+  const loadHistory = async () => {
+    try {
+      const history = await getSearchHistory();
+      setSearchHistory(history.slice(0, 5)); // Show only last 5 searches
+    } catch (error) {
+      console.error('Failed to load search history:', error);
+    }
+  };
+
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const history = await getSearchHistory();
-        setSearchHistory(history.slice(0, 5)); // Show only last 5 searches
-      } catch (error) {
-        console.error('Failed to load search history:', error);
-      }
-    };
-    
     loadHistory();
   }, []);
+
+  useEffect(() => {
+    if (refreshHistory) {
+      loadHistory();
+    }
+  }, [refreshHistory]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -45,6 +52,18 @@ export const SearchSection = ({ onSearch, isLoading = false }: SearchSectionProp
     setSearchQuery(historyQuery);
     setGenderFilter(historyGender);
     onSearch(historyQuery, historyGender);
+  };
+
+  const handleDeleteHistory = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // Prevent triggering the search
+    try {
+      const success = await deleteSearchHistory(id);
+      if (success) {
+        await loadHistory(); // Refresh the history list
+      }
+    } catch (error) {
+      console.error('Failed to delete search history:', error);
+    }
   };
 
   return (
@@ -102,17 +121,26 @@ export const SearchSection = ({ onSearch, isLoading = false }: SearchSectionProp
           <div className="flex flex-wrap gap-2">
               {(Array.isArray(searchHistory) ? searchHistory : []).map((history) => (
               <Badge
-                key={`${history.query}-${history.gender}`}
+                key={`${history.query}-${history.gender}-${history.id}`}
                 variant="secondary"
-                className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                className="cursor-pointer hover:bg-secondary/80 transition-colors flex items-center gap-1 pr-1"
                 onClick={() => handleHistoryClick(history.query, history.gender)}
               >
-                {history.query}
-                {history.gender !== 'all' && (
-                  <span className="ml-1 text-xs opacity-70">
-                    ({history.gender === 'male' ? '男' : '女'})
-                  </span>
-                )}
+                <span>
+                  {history.query}
+                  {history.gender !== 'all' && (
+                    <span className="ml-1 text-xs opacity-70">
+                      ({history.gender === 'male' ? '男' : '女'})
+                    </span>
+                  )}
+                </span>
+                <button
+                  onClick={(e) => handleDeleteHistory(e, history.id)}
+                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  title="Remove from history"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             ))}
           </div>
