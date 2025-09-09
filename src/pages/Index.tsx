@@ -259,10 +259,10 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-3 flex-1 flex flex-col">
 
         {/* Main Content Grid */}
-        <div className={`grid gap-6 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
+        <div className={`grid gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
           {/* Search Results */}
           {showSearchResults && (
             <div className={gridConfig.searchSpan}>
@@ -351,7 +351,7 @@ const Index = () => {
           )}
 
           {/* Queue */}
-          <div className={gridConfig.queueSpan}>
+          <div className={`${gridConfig.queueSpan} flex flex-col min-h-0`}>
             {!showSearchResults && (
               <div className="mb-4">
                 <Button 

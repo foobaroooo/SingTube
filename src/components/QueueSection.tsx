@@ -112,7 +112,7 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
       {isMaximized && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onToggleMaximize} />
       )}
-      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'h-fit'}`}>
+      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
           </div>
         </div>
       </CardHeader>
-      <CardContent className={`p-4 space-y-3 overflow-y-auto ${isMaximized ? 'flex-1' : 'max-h-96'}`}>
+      <CardContent className={`p-4 space-y-3 overflow-y-scroll flex-1 min-h-0 ${isMaximized ? '' : ''}`}>
         {!Array.isArray(queue) || queue.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
