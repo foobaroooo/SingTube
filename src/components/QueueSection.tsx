@@ -17,6 +17,7 @@ interface QueueSectionProps {
   onPause?: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
+  onDoubleClickPlay?: (index: number) => void;
   currentIndex: number;
   isPlaying?: boolean;
   canGoNext?: boolean;
@@ -29,7 +30,7 @@ interface QueueSectionProps {
   queueId?: number | null;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -377,6 +378,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   ${isFadingOut ? 'opacity-0 scale-95 translate-x-4' : ''}
                 `}
                 onClick={() => onSelect(index)}
+                onDoubleClick={() => onDoubleClickPlay && onDoubleClickPlay(index)}
               >
                 <div className="flex items-center gap-3 mr-3">
                   <span className={`text-lg font-mono font-bold w-8 text-center ${

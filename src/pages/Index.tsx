@@ -261,6 +261,25 @@ const Index = () => {
     });
   };
 
+  const handleDoubleClickPlay = (index: number) => {
+    // First, select the song if it's not already selected
+    if (currentIndex !== index) {
+      setCurrentIndex(index);
+    }
+    
+    // Then trigger play
+    if (index >= 0 && Array.isArray(queue) && queue[index]) {
+      const song = queue[index];
+      setShouldAutoplay(true);
+      setIsPlaying(true);
+      
+      toast({
+        title: "Double-click Play",
+        description: `Playing: ${song.title}`,
+      });
+    }
+  };
+
   const handleVideoEnd = () => {
     if (autoAdvance && Array.isArray(queue) && currentIndex < queue.length - 1) {
       // Auto-advance to next song and start playing it
@@ -573,6 +592,7 @@ const Index = () => {
               onPause={handlePauseCurrentSong}
               onNext={nextSong}
               onPrevious={previousSong}
+              onDoubleClickPlay={handleDoubleClickPlay}
               currentIndex={currentIndex}
               isPlaying={isPlaying}
               canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
@@ -616,6 +636,7 @@ const Index = () => {
             onPause={handlePauseCurrentSong}
             onNext={nextSong}
             onPrevious={previousSong}
+            onDoubleClickPlay={handleDoubleClickPlay}
             currentIndex={currentIndex}
             isPlaying={isPlaying}
             canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
