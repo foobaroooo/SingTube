@@ -183,17 +183,6 @@ const Index = () => {
             )}
           </div>
 
-          {/* Current Song */}
-          <div className="lg:col-span-1">
-            <CurrentSong
-              currentSong={currentSong}
-              onNext={nextSong}
-              onPrevious={previousSong}
-              canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
-              canGoPrevious={currentIndex > 0}
-            />
-          </div>
-
           {/* Queue */}
           <div className="lg:col-span-1">
             <QueueSection
@@ -205,6 +194,17 @@ const Index = () => {
               onLoadQueue={loadQueue}
               isMaximized={isQueueMaximized}
               onToggleMaximize={toggleQueueMaximize}
+            />
+          </div>
+
+          {/* Preview */}
+          <div className="lg:col-span-1">
+            <CurrentSong
+              currentSong={currentSong}
+              onNext={nextSong}
+              onPrevious={previousSong}
+              canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
+              canGoPrevious={currentIndex > 0}
             />
           </div>
         </div>
