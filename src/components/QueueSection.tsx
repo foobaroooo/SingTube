@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2 } from "lucide-react";
+import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
@@ -13,6 +13,7 @@ interface QueueSectionProps {
   onRemove: (index: number) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
   onSelect: (index: number) => void;
+  onPlay?: () => void;
   currentIndex: number;
   onLoadQueue?: (songs: Song[], queueName: string, queueId?: number) => void;
   onQueueSaved?: (queueName: string, queueId?: number) => void;
@@ -22,7 +23,7 @@ interface QueueSectionProps {
   queueId?: number | null;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -178,6 +179,20 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
               )}
             </div>
           </CardTitle>
+          
+          {/* Play Button */}
+          {onPlay && (
+            <Button
+              onClick={onPlay}
+              disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
+              size="icon"
+              className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-12 h-12"
+              title={currentIndex >= 0 && queue[currentIndex] ? `Play: ${queue[currentIndex].title}` : "No song selected"}
+            >
+              <Play className="w-5 h-5 fill-current" />
+            </Button>
+          )}
+          
           <div className="flex gap-2">
             <Dialog open={loadDialogOpen} onOpenChange={(open) => {
               setLoadDialogOpen(open);

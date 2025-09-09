@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, SkipBack, SkipForward, Play } from "lucide-react";
 import { Song } from "./SongCard";
+import { useEffect, useState, useRef } from "react";
 
 interface PreviewProps {
   currentSong: Song | null;
@@ -9,9 +10,44 @@ interface PreviewProps {
   onPrevious: () => void;
   canGoNext: boolean;
   canGoPrevious: boolean;
+  shouldAutoplay?: boolean;
+  onAutoplayHandled?: () => void;
 }
 
-export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious }: PreviewProps) => {
+export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, onAutoplayHandled }: PreviewProps) => {
+  const [iframeKey, setIframeKey] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  
+  // Force iframe reload when shouldAutoplay changes to ensure fresh player
+  useEffect(() => {
+    if (shouldAutoplay && currentSong) {
+      setIframeKey(prev => prev + 1);
+    }
+  }, [shouldAutoplay, currentSong]);
+
+  // Use postMessage to control YouTube player when autoplay is triggered
+  useEffect(() => {
+    if (shouldAutoplay && currentSong) {
+      // Wait for iframe to load, then send play command
+      const timer = setTimeout(() => {
+        if (iframeRef.current?.contentWindow) {
+          try {
+            iframeRef.current.contentWindow.postMessage(
+              '{"event":"command","func":"playVideo","args":""}',
+              'https://www.youtube.com'
+            );
+          } catch (error) {
+            console.log('PostMessage failed, iframe may not be ready yet');
+          }
+        }
+        if (onAutoplayHandled) {
+          onAutoplayHandled();
+        }
+      }, 2000); // Wait longer for iframe to fully load
+      return () => clearTimeout(timer);
+    }
+  }, [iframeKey, shouldAutoplay, currentSong, onAutoplayHandled]);
+  
   const handlePlayYouTube = () => {
     if (currentSong) {
       window.open(`https://www.youtube.com/watch?v=${currentSong.youtubeId}`, '_blank');
@@ -47,6 +83,8 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
         <div className="space-y-4">
           <div className="aspect-video w-full">
             <iframe
+              ref={iframeRef}
+              key={iframeKey}
               width="100%"
               height="100%"
               src={`https://www.youtube.com/embed/${currentSong.youtubeId}?enablejsapi=1&origin=${window.location.origin}`}

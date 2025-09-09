@@ -23,6 +23,7 @@ const Index = () => {
   const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
   const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -209,6 +210,23 @@ const Index = () => {
   const handleQueueSaved = (queueName: string, queueId: number | null = null) => {
     setCurrentQueueName(queueName);
     setCurrentQueueId(queueId);
+  };
+
+  const handlePlayCurrentSong = () => {
+    if (currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex]) {
+      const song = queue[currentIndex];
+      // Trigger autoplay by forcing a re-render with autoplay enabled
+      setShouldAutoplay(true);
+      
+      toast({
+        title: "Playing Song",
+        description: `Playing: ${song.title}`,
+      });
+    }
+  };
+
+  const handleAutoplayComplete = () => {
+    setShouldAutoplay(false);
   };
 
   const loadMoreResults = async () => {
@@ -435,6 +453,7 @@ const Index = () => {
               onRemove={removeFromQueue}
               onReorder={reorderQueue}
               onSelect={selectSong}
+              onPlay={handlePlayCurrentSong}
               currentIndex={currentIndex}
               onLoadQueue={loadQueue}
               onQueueSaved={handleQueueSaved}
@@ -453,6 +472,8 @@ const Index = () => {
               onPrevious={previousSong}
               canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
               canGoPrevious={currentIndex > 0}
+              shouldAutoplay={shouldAutoplay}
+              onAutoplayHandled={handleAutoplayComplete}
             />
           </div>
         </div>
@@ -464,6 +485,7 @@ const Index = () => {
             onRemove={removeFromQueue}
             onReorder={reorderQueue}
             onSelect={selectSong}
+            onPlay={handlePlayCurrentSong}
             currentIndex={currentIndex}
             onLoadQueue={loadQueue}
             onQueueSaved={handleQueueSaved}
