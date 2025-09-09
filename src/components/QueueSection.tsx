@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, GripVertical, Music, Save, FolderOpen } from "lucide-react";
+import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2 } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
@@ -15,9 +15,11 @@ interface QueueSectionProps {
   onSelect: (index: number) => void;
   currentIndex: number;
   onLoadQueue?: (songs: Song[]) => void;
+  isMaximized?: boolean;
+  onToggleMaximize?: () => void;
 }
 
-export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQueue }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQueue, isMaximized = false, onToggleMaximize }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [queueName, setQueueName] = useState("");
@@ -97,7 +99,11 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
   };
 
   return (
-    <Card className="bg-card border-border shadow-card h-fit">
+    <>
+      {isMaximized && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={onToggleMaximize} />
+      )}
+      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'h-fit'}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -105,6 +111,16 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
             Queue ({Array.isArray(queue) ? queue.length : 0})
           </CardTitle>
           <div className="flex gap-2">
+            {onToggleMaximize && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={onToggleMaximize}
+                title={isMaximized ? "Restore queue" : "Maximize queue"}
+              >
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+            )}
             <Dialog open={loadDialogOpen} onOpenChange={(open) => {
               setLoadDialogOpen(open);
               if (open) loadSavedQueues();
@@ -197,7 +213,7 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-3 max-h-96 overflow-y-auto">
+      <CardContent className={`p-4 space-y-3 overflow-y-auto ${isMaximized ? 'flex-1' : 'max-h-96'}`}>
         {!Array.isArray(queue) || queue.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -251,5 +267,6 @@ export const QueueSection = ({ queue, onRemove, onSelect, currentIndex, onLoadQu
         )}
       </CardContent>
     </Card>
+    </>
   );
 };

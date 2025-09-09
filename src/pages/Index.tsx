@@ -14,6 +14,7 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [refreshHistory, setRefreshHistory] = useState(false);
+  const [isQueueMaximized, setIsQueueMaximized] = useState(false);
   const { toast } = useToast();
 
   // Load saved queue on component mount
@@ -122,6 +123,10 @@ const Index = () => {
     setCurrentIndex(safeSongs.length > 0 ? 0 : -1);
   };
 
+  const toggleQueueMaximize = () => {
+    setIsQueueMaximized(prev => !prev);
+  };
+
   const currentSong = currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex] ? queue[currentIndex] : null;
 
   return (
@@ -145,7 +150,7 @@ const Index = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className={`grid gap-6 ${isQueueMaximized ? 'hidden' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Search Results */}
           <div className="lg:col-span-1">
             <h2 className="text-xl font-semibold mb-4 text-foreground">
@@ -198,9 +203,25 @@ const Index = () => {
               onSelect={selectSong}
               currentIndex={currentIndex}
               onLoadQueue={loadQueue}
+              isMaximized={isQueueMaximized}
+              onToggleMaximize={toggleQueueMaximize}
             />
           </div>
         </div>
+
+        {/* Maximized Queue */}
+        {isQueueMaximized && (
+          <QueueSection
+            queue={queue}
+            onRemove={removeFromQueue}
+            onReorder={() => {}} // TODO: Implement drag & drop
+            onSelect={selectSong}
+            currentIndex={currentIndex}
+            onLoadQueue={loadQueue}
+            isMaximized={isQueueMaximized}
+            onToggleMaximize={toggleQueueMaximize}
+          />
+        )}
       </div>
     </div>
   );
