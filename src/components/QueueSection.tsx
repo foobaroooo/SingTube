@@ -314,7 +314,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
                 `}
                 onClick={() => onSelect(index)}
               >
-                <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                <div className="flex items-center gap-3 mr-3">
+                  <span className={`text-lg font-mono font-bold w-8 text-center ${
+                    index === currentIndex ? 'text-primary' : 'text-foreground'
+                  }`}>
+                    {index + 1}
+                  </span>
+                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                </div>
                 
                 <img 
                   src={song.thumbnail} 
@@ -323,10 +330,10 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
                 />
                 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate text-card-foreground">
+                  <h4 className="font-semibold text-base truncate text-card-foreground leading-tight">
                     {song.title}
                   </h4>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-sm text-muted-foreground truncate mt-1">
                     {song.artist}
                   </p>
                   <span className="text-xs text-muted-foreground">
