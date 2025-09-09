@@ -370,27 +370,27 @@ const Index = () => {
   // Dynamic grid configuration
   const getGridConfig = () => {
     if (!showSearchResults) {
-      // No search results: Queue gets more space (2 columns), Preview gets 1
+      // No search results: Queue gets more space (3 columns), Preview gets 1
       return {
-        gridCols: "grid-cols-1 lg:grid-cols-3",
+        gridCols: "grid-cols-1 lg:grid-cols-4",
         searchSpan: "lg:col-span-1 hidden lg:block", // Hidden on large screens when no search
-        queueSpan: "lg:col-span-2", // Queue gets 2 columns
+        queueSpan: "lg:col-span-3", // Queue gets 3 columns (more space)
         previewSpan: "lg:col-span-1"
       };
     } else if (hasResults) {
-      // Has search results: Equal distribution
+      // Has search results: Search gets 1, Queue gets 2, Preview gets 1
       return {
-        gridCols: "grid-cols-1 lg:grid-cols-3",
+        gridCols: "grid-cols-1 lg:grid-cols-4",
         searchSpan: "lg:col-span-1",
-        queueSpan: "lg:col-span-1",
+        queueSpan: "lg:col-span-2", // Queue gets 2 columns
         previewSpan: "lg:col-span-1"
       };
     } else {
       // Searched but no results: Compact search, more space for queue
       return {
-        gridCols: "grid-cols-1 lg:grid-cols-3",
+        gridCols: "grid-cols-1 lg:grid-cols-4",
         searchSpan: "lg:col-span-1",
-        queueSpan: "lg:col-span-1",
+        queueSpan: "lg:col-span-2", // Queue gets 2 columns
         previewSpan: "lg:col-span-1"
       };
     }
@@ -415,7 +415,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-2 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Logo and Title */}
             <div className="flex items-center gap-3">
@@ -458,7 +458,7 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-3 flex-1 flex flex-col">
+      <div className="container mx-auto px-2 py-3 flex-1 flex flex-col">
 
         {/* Main Content Grid */}
         <div className={`grid gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
