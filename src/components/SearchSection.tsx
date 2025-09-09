@@ -10,9 +10,10 @@ interface SearchSectionProps {
   isLoading?: boolean;
   refreshHistory?: boolean;
   compact?: boolean;
+  extraButton?: React.ReactNode;
 }
 
-export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false }: SearchSectionProps) => {
+export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false, extraButton }: SearchSectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
@@ -89,6 +90,9 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               <Search className="w-4 h-4" />
             )}
           </Button>
+          
+          {/* Extra button (e.g. fullscreen toggle) */}
+          {extraButton}
         </div>
 
         {/* Recent Searches - Dropdown style for compact mode */}

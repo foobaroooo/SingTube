@@ -7,7 +7,7 @@ import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQu
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Mic2, X, EyeOff, Search } from "lucide-react";
+import { Mic2, X, EyeOff, Search, Expand, Shrink } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
@@ -27,6 +27,7 @@ const Index = () => {
   const [shouldPause, setShouldPause] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true); // Enable auto-advance by default
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -289,6 +290,41 @@ const Index = () => {
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+        toast({
+          title: "Fullscreen Mode",
+          description: "Press ESC to exit fullscreen",
+        });
+      }).catch((err) => {
+        console.error('Error attempting to enable fullscreen:', err);
+        toast({
+          title: "Fullscreen Error",
+          description: "Unable to enter fullscreen mode",
+          variant: "destructive"
+        });
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      }).catch((err) => {
+        console.error('Error attempting to exit fullscreen:', err);
+      });
+    }
+  };
+
+  // Listen for fullscreen changes (ESC key or other methods)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const loadMoreResults = async () => {
     if (!nextPageToken || !currentSearchQuery || isLoadingMore) {
       return;
@@ -394,9 +430,29 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Search Section */}
+            {/* Search Section and Controls */}
             <div className="flex-1 max-w-2xl">
-              <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} refreshHistory={refreshHistory} compact />
+              <SearchSection 
+                onSearch={handleSearch} 
+                isLoading={isSearchLoading} 
+                refreshHistory={refreshHistory} 
+                compact 
+                extraButton={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleFullscreen}
+                    className="flex-shrink-0"
+                    title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  >
+                    {isFullscreen ? (
+                      <Shrink className="w-4 h-4" />
+                    ) : (
+                      <Expand className="w-4 h-4" />
+                    )}
+                  </Button>
+                }
+              />
             </div>
           </div>
         </div>
