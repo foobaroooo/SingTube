@@ -24,6 +24,8 @@ const Index = () => {
   const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
+  const [shouldPause, setShouldPause] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -181,17 +183,23 @@ const Index = () => {
 
   const selectSong = (index: number) => {
     setCurrentIndex(index);
+    // Reset playing state when selecting a different song
+    setIsPlaying(false);
   };
 
   const nextSong = () => {
     if (Array.isArray(queue) && currentIndex < queue.length - 1) {
       setCurrentIndex(prev => prev + 1);
+      // Reset playing state when changing songs
+      setIsPlaying(false);
     }
   };
 
   const previousSong = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
+      // Reset playing state when changing songs  
+      setIsPlaying(false);
     }
   };
 
@@ -217,6 +225,7 @@ const Index = () => {
       const song = queue[currentIndex];
       // Trigger autoplay by forcing a re-render with autoplay enabled
       setShouldAutoplay(true);
+      setIsPlaying(true);
       
       toast({
         title: "Playing Song",
@@ -225,8 +234,22 @@ const Index = () => {
     }
   };
 
+  const handlePauseCurrentSong = () => {
+    setShouldPause(true);
+    setIsPlaying(false);
+    
+    toast({
+      title: "Paused",
+      description: "Playback paused",
+    });
+  };
+
   const handleAutoplayComplete = () => {
     setShouldAutoplay(false);
+  };
+
+  const handlePauseComplete = () => {
+    setShouldPause(false);
   };
 
   const loadMoreResults = async () => {
@@ -454,7 +477,13 @@ const Index = () => {
               onReorder={reorderQueue}
               onSelect={selectSong}
               onPlay={handlePlayCurrentSong}
+              onPause={handlePauseCurrentSong}
+              onNext={nextSong}
+              onPrevious={previousSong}
               currentIndex={currentIndex}
+              isPlaying={isPlaying}
+              canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
+              canGoPrevious={currentIndex > 0}
               onLoadQueue={loadQueue}
               onQueueSaved={handleQueueSaved}
               isMaximized={isQueueMaximized}
@@ -473,7 +502,9 @@ const Index = () => {
               canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
               canGoPrevious={currentIndex > 0}
               shouldAutoplay={shouldAutoplay}
+              shouldPause={shouldPause}
               onAutoplayHandled={handleAutoplayComplete}
+              onPauseHandled={handlePauseComplete}
             />
           </div>
         </div>
@@ -486,7 +517,13 @@ const Index = () => {
             onReorder={reorderQueue}
             onSelect={selectSong}
             onPlay={handlePlayCurrentSong}
+            onPause={handlePauseCurrentSong}
+            onNext={nextSong}
+            onPrevious={previousSong}
             currentIndex={currentIndex}
+            isPlaying={isPlaying}
+            canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
+            canGoPrevious={currentIndex > 0}
             onLoadQueue={loadQueue}
             onQueueSaved={handleQueueSaved}
             isMaximized={isQueueMaximized}

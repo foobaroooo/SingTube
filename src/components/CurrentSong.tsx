@@ -11,10 +11,12 @@ interface PreviewProps {
   canGoNext: boolean;
   canGoPrevious: boolean;
   shouldAutoplay?: boolean;
+  shouldPause?: boolean;
   onAutoplayHandled?: () => void;
+  onPauseHandled?: () => void;
 }
 
-export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, onAutoplayHandled }: PreviewProps) => {
+export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled }: PreviewProps) => {
   const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
@@ -47,6 +49,28 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
       return () => clearTimeout(timer);
     }
   }, [iframeKey, shouldAutoplay, currentSong, onAutoplayHandled]);
+
+  // Handle pause requests via postMessage
+  useEffect(() => {
+    if (shouldPause && currentSong) {
+      const timer = setTimeout(() => {
+        if (iframeRef.current?.contentWindow) {
+          try {
+            iframeRef.current.contentWindow.postMessage(
+              '{"event":"command","func":"pauseVideo","args":""}',
+              'https://www.youtube.com'
+            );
+          } catch (error) {
+            console.log('Pause postMessage failed, iframe may not be ready yet');
+          }
+        }
+        if (onPauseHandled) {
+          onPauseHandled();
+        }
+      }, 100); // Immediate pause, no need to wait for reload
+      return () => clearTimeout(timer);
+    }
+  }, [shouldPause, currentSong, onPauseHandled]);
   
   const handlePlayYouTube = () => {
     if (currentSong) {

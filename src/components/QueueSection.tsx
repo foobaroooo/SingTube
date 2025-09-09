@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play } from "lucide-react";
+import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
@@ -14,7 +14,13 @@ interface QueueSectionProps {
   onReorder: (fromIndex: number, toIndex: number) => void;
   onSelect: (index: number) => void;
   onPlay?: () => void;
+  onPause?: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
   currentIndex: number;
+  isPlaying?: boolean;
+  canGoNext?: boolean;
+  canGoPrevious?: boolean;
   onLoadQueue?: (songs: Song[], queueName: string, queueId?: number) => void;
   onQueueSaved?: (queueName: string, queueId?: number) => void;
   isMaximized?: boolean;
@@ -23,7 +29,7 @@ interface QueueSectionProps {
   queueId?: number | null;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -180,17 +186,60 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, cur
             </div>
           </CardTitle>
           
-          {/* Play Button */}
-          {onPlay && (
-            <Button
-              onClick={onPlay}
-              disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
-              size="icon"
-              className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-12 h-12"
-              title={currentIndex >= 0 && queue[currentIndex] ? `Play: ${queue[currentIndex].title}` : "No song selected"}
-            >
-              <Play className="w-5 h-5 fill-current" />
-            </Button>
+          {/* Playback Controls */}
+          {(onPlay || onPause || onNext || onPrevious) && (
+            <div className="flex items-center gap-2">
+              {/* Previous Button */}
+              {onPrevious && (
+                <Button
+                  onClick={onPrevious}
+                  disabled={!canGoPrevious}
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full w-10 h-10"
+                  title="Previous song"
+                >
+                  <SkipBack className="w-4 h-4" />
+                </Button>
+              )}
+              
+              {/* Play/Pause Button */}
+              {(onPlay || onPause) && (
+                <Button
+                  onClick={isPlaying ? onPause : onPlay}
+                  disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
+                  size="icon"
+                  className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-12 h-12"
+                  title={
+                    currentIndex < 0 || !Array.isArray(queue) || queue.length === 0
+                      ? "No song selected"
+                      : isPlaying
+                      ? `Pause: ${queue[currentIndex]?.title}`
+                      : `Play: ${queue[currentIndex]?.title}`
+                  }
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5 fill-current" />
+                  ) : (
+                    <Play className="w-5 h-5 fill-current" />
+                  )}
+                </Button>
+              )}
+              
+              {/* Next Button */}
+              {onNext && (
+                <Button
+                  onClick={onNext}
+                  disabled={!canGoNext}
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full w-10 h-10"
+                  title="Next song"
+                >
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           )}
           
           <div className="flex gap-2">
