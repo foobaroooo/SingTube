@@ -26,6 +26,7 @@ const Index = () => {
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const [shouldPause, setShouldPause] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(true); // Enable auto-advance by default
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -250,6 +251,36 @@ const Index = () => {
 
   const handlePauseComplete = () => {
     setShouldPause(false);
+  };
+
+  const handleVideoEnd = () => {
+    if (autoAdvance && Array.isArray(queue) && currentIndex < queue.length - 1) {
+      // Auto-advance to next song and start playing it
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      
+      // Trigger autoplay for the next song
+      setTimeout(() => {
+        setShouldAutoplay(true);
+        setIsPlaying(true);
+        
+        if (queue[nextIndex]) {
+          toast({
+            title: "Auto-advancing",
+            description: `Now playing: ${queue[nextIndex].title}`,
+          });
+        }
+      }, 500); // Small delay to allow iframe to update
+    } else {
+      // End of queue or auto-advance disabled
+      setIsPlaying(false);
+      if (autoAdvance) {
+        toast({
+          title: "Queue Complete",
+          description: "Reached end of queue",
+        });
+      }
+    }
   };
 
   const loadMoreResults = async () => {
@@ -505,6 +536,8 @@ const Index = () => {
               shouldPause={shouldPause}
               onAutoplayHandled={handleAutoplayComplete}
               onPauseHandled={handlePauseComplete}
+              onVideoEnd={handleVideoEnd}
+              autoAdvance={autoAdvance}
             />
           </div>
         </div>

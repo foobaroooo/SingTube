@@ -14,11 +14,15 @@ interface PreviewProps {
   shouldPause?: boolean;
   onAutoplayHandled?: () => void;
   onPauseHandled?: () => void;
+  onVideoEnd?: () => void;
+  autoAdvance?: boolean;
 }
 
-export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled }: PreviewProps) => {
+export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled, onVideoEnd, autoAdvance = false }: PreviewProps) => {
   const [iframeKey, setIframeKey] = useState(0);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Force iframe reload when shouldAutoplay changes to ensure fresh player
   useEffect(() => {
@@ -30,14 +34,24 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
   // Use postMessage to control YouTube player when autoplay is triggered
   useEffect(() => {
     if (shouldAutoplay && currentSong) {
-      // Wait for iframe to load, then send play command
+      // Wait for iframe to load, then send play command and enable listening
       const timer = setTimeout(() => {
         if (iframeRef.current?.contentWindow) {
           try {
+            // Enable event listening first
+            iframeRef.current.contentWindow.postMessage(
+              '{"event":"listening","id":"' + currentSong.youtubeId + '"}',
+              'https://www.youtube.com'
+            );
+            
+            // Then send play command
             iframeRef.current.contentWindow.postMessage(
               '{"event":"command","func":"playVideo","args":""}',
               'https://www.youtube.com'
             );
+            
+            // Set playing state and start monitoring
+            setIsVideoPlaying(true);
           } catch (error) {
             console.log('PostMessage failed, iframe may not be ready yet');
           }
@@ -60,6 +74,7 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
               '{"event":"command","func":"pauseVideo","args":""}',
               'https://www.youtube.com'
             );
+            setIsVideoPlaying(false);
           } catch (error) {
             console.log('Pause postMessage failed, iframe may not be ready yet');
           }
@@ -71,6 +86,113 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
       return () => clearTimeout(timer);
     }
   }, [shouldPause, currentSong, onPauseHandled]);
+
+  // Fallback: Monitor for video end using duration estimation
+  useEffect(() => {
+    if (!isVideoPlaying || !autoAdvance || !onVideoEnd || !currentSong) {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Start checking for video end after 10 seconds (most karaoke songs are longer)
+    const startCheckingAfter = setTimeout(() => {
+      checkIntervalRef.current = setInterval(() => {
+        if (iframeRef.current?.contentWindow) {
+          try {
+            // Request current time and duration from YouTube player
+            iframeRef.current.contentWindow.postMessage(
+              '{"event":"command","func":"getCurrentTime","args":""}',
+              'https://www.youtube.com'
+            );
+            iframeRef.current.contentWindow.postMessage(
+              '{"event":"command","func":"getDuration","args":""}',
+              'https://www.youtube.com'
+            );
+          } catch (error) {
+            console.log('Failed to check video progress');
+          }
+        }
+      }, 5000); // Check every 5 seconds
+    }, 10000);
+
+    return () => {
+      clearTimeout(startCheckingAfter);
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+    };
+  }, [isVideoPlaying, autoAdvance, onVideoEnd, currentSong]);
+
+  // Clean up on component unmount or song change
+  useEffect(() => {
+    setIsVideoPlaying(false);
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+  }, [currentSong]);
+
+  // Listen for YouTube player events
+  useEffect(() => {
+    if (!autoAdvance || !onVideoEnd) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      // Only listen to messages from YouTube
+      if (event.origin !== 'https://www.youtube.com') return;
+      
+      console.log('YouTube message received:', event.data); // Debug log
+      
+      try {
+        // YouTube iframe API sends messages in different formats
+        let data;
+        if (typeof event.data === 'string') {
+          // Handle string format: {"event":"onStateChange","info":0}
+          if (event.data.startsWith('{')) {
+            data = JSON.parse(event.data);
+          } else {
+            // Handle other string formats
+            return;
+          }
+        } else {
+          data = event.data;
+        }
+        
+        console.log('Parsed YouTube data:', data); // Debug log
+        
+        // Listen for state changes - state 0 means video ended
+        if (data.event === 'onStateChange' && data.info === 0) {
+          console.log('Video ended, auto-advancing...'); // Debug log
+          setIsVideoPlaying(false);
+          // Video ended, auto-advance if possible
+          if (canGoNext) {
+            onVideoEnd();
+          }
+        }
+        
+        // Also listen for getCurrentTime response to check for video end
+        if (data.event === 'infoDelivery' && data.info && typeof data.info === 'object') {
+          const { currentTime, duration } = data.info;
+          if (currentTime && duration && Math.abs(currentTime - duration) < 2) {
+            // Video is within 2 seconds of ending
+            console.log('Video near end, auto-advancing...'); // Debug log
+            setIsVideoPlaying(false);
+            if (canGoNext) {
+              onVideoEnd();
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Error parsing YouTube message:', error); // Debug log
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [autoAdvance, onVideoEnd, canGoNext]);
   
   const handlePlayYouTube = () => {
     if (currentSong) {
@@ -111,7 +233,7 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
               key={iframeKey}
               width="100%"
               height="100%"
-              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?enablejsapi=1&origin=${window.location.origin}`}
+              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?enablejsapi=1&origin=${window.location.origin}&rel=0&showinfo=0&modestbranding=1&controls=1&fs=1&playsinline=1&widget_referrer=${window.location.origin}`}
               title={currentSong.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
