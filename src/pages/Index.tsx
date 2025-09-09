@@ -128,16 +128,27 @@ const Index = () => {
     });
   };
 
-  const removeFromQueue = (index: number) => {
-    setQueue(prev => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
+  const removeFromQueue = async (index: number) => {
+    const newQueue = Array.isArray(queue) ? queue.filter((_, i) => i !== index) : [];
+    setQueue(newQueue);
+    
     if (index === currentIndex) {
       setCurrentIndex(-1);
     } else if (index < currentIndex) {
       setCurrentIndex(prev => prev - 1);
     }
+    
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName && newQueue.length > 0) {
+      try {
+        await updateQueue(currentQueueId, currentQueueName, newQueue);
+      } catch (error) {
+        console.error('Failed to update saved queue after removal:', error);
+      }
+    }
   };
 
-  const reorderQueue = (fromIndex: number, toIndex: number) => {
+  const reorderQueue = async (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex || !Array.isArray(queue)) return;
     
     const newQueue = [...queue];
@@ -156,7 +167,15 @@ const Index = () => {
     
     setQueue(newQueue);
     setCurrentIndex(newCurrentIndex);
-    setCurrentQueueName(""); // Clear queue name when reordering
+    
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName) {
+      try {
+        await updateQueue(currentQueueId, currentQueueName, newQueue);
+      } catch (error) {
+        console.error('Failed to update saved queue after reorder:', error);
+      }
+    }
   };
 
   const selectSong = (index: number) => {
