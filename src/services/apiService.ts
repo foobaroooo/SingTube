@@ -124,11 +124,12 @@ export const deleteSearchHistory = async (id: number): Promise<boolean> => {
 };
 
 // Fallback to localStorage for offline functionality
-export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1): boolean => {
+export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1, queueName: string = ""): boolean => {
   try {
     const queueData = {
       songs,
       currentIndex,
+      queueName,
       updatedAt: new Date().toISOString(),
     };
     localStorage.setItem('singtube_current_queue', JSON.stringify(queueData));
@@ -139,7 +140,7 @@ export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1): bool
   }
 };
 
-export const loadCurrentQueue = (): { songs: Song[]; currentIndex: number } => {
+export const loadCurrentQueue = (): { songs: Song[]; currentIndex: number; queueName: string } => {
   try {
     const data = localStorage.getItem('singtube_current_queue');
     if (data) {
@@ -147,11 +148,12 @@ export const loadCurrentQueue = (): { songs: Song[]; currentIndex: number } => {
       return {
         songs: parsed.songs || [],
         currentIndex: parsed.currentIndex || -1,
+        queueName: parsed.queueName || "",
       };
     }
   } catch (error) {
     console.error('Error loading current queue:', error);
   }
   
-  return { songs: [], currentIndex: -1 };
+  return { songs: [], currentIndex: -1, queueName: "" };
 };

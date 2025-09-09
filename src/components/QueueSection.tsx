@@ -159,6 +159,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
   };
 
 
+
   return (
     <>
       {isMaximized && (

@@ -31,15 +31,16 @@ const Index = () => {
     if (Array.isArray(savedData.songs) && savedData.songs.length > 0) {
       setQueue(savedData.songs);
       setCurrentIndex(savedData.currentIndex);
+      setCurrentQueueName(savedData.queueName);
     }
   }, []);
 
   // Auto-save queue whenever it changes
   useEffect(() => {
     if ((Array.isArray(queue) && queue.length > 0) || currentIndex >= 0) {
-      saveCurrentQueue(queue, currentIndex);
+      saveCurrentQueue(queue, currentIndex, currentQueueName);
     }
-  }, [queue, currentIndex]);
+  }, [queue, currentIndex, currentQueueName]);
 
   const handleSearch = async (query: string, gender: string) => {
     if (!query.trim()) {
