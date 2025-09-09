@@ -14,14 +14,15 @@ interface QueueSectionProps {
   onReorder: (fromIndex: number, toIndex: number) => void;
   onSelect: (index: number) => void;
   currentIndex: number;
-  onLoadQueue?: (songs: Song[], queueName: string) => void;
-  onQueueSaved?: (queueName: string) => void;
+  onLoadQueue?: (songs: Song[], queueName: string, queueId?: number) => void;
+  onQueueSaved?: (queueName: string, queueId?: number) => void;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
   queueName?: string;
+  queueId?: number | null;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentIndex, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -99,9 +100,9 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
     }
   };
 
-  const handleLoadQueue = (songs: Song[], savedQueueName: string) => {
+  const handleLoadQueue = (songs: Song[], savedQueueName: string, savedQueueId: number) => {
     if (onLoadQueue) {
-      onLoadQueue(songs, savedQueueName);
+      onLoadQueue(songs, savedQueueName, savedQueueId);
       setLoadDialogOpen(false);
       toast({
         title: "Queue Loaded",
@@ -228,7 +229,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
                           >
                             Delete
                           </Button>
-                          <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name)}>
+                          <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
                             Load
                           </Button>
                         </div>
@@ -313,38 +314,38 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, currentInde
                 `}
                 onClick={() => onSelect(index)}
               >
-              <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
-              
-              <img 
-                src={song.thumbnail} 
-                alt={song.title}
-                className="w-12 h-12 object-cover rounded bg-muted flex-shrink-0"
-              />
-              
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm truncate text-card-foreground">
-                  {song.title}
-                </h4>
-                <p className="text-xs text-muted-foreground truncate">
-                  {song.artist}
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  {song.duration}
-                </span>
+                <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                
+                <img 
+                  src={song.thumbnail} 
+                  alt={song.title}
+                  className="w-12 h-12 object-cover rounded bg-muted flex-shrink-0"
+                />
+                
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm truncate text-card-foreground">
+                    {song.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {song.artist}
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    {song.duration}
+                  </span>
+                </div>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveWithFadeOut(index);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-              
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveWithFadeOut(index);
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
             );
           })
         )}

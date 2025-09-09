@@ -3,7 +3,7 @@ import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
-import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue } from "@/services/apiService";
+import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const Index = () => {
   const [refreshHistory, setRefreshHistory] = useState(false);
   const [isQueueMaximized, setIsQueueMaximized] = useState(false);
   const [currentQueueName, setCurrentQueueName] = useState<string>("");
+  const [currentQueueId, setCurrentQueueId] = useState<number | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
   const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
@@ -86,19 +87,41 @@ const Index = () => {
     }
   };
 
-  const addToQueue = (song: Song) => {
-    setQueue(prev => [...prev, song]);
+  const addToQueue = async (song: Song) => {
+    const newQueue = [...queue, song];
+    setQueue(newQueue);
+    
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName) {
+      try {
+        await updateQueue(currentQueueId, currentQueueName, newQueue);
+      } catch (error) {
+        console.error('Failed to update saved queue:', error);
+      }
+    }
+    
     toast({
       title: "Song Added",
       description: `${song.title} added to queue`,
     });
   };
 
-  const addToFront = (song: Song) => {
-    setQueue(prev => [song, ...prev]);
+  const addToFront = async (song: Song) => {
+    const newQueue = [song, ...queue];
+    setQueue(newQueue);
     if (currentIndex >= 0) {
       setCurrentIndex(prev => prev + 1);
     }
+    
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName) {
+      try {
+        await updateQueue(currentQueueId, currentQueueName, newQueue);
+      } catch (error) {
+        console.error('Failed to update saved queue:', error);
+      }
+    }
+    
     toast({
       title: "Priority Added",
       description: `${song.title} added to front of queue`,
@@ -152,19 +175,21 @@ const Index = () => {
     }
   };
 
-  const loadQueue = (songs: Song[], queueName: string = "") => {
+  const loadQueue = (songs: Song[], queueName: string = "", queueId: number | null = null) => {
     const safeSongs = Array.isArray(songs) ? songs : [];
     setQueue(safeSongs);
     setCurrentIndex(safeSongs.length > 0 ? 0 : -1);
     setCurrentQueueName(queueName);
+    setCurrentQueueId(queueId);
   };
 
   const toggleQueueMaximize = () => {
     setIsQueueMaximized(prev => !prev);
   };
 
-  const handleQueueSaved = (queueName: string) => {
+  const handleQueueSaved = (queueName: string, queueId: number | null = null) => {
     setCurrentQueueName(queueName);
+    setCurrentQueueId(queueId);
   };
 
   const loadMoreResults = async () => {
@@ -397,6 +422,7 @@ const Index = () => {
               isMaximized={isQueueMaximized}
               onToggleMaximize={toggleQueueMaximize}
               queueName={currentQueueName}
+              queueId={currentQueueId}
             />
           </div>
 
@@ -425,6 +451,7 @@ const Index = () => {
             isMaximized={isQueueMaximized}
             onToggleMaximize={toggleQueueMaximize}
             queueName={currentQueueName}
+            queueId={currentQueueId}
           />
         )}
       </div>

@@ -68,6 +68,42 @@ switch ($method) {
         }
         break;
 
+    case 'PUT':
+        // Update an existing queue
+        if (!isset($data['id']) || !isset($data['name']) || !isset($data['songs'])) {
+            sendErrorResponse('ID, name and songs are required');
+        }
+        
+        if (empty(trim($data['name']))) {
+            sendErrorResponse('Queue name cannot be empty');
+        }
+        
+        if (empty($data['songs'])) {
+            sendErrorResponse('Cannot save an empty queue');
+        }
+        
+        try {
+            $stmt = $pdo->prepare('UPDATE saved_queues SET name = ?, songs = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+            $stmt->execute([
+                trim($data['name']),
+                json_encode($data['songs']),
+                intval($data['id'])
+            ]);
+            
+            if ($stmt->rowCount() > 0) {
+                sendJsonResponse([
+                    'id' => intval($data['id']),
+                    'message' => 'Queue updated successfully'
+                ]);
+            } else {
+                sendErrorResponse('Queue not found', 404);
+            }
+        } catch (PDOException $e) {
+            error_log('Database error: ' . $e->getMessage());
+            sendErrorResponse('Failed to update queue', 500);
+        }
+        break;
+
     case 'DELETE':
         // Delete a queue
         $queueId = $_GET['id'] ?? null;

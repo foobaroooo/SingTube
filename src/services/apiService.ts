@@ -67,6 +67,20 @@ export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> =
   }
 };
 
+export const updateQueue = async (id: number, name: string, songs: Song[]): Promise<boolean> => {
+  try {
+    await axios.put(`${API_BASE_URL}/queues.php`, {
+      id,
+      name,
+      songs,
+    });
+    return true;
+  } catch (error) {
+    console.error('Update queue error:', error);
+    return false;
+  }
+};
+
 export const getSavedQueues = async (): Promise<SavedQueue[]> => {
   try {
     const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/queues.php`);
