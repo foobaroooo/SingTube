@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue } from "@/services/apiService";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Mic2, X, EyeOff, Search } from "lucide-react";
@@ -18,6 +19,10 @@ const Index = () => {
   const [isQueueMaximized, setIsQueueMaximized] = useState(false);
   const [currentQueueName, setCurrentQueueName] = useState<string>("");
   const [hasSearched, setHasSearched] = useState(false);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
+  const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Load saved queue on component mount
@@ -49,10 +54,12 @@ const Index = () => {
 
     setIsSearchLoading(true);
     setHasSearched(true);
+    setCurrentSearchQuery(query);
     
     try {
-      const results = await searchYouTubeVideos(query, gender, 20);
-      setSearchResults(results);
+      const result = await searchYouTubeVideos(query, gender, 20);
+      setSearchResults(result.songs);
+      setNextPageToken(result.nextPageToken);
       
       // Save search to history
       await saveSearchHistory(query, gender);
@@ -62,7 +69,7 @@ const Index = () => {
       
       toast({
         title: "Search Complete",
-        description: `Found ${Array.isArray(results) ? results.length : 0} karaoke songs from YouTube`,
+        description: `Found ${Array.isArray(result.songs) ? result.songs.length : 0} karaoke songs from YouTube`,
       });
     } catch (error) {
       console.error('Search error:', error);
@@ -72,6 +79,7 @@ const Index = () => {
         variant: "destructive"
       });
       setSearchResults([]);
+      setNextPageToken(undefined);
     } finally {
       setIsSearchLoading(false);
     }
@@ -138,8 +146,32 @@ const Index = () => {
     setCurrentQueueName(queueName);
   };
 
+  const loadMoreResults = async () => {
+    if (!nextPageToken || !currentSearchQuery || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    
+    try {
+      const result = await searchYouTubeVideos(currentSearchQuery, "all", 20, nextPageToken);
+      setSearchResults(prev => [...prev, ...result.songs]);
+      setNextPageToken(result.nextPageToken);
+    } catch (error) {
+      console.error('Load more error:', error);
+      toast({
+        title: "Load More Failed",
+        description: "Unable to load more results",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
   const clearSearch = () => {
     setSearchResults([]);
+    setNextPageToken(undefined);
   };
 
   const hideSearch = () => {
@@ -186,6 +218,19 @@ const Index = () => {
   };
   
   const gridConfig = getGridConfig();
+
+  // Infinite scroll hook
+  const { targetRef, isFetching, setIsFetchingMore } = useInfiniteScroll(
+    loadMoreResults, 
+    scrollContainerRef.current
+  );
+
+  // Reset fetching state when load more completes
+  useEffect(() => {
+    if (isFetching && !isLoadingMore) {
+      setIsFetchingMore(false);
+    }
+  }, [isLoadingMore, isFetching, setIsFetchingMore]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -262,7 +307,7 @@ const Index = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+                <div ref={scrollContainerRef} className="grid gap-4 max-h-[600px] overflow-y-auto">
                   {(Array.isArray(searchResults) ? searchResults : []).map(song => (
                     <SongCard
                       key={song.id}
@@ -272,6 +317,30 @@ const Index = () => {
                       showPlayButton
                     />
                   ))}
+                  
+                  {/* Infinite scroll trigger */}
+                  {nextPageToken && (
+                    <div ref={targetRef} className="py-4 text-center">
+                      {isLoadingMore ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                          <span className="text-sm text-muted-foreground">Loading more songs...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Scroll down for more results</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={loadMoreResults}
+                            disabled={isLoadingMore}
+                          >
+                            Load More
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

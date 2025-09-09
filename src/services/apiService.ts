@@ -24,23 +24,29 @@ export interface SearchHistory {
 export const searchYouTubeVideos = async (
   query: string,
   gender: string = 'all',
-  maxResults: number = 25
-): Promise<Song[]> => {
+  maxResults: number = 25,
+  pageToken?: string
+): Promise<{ songs: Song[]; nextPageToken?: string }> => {
   if (!query.trim()) {
-    return [];
+    return { songs: [] };
   }
 
   try {
-    const response = await axios.get<Song[]>(`${API_BASE_URL}/youtube.php`, {
+    const response = await axios.get<{ songs: Song[]; nextPageToken?: string }>(`${API_BASE_URL}/youtube.php`, {
       params: {
         q: query,
         gender,
         maxResults,
+        pageToken,
       },
     });
 
-    // Ensure we always return an array
-    return Array.isArray(response.data) ? response.data : [];
+    // Ensure we always return the expected format
+    const data = response.data;
+    return {
+      songs: Array.isArray(data.songs) ? data.songs : Array.isArray(data) ? data : [],
+      nextPageToken: data.nextPageToken,
+    };
   } catch (error) {
     console.error('YouTube Search API Error:', error);
     throw error;
