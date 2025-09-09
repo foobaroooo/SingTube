@@ -237,25 +237,29 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Mic2 className="w-8 h-8 text-primary" />
-            <div className="flex flex-col">
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                SingTube
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                The Missing Karaoke Player for YouTube
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo and Title */}
+            <div className="flex items-center gap-3">
+              <Mic2 className="w-8 h-8 text-primary" />
+              <div className="flex flex-col">
+                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  SingTube
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  The Missing Karaoke Player for YouTube
+                </p>
+              </div>
+            </div>
+            
+            {/* Search Section */}
+            <div className="flex-1 max-w-2xl">
+              <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} refreshHistory={refreshHistory} compact />
             </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-3">
-        {/* Search Section */}
-        <div className="mb-4">
-          <SearchSection onSearch={handleSearch} isLoading={isSearchLoading} refreshHistory={refreshHistory} />
-        </div>
 
         {/* Main Content Grid */}
         <div className={`grid gap-6 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>

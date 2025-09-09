@@ -9,9 +9,10 @@ interface SearchSectionProps {
   onSearch: (query: string, gender: string) => void;
   isLoading?: boolean;
   refreshHistory?: boolean;
+  compact?: boolean;
 }
 
-export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false }: SearchSectionProps) => {
+export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false }: SearchSectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
@@ -62,6 +63,61 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
       console.error('Failed to delete search history:', error);
     }
   };
+
+  if (compact) {
+    return (
+      <div className="w-full">
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Input
+              placeholder="Search for songs, artists... (e.g. 邓丽君, 周杰伦)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="bg-input border-border focus:ring-2 focus:ring-primary transition-smooth"
+            />
+          </div>
+          
+          <Button 
+            onClick={handleSearch}
+            className="px-4 bg-gradient-primary hover:shadow-neon transition-bounce"
+            disabled={!searchQuery.trim() || isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* Recent Searches - Dropdown style for compact mode */}
+        {Array.isArray(searchHistory) && searchHistory.length > 0 && (
+          <div className="mt-2">
+            <div className="flex flex-wrap gap-1">
+                {(Array.isArray(searchHistory) ? searchHistory : []).slice(0, 3).map((history) => (
+                <Badge
+                  key={`${history.query}-${history.gender}-${history.id}`}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-secondary/80 transition-colors text-xs flex items-center gap-1 pr-1"
+                  onClick={() => handleHistoryClick(history.query, history.gender)}
+                >
+                  <span>{history.query}</span>
+                  <button
+                    onClick={(e) => handleDeleteHistory(e, history.id)}
+                    className="hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                    title="Remove from history"
+                  >
+                    <X className="w-2 h-2" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 shadow-card">
