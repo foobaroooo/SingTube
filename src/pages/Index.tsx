@@ -5,7 +5,8 @@ import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue } from "@/services/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { Mic2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Mic2, X, EyeOff, Search } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
@@ -16,6 +17,7 @@ const Index = () => {
   const [refreshHistory, setRefreshHistory] = useState(false);
   const [isQueueMaximized, setIsQueueMaximized] = useState(false);
   const [currentQueueName, setCurrentQueueName] = useState<string>("");
+  const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
   // Load saved queue on component mount
@@ -46,6 +48,7 @@ const Index = () => {
     }
 
     setIsSearchLoading(true);
+    setHasSearched(true);
     
     try {
       const results = await searchYouTubeVideos(query, gender, 20);
@@ -135,7 +138,54 @@ const Index = () => {
     setCurrentQueueName(queueName);
   };
 
+  const clearSearch = () => {
+    setSearchResults([]);
+  };
+
+  const hideSearch = () => {
+    setHasSearched(false);
+  };
+
+  const showSearch = () => {
+    setHasSearched(true);
+  };
+
   const currentSong = currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex] ? queue[currentIndex] : null;
+  
+  // Determine layout based on search state
+  const hasResults = Array.isArray(searchResults) && searchResults.length > 0;
+  const showSearchResults = hasSearched || isSearchLoading;
+  
+  // Dynamic grid configuration
+  const getGridConfig = () => {
+    if (!showSearchResults) {
+      // No search results: Queue gets more space (2 columns), Preview gets 1
+      return {
+        gridCols: "grid-cols-1 lg:grid-cols-3",
+        searchSpan: "lg:col-span-1 hidden lg:block", // Hidden on large screens when no search
+        queueSpan: "lg:col-span-2", // Queue gets 2 columns
+        previewSpan: "lg:col-span-1"
+      };
+    } else if (hasResults) {
+      // Has search results: Equal distribution
+      return {
+        gridCols: "grid-cols-1 lg:grid-cols-3",
+        searchSpan: "lg:col-span-1",
+        queueSpan: "lg:col-span-1",
+        previewSpan: "lg:col-span-1"
+      };
+    } else {
+      // Searched but no results: Compact search, more space for queue
+      return {
+        gridCols: "grid-cols-1 lg:grid-cols-3",
+        searchSpan: "lg:col-span-1",
+        queueSpan: "lg:col-span-1",
+        previewSpan: "lg:col-span-1"
+      };
+    }
+  };
+  
+  const gridConfig = getGridConfig();
 
   return (
     <div className="min-h-screen bg-background">
@@ -158,41 +208,85 @@ const Index = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className={`grid gap-6 ${isQueueMaximized ? 'hidden' : 'grid-cols-1 lg:grid-cols-3'}`}>
+        <div className={`grid gap-6 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
           {/* Search Results */}
-          <div className="lg:col-span-1">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">
-              Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
-            </h2>
-            
-            {!Array.isArray(searchResults) || searchResults.length === 0 ? (
-              <div className="text-center py-12">
-                <img 
-                  src={heroImage} 
-                  alt="Karaoke Hero" 
-                  className="w-full max-w-md mx-auto rounded-lg mb-4 opacity-50"
-                />
-                <p className="text-muted-foreground">
-                  Search for your favorite Chinese karaoke songs
-                </p>
+          {showSearchResults && (
+            <div className={gridConfig.searchSpan}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground">
+                  Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
+                </h2>
+                {hasSearched && (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={clearSearch}
+                      className="flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Clear
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={hideSearch}
+                      className="flex items-center gap-2"
+                    >
+                      <EyeOff className="w-4 h-4" />
+                      Hide
+                    </Button>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="grid gap-4 max-h-[600px] overflow-y-auto">
-                {(Array.isArray(searchResults) ? searchResults : []).map(song => (
-                  <SongCard
-                    key={song.id}
-                    song={song}
-                    onAddToQueue={addToQueue}
-                    onAddToFront={addToFront}
-                    showPlayButton
+              
+              {isSearchLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Searching for karaoke songs...</p>
+                </div>
+              ) : !Array.isArray(searchResults) || searchResults.length === 0 ? (
+                <div className="text-center py-12">
+                  <img 
+                    src={heroImage} 
+                    alt="Karaoke Hero" 
+                    className="w-full max-w-md mx-auto rounded-lg mb-4 opacity-50"
                   />
-                ))}
-              </div>
-            )}
-          </div>
+                  <p className="text-muted-foreground">
+                    {hasSearched ? "No results found. Try a different search term." : "Search for your favorite Chinese karaoke songs"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+                  {(Array.isArray(searchResults) ? searchResults : []).map(song => (
+                    <SongCard
+                      key={song.id}
+                      song={song}
+                      onAddToQueue={addToQueue}
+                      onAddToFront={addToFront}
+                      showPlayButton
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Queue */}
-          <div className="lg:col-span-1">
+          <div className={gridConfig.queueSpan}>
+            {!showSearchResults && (
+              <div className="mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={showSearch}
+                  className="flex items-center gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  Show Search
+                </Button>
+              </div>
+            )}
             <QueueSection
               queue={queue}
               onRemove={removeFromQueue}
@@ -208,7 +302,7 @@ const Index = () => {
           </div>
 
           {/* Preview */}
-          <div className="lg:col-span-1">
+          <div className={gridConfig.previewSpan}>
             <CurrentSong
               currentSong={currentSong}
               onNext={nextSong}
