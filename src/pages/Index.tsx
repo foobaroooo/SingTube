@@ -8,7 +8,7 @@ import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQu
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Mic2, X, EyeOff, Search, Expand, Shrink } from "lucide-react";
+import { Mic2, X, EyeOff, Search, Expand, Shrink, List } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
@@ -30,6 +30,7 @@ const Index = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true); // Enable auto-advance by default
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeView, setActiveView] = useState<'search' | 'queue'>('queue'); // Track which view is active
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -64,6 +65,7 @@ const Index = () => {
     setIsSearchLoading(true);
     setHasSearched(true);
     setCurrentSearchQuery(query);
+    setActiveView('search'); // Switch to search view when searching
     
     try {
       const result = await searchYouTubeVideos(query, gender, 20);
@@ -378,47 +380,28 @@ const Index = () => {
     setNextPageToken(undefined);
   };
 
-  const hideSearch = () => {
-    setHasSearched(false);
+  const toggleView = () => {
+    setActiveView(prev => prev === 'search' ? 'queue' : 'search');
   };
 
-  const showSearch = () => {
-    setHasSearched(true);
+  const switchToQueue = () => {
+    setActiveView('queue');
   };
 
   const currentSong = currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex] ? queue[currentIndex] : null;
   
-  // Determine layout based on search state
+  // Determine layout based on active view
   const hasResults = Array.isArray(searchResults) && searchResults.length > 0;
-  const showSearchResults = hasSearched || isSearchLoading;
+  const showSearchResults = activeView === 'search' && (hasSearched || isSearchLoading);
+  const showQueueSection = activeView === 'queue';
   
-  // Dynamic grid configuration
+  // Dynamic grid configuration - only show one main section at a time
   const getGridConfig = () => {
-    if (!showSearchResults) {
-      // No search results: Queue gets more space (3 columns), Preview gets 1
-      return {
-        gridCols: "grid-cols-1 lg:grid-cols-4",
-        searchSpan: "lg:col-span-1 hidden lg:block", // Hidden on large screens when no search
-        queueSpan: "lg:col-span-3", // Queue gets 3 columns (more space)
-        previewSpan: "lg:col-span-1"
-      };
-    } else if (hasResults) {
-      // Has search results: Search gets 1, Queue gets 2, Preview gets 1
-      return {
-        gridCols: "grid-cols-1 lg:grid-cols-4",
-        searchSpan: "lg:col-span-1",
-        queueSpan: "lg:col-span-2", // Queue gets 2 columns
-        previewSpan: "lg:col-span-1"
-      };
-    } else {
-      // Searched but no results: Compact search, more space for queue
-      return {
-        gridCols: "grid-cols-1 lg:grid-cols-4",
-        searchSpan: "lg:col-span-1",
-        queueSpan: "lg:col-span-2", // Queue gets 2 columns
-        previewSpan: "lg:col-span-1"
-      };
-    }
+    return {
+      gridCols: "grid-cols-1 lg:grid-cols-4",
+      mainSpan: "lg:col-span-3", // Main content (search OR queue) gets 3 columns
+      previewSpan: "lg:col-span-1" // Preview always gets 1 column
+    };
   };
   
   const gridConfig = getGridConfig();
@@ -492,13 +475,13 @@ const Index = () => {
         <div className={`grid gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
           {/* Search Results */}
           {showSearchResults && (
-            <div className={gridConfig.searchSpan}>
+            <div className={gridConfig.mainSpan}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
                   Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
                 </h2>
-                {hasSearched && (
-                  <div className="flex gap-2">
+                <div className="flex gap-2">
+                  {hasSearched && (
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -508,17 +491,17 @@ const Index = () => {
                       <X className="w-4 h-4" />
                       Clear
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={hideSearch}
-                      className="flex items-center gap-2"
-                    >
-                      <EyeOff className="w-4 h-4" />
-                      Hide
-                    </Button>
-                  </div>
-                )}
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={toggleView}
+                    className="flex items-center gap-2"
+                  >
+                    <List className="w-4 h-4" />
+                    Queue Playlist
+                  </Button>
+                </div>
               </div>
               
               {isSearchLoading ? (
@@ -578,20 +561,22 @@ const Index = () => {
           )}
 
           {/* Queue */}
-          <div className={`${gridConfig.queueSpan} flex flex-col min-h-0`}>
-            {!showSearchResults && (
-              <div className="mb-4">
+          {showQueueSection && (
+            <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground">
+                  Queue Playlist ({Array.isArray(queue) ? queue.length : 0} songs)
+                </h2>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={showSearch}
+                  onClick={toggleView}
                   className="flex items-center gap-2"
                 >
                   <Search className="w-4 h-4" />
-                  Show Search
+                  Search Results
                 </Button>
               </div>
-            )}
             <QueueSection
               queue={queue}
               onRemove={removeFromQueue}
@@ -613,7 +598,8 @@ const Index = () => {
               queueName={currentQueueName}
               queueId={currentQueueId}
             />
-          </div>
+            </div>
+          )}
 
           {/* Preview */}
           <div className={gridConfig.previewSpan}>
