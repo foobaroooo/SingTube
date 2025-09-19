@@ -630,21 +630,23 @@ const Index = () => {
                   </p>
                 </div>
               ) : (
-                <div ref={scrollContainerRef} className="grid gap-4 flex-1 overflow-y-auto">
-                  {(Array.isArray(searchResults) ? searchResults : []).map(song => (
-                    <SongCard
-                      key={song.id}
-                      song={song}
-                      onAddToQueue={addToQueue}
-                      onAddToFront={addToFront}
-                      onPreview={handlePreviewSong}
-                      showPlayButton
-                      compact
-                    />
-                  ))}
+                <>
+                  <div ref={scrollContainerRef} className="grid gap-4 flex-1 overflow-y-auto">
+                    {(Array.isArray(searchResults) ? searchResults : []).map(song => (
+                      <SongCard
+                        key={song.id}
+                        song={song}
+                        onAddToQueue={addToQueue}
+                        onAddToFront={addToFront}
+                        onPreview={handlePreviewSong}
+                        showPlayButton
+                        compact
+                      />
+                    ))}
+                  </div>
                   
-                  {/* Pagination */}
-                  <div className="py-6">
+                  {/* Fixed Pagination at bottom */}
+                  <div className="border-t border-border bg-card/50 backdrop-blur-sm py-4 mt-4">
                     <Pagination
                       currentPage={currentPage}
                       hasNextPage={!!nextPageToken}
@@ -653,13 +655,13 @@ const Index = () => {
                       onNext={nextPage}
                       isLoading={isLoadingMore}
                     />
+                    
+                    {/* Debug info */}
+                    <div className="text-xs text-muted-foreground text-center pt-2">
+                      Debug: Page {currentPage}, Next: {nextPageToken ? 'Yes' : 'No'}, Prev: {currentPage > 1 ? 'Yes' : 'No'}
+                    </div>
                   </div>
-                  
-                  {/* Debug info */}
-                  <div className="text-xs text-muted-foreground text-center py-2">
-                    Debug: Page {currentPage}, Next: {nextPageToken ? 'Yes' : 'No'}, Prev: {currentPage > 1 ? 'Yes' : 'No'}
-                  </div>
-                </div>
+                </>
               )}
             </div>
           )}
