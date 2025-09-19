@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
@@ -11,6 +12,7 @@ import { Mic2, X, EyeOff, Search, Expand, Shrink } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -334,6 +336,10 @@ const Index = () => {
     }
   };
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   // Listen for fullscreen changes (ESC key or other methods)
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -437,7 +443,10 @@ const Index = () => {
         <div className="container mx-auto px-2 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Logo and Title */}
-            <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleLogoClick}
+            >
               <Mic2 className="w-8 h-8 text-primary" />
               <div className="flex flex-col">
                 <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
