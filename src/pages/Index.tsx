@@ -585,7 +585,7 @@ const Index = () => {
         <div className={`grid gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
           {/* Search Results */}
           {showSearchResults && (
-            <div className={gridConfig.mainSpan}>
+            <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
                   Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
@@ -603,10 +603,9 @@ const Index = () => {
                     </Button>
                   )}
                   <Button 
-                    variant="outline" 
                     size="sm"
                     onClick={toggleView}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
                   >
                     <List className="w-4 h-4" />
                     Song Queue
@@ -631,7 +630,7 @@ const Index = () => {
                   </p>
                 </div>
               ) : (
-                <div ref={scrollContainerRef} className="grid gap-4 max-h-[600px] overflow-y-auto">
+                <div ref={scrollContainerRef} className="grid gap-4 flex-1 overflow-y-auto">
                   {(Array.isArray(searchResults) ? searchResults : []).map(song => (
                     <SongCard
                       key={song.id}
@@ -673,10 +672,9 @@ const Index = () => {
                   Song Queue ({Array.isArray(queue) ? queue.length : 0} songs)
                 </h2>
                 <Button 
-                  variant="outline" 
                   size="sm"
                   onClick={toggleView}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
                 >
                   <Search className="w-4 h-4" />
                   Search Results
