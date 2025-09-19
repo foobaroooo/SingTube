@@ -609,7 +609,7 @@ const Index = () => {
                     className="flex items-center gap-2"
                   >
                     <List className="w-4 h-4" />
-                    Playlist Queue
+                    Song Queue
                   </Button>
                 </div>
               </div>
@@ -670,7 +670,7 @@ const Index = () => {
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
-                  Playlist Queue ({Array.isArray(queue) ? queue.length : 0} songs)
+                  Song Queue ({Array.isArray(queue) ? queue.length : 0} songs)
                 </h2>
                 <Button 
                   variant="outline" 

@@ -180,7 +180,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
           <CardTitle className="flex items-center gap-2">
             <Music className="w-5 h-5 text-primary" />
             <div className="flex flex-col">
-              <span>{queueName || 'Queue'} ({Array.isArray(queue) ? queue.length : 0})</span>
+              <span>{queueName || 'Song Queue'} ({Array.isArray(queue) ? queue.length : 0})</span>
             </div>
           </CardTitle>
           
