@@ -4,6 +4,7 @@ import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
+import { Pagination } from "@/components/Pagination";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
@@ -23,8 +24,13 @@ const Index = () => {
   const [currentQueueId, setCurrentQueueId] = useState<number | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
+  const [prevPageToken, setPrevPageToken] = useState<string | undefined>(undefined);
   const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
+  const [currentSearchGender, setCurrentSearchGender] = useState<string>("all");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [pageTokenHistory, setPageTokenHistory] = useState<string[]>([]);
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const [shouldPause, setShouldPause] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -51,7 +57,7 @@ const Index = () => {
     }
   }, [queue, currentIndex, currentQueueName]);
 
-  const handleSearch = async (query: string, gender: string) => {
+  const handleSearch = async (query: string, gender: string, pageToken?: string) => {
     if (!query.trim()) {
       setSearchResults([]);
       toast({
@@ -65,22 +71,56 @@ const Index = () => {
     setIsSearchLoading(true);
     setHasSearched(true);
     setCurrentSearchQuery(query);
+    setCurrentSearchGender(gender);
     setActiveView('search'); // Switch to search view when searching
     
+    // If no pageToken provided, this is a new search
+    if (!pageToken) {
+      setCurrentPage(1);
+      setPageTokenHistory([]);
+      setPrevPageToken(undefined);
+    }
+    
     try {
-      const result = await searchYouTubeVideos(query, gender, 20);
+      console.log('Calling searchYouTubeVideos with:', { 
+        query, 
+        gender, 
+        itemsPerPage, 
+        pageToken 
+      });
+      
+      const result = await searchYouTubeVideos(query, gender, itemsPerPage, pageToken);
+      
+      console.log('Search result:', {
+        songsCount: result.songs.length,
+        nextPageToken: result.nextPageToken,
+        hasNextPageToken: !!result.nextPageToken
+      });
+      
       setSearchResults(result.songs);
       setNextPageToken(result.nextPageToken);
       
-      // Save search to history
-      await saveSearchHistory(query, gender);
+      // Debug logging
+      console.log('Search complete:', {
+        query,
+        gender,
+        pageToken,
+        currentPage,
+        results: result.songs.length,
+        hasNext: !!result.nextPageToken,
+        hasPrev: pageTokenHistory.length > 0
+      });
       
-      // Trigger history refresh
-      setRefreshHistory(prev => !prev);
+      // Save search to history (only for new searches, not pagination)
+      if (!pageToken) {
+        await saveSearchHistory(query, gender);
+        // Trigger history refresh
+        setRefreshHistory(prev => !prev);
+      }
       
       toast({
         title: "Search Complete",
-        description: `Found ${Array.isArray(result.songs) ? result.songs.length : 0} karaoke songs from YouTube`,
+        description: `Found ${result.songs.length} karaoke songs (Page ${currentPage})`,
       });
     } catch (error) {
       console.error('Search error:', error);
@@ -378,6 +418,62 @@ const Index = () => {
   const clearSearch = () => {
     setSearchResults([]);
     setNextPageToken(undefined);
+    setPrevPageToken(undefined);
+    setCurrentPage(1);
+    setPageTokenHistory([]);
+  };
+
+  const nextPage = async () => {
+    if (!nextPageToken || !currentSearchQuery) return;
+    
+    setIsLoadingMore(true);
+    
+    try {
+      // Add current page token to history
+      setPageTokenHistory(prev => [...prev, nextPageToken]);
+      setPrevPageToken(nextPageToken);
+      setCurrentPage(prev => prev + 1);
+      
+      await handleSearch(currentSearchQuery, currentSearchGender, nextPageToken);
+    } catch (error) {
+      console.error('Next page error:', error);
+      toast({
+        title: "Page Load Failed",
+        description: "Unable to load next page",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const prevPage = async () => {
+    if (pageTokenHistory.length === 0) return;
+    
+    setIsLoadingMore(true);
+    
+    try {
+      // Get the previous page token from history
+      const newHistory = [...pageTokenHistory];
+      const prevToken = newHistory.pop();
+      
+      setPageTokenHistory(newHistory);
+      setCurrentPage(prev => prev - 1);
+      
+      // If we're going to page 1, use no token
+      const tokenToUse = newHistory.length === 0 ? undefined : newHistory[newHistory.length - 1];
+      
+      await handleSearch(currentSearchQuery, currentSearchGender, tokenToUse);
+    } catch (error) {
+      console.error('Previous page error:', error);
+      toast({
+        title: "Page Load Failed",
+        description: "Unable to load previous page",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   const toggleView = () => {
@@ -548,29 +644,22 @@ const Index = () => {
                     />
                   ))}
                   
-                  {/* Infinite scroll trigger */}
-                  {nextPageToken && (
-                    <div ref={targetRef} className="py-4 text-center">
-                      {isLoadingMore ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                          <span className="text-sm text-muted-foreground">Loading more songs...</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Scroll down for more results</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={loadMoreResults}
-                            disabled={isLoadingMore}
-                          >
-                            Load More
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* Pagination */}
+                  <div className="py-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      hasNextPage={!!nextPageToken}
+                      hasPrevPage={currentPage > 1}
+                      onPrevious={prevPage}
+                      onNext={nextPage}
+                      isLoading={isLoadingMore}
+                    />
+                  </div>
+                  
+                  {/* Debug info */}
+                  <div className="text-xs text-muted-foreground text-center py-2">
+                    Debug: Page {currentPage}, Next: {nextPageToken ? 'Yes' : 'No'}, Prev: {currentPage > 1 ? 'Yes' : 'No'}
+                  </div>
                 </div>
               )}
             </div>
