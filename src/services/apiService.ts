@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Song } from '@/components/SongCard';
+import { searchSongs } from '@/data/mockSongs';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082';
@@ -48,8 +49,14 @@ export const searchYouTubeVideos = async (
       nextPageToken: data.nextPageToken,
     };
   } catch (error) {
-    console.error('YouTube Search API Error:', error);
-    throw error;
+    console.error('YouTube Search API Error, falling back to mock data:', error);
+    
+    // Fallback to mock data when API is not available
+    const mockResults = searchSongs(query, gender);
+    return {
+      songs: mockResults,
+      nextPageToken: undefined, // No pagination for mock data
+    };
   }
 };
 
