@@ -246,7 +246,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               if (open) loadSavedQueues();
             }}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" title="Load saved queue">
                   <FolderOpen className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
@@ -405,7 +405,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             
             <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0}>
+                <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title="Save current queue">
                   <Save className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
@@ -484,7 +484,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   }`}>
                     {index + 1}
                   </span>
-                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" title="Drag to reorder" />
                 </div>
                 
                 <img 
@@ -513,6 +513,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     handleRemoveWithFadeOut(index);
                   }}
                   className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
+                  title="Remove song from queue"
                 >
                   <X className="w-4 h-4" />
                 </Button>
