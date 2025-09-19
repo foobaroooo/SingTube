@@ -369,8 +369,8 @@ export const searchSongs = (query: string, gender: string = "all", maxResults: n
   // For testing pagination, create a large dataset by duplicating songs
   let filtered = mockSongs;
   
-  // Create enough data for pagination testing (at least 50 songs)
-  while (filtered.length < 50) {
+  // Create enough data for pagination testing (at least 200 songs for 10 pages)
+  while (filtered.length < 200) {
     filtered = [...filtered, ...mockSongs.map(song => ({
       ...song,
       id: `${song.id}_dup_${Math.floor(filtered.length / mockSongs.length)}`,

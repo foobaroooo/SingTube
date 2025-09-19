@@ -34,13 +34,7 @@ export const searchYouTubeVideos = async (
     return { songs: [] };
   }
 
-  // Handle pagination for APIs that don't support it natively
-  if (pageToken && pageToken.startsWith('fake-token')) {
-    console.log('🎭 Using mock data for pagination since API doesn\'t support it');
-    const mockResults = searchSongs(query, gender, maxResults, pageToken);
-    console.log('📤 Mock pagination result:', { songsCount: mockResults.songs.length, hasNext: !!mockResults.nextPageToken });
-    return mockResults;
-  }
+  // No more fake pagination - let the real API handle everything
 
   try {
     console.log('📡 Attempting API call to:', `${API_BASE_URL}/youtube.php`);
@@ -90,13 +84,6 @@ export const searchYouTubeVideos = async (
     };
     
     console.log('📤 API result:', { songsCount: result.songs.length, hasNext: !!result.nextPageToken });
-    
-    // If API doesn't support pagination but we have results, add fake pagination for testing
-    if (songs.length > 0 && !nextPageToken && !pageToken) {
-      console.log('🔧 Adding fake pagination since API returned results but no nextPageToken');
-      result.nextPageToken = 'fake-token-page-2'; // Add fake token for testing
-    }
-    
     return result;
   } catch (error) {
     console.error('❌ YouTube Search API Error, falling back to mock data:', error);

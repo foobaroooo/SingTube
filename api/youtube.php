@@ -30,7 +30,7 @@ function formatDuration($duration) {
     return sprintf('%d:%02d', $minutes, $seconds);
 }
 
-function searchYouTubeVideos($query, $gender = 'all', $maxResults = 25) {
+function searchYouTubeVideos($query, $gender = 'all', $maxResults = 25, $pageToken = null) {
     if (empty(YOUTUBE_API_KEY)) {
         sendErrorResponse('YouTube API key is not configured', 500);
     }
@@ -44,7 +44,7 @@ function searchYouTubeVideos($query, $gender = 'all', $maxResults = 25) {
         $karaokeQuery = buildKaraokeQuery($query, $gender);
         
         // First, search for videos
-        $searchUrl = YOUTUBE_API_BASE_URL . '/search?' . http_build_query([
+        $searchParams = [
             'key' => YOUTUBE_API_KEY,
             'q' => $karaokeQuery,
             'part' => 'snippet',
@@ -54,7 +54,14 @@ function searchYouTubeVideos($query, $gender = 'all', $maxResults = 25) {
             'regionCode' => 'TW', // Taiwan region for better Chinese content
             'relevanceLanguage' => 'zh', // Chinese language preference
             'safeSearch' => 'moderate',
-        ]);
+        ];
+        
+        // Add pageToken if provided for pagination
+        if (!empty($pageToken)) {
+            $searchParams['pageToken'] = $pageToken;
+        }
+        
+        $searchUrl = YOUTUBE_API_BASE_URL . '/search?' . http_build_query($searchParams);
 
         $searchResponse = file_get_contents($searchUrl);
         if ($searchResponse === false) {
@@ -117,7 +124,17 @@ function searchYouTubeVideos($query, $gender = 'all', $maxResults = 25) {
             }
         }
 
-        return $filteredSongs;
+        // Return songs with pagination info
+        $result = [
+            'songs' => $filteredSongs,
+        ];
+        
+        // Add nextPageToken if available
+        if (isset($searchData['nextPageToken'])) {
+            $result['nextPageToken'] = $searchData['nextPageToken'];
+        }
+        
+        return $result;
 
     } catch (Exception $e) {
         error_log('YouTube API Error: ' . $e->getMessage());
@@ -132,8 +149,9 @@ if ($method === 'GET') {
     $query = $_GET['q'] ?? '';
     $gender = $_GET['gender'] ?? 'all';
     $maxResults = intval($_GET['maxResults'] ?? 25);
+    $pageToken = $_GET['pageToken'] ?? null;
     
-    $results = searchYouTubeVideos($query, $gender, $maxResults);
+    $results = searchYouTubeVideos($query, $gender, $maxResults, $pageToken);
     sendJsonResponse($results);
 } else {
     sendErrorResponse('Method not allowed', 405);
