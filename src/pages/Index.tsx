@@ -5,7 +5,7 @@ import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
-import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue } from "@/services/apiService";
+import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -40,14 +40,57 @@ const Index = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Load saved queue on component mount
+  // Load saved queue on component mount and handle shared queues
   useEffect(() => {
-    const savedData = loadCurrentQueue();
-    if (Array.isArray(savedData.songs) && savedData.songs.length > 0) {
-      setQueue(savedData.songs);
-      setCurrentIndex(savedData.currentIndex);
-      setCurrentQueueName(savedData.queueName);
-    }
+    const loadInitialQueue = async () => {
+      // Check for shared queue in URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareGuid = urlParams.get('share');
+      
+      if (shareGuid) {
+        try {
+          const sharedQueue = await getSharedQueue(shareGuid);
+          if (sharedQueue) {
+            setQueue(sharedQueue.songs);
+            setCurrentIndex(0);
+            setCurrentQueueName(sharedQueue.name);
+            setActiveView('queue'); // Switch to queue view to show the shared playlist
+            
+            toast({
+              title: "Shared Queue Loaded",
+              description: `Loaded "${sharedQueue.name}" with ${sharedQueue.songs.length} songs`,
+            });
+            
+            // Clean up URL to remove share parameter
+            window.history.replaceState({}, '', window.location.pathname);
+            return;
+          } else {
+            toast({
+              title: "Shared Queue Not Found",
+              description: "The shared queue could not be found or may have been deleted",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load shared queue:', error);
+          toast({
+            title: "Failed to Load Shared Queue",
+            description: "There was an error loading the shared queue",
+            variant: "destructive"
+          });
+        }
+      }
+      
+      // Load regular saved queue if no shared queue
+      const savedData = loadCurrentQueue();
+      if (Array.isArray(savedData.songs) && savedData.songs.length > 0) {
+        setQueue(savedData.songs);
+        setCurrentIndex(savedData.currentIndex);
+        setCurrentQueueName(savedData.queueName);
+      }
+    };
+    
+    loadInitialQueue();
   }, []);
 
   // Auto-save queue whenever it changes

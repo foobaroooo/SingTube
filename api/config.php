@@ -63,6 +63,30 @@ function initDatabase() {
             );
         ");
         
+        // Add GUID column if it doesn't exist (for existing databases)
+        try {
+            $pdo->exec("ALTER TABLE saved_queues ADD COLUMN guid TEXT");
+        } catch (PDOException $e) {
+            // Column already exists, ignore
+        }
+        
+        // Generate GUIDs for existing rows that don't have them
+        $stmt = $pdo->query("SELECT id FROM saved_queues WHERE guid IS NULL OR guid = ''");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($rows as $row) {
+            $guid = generateGUID();
+            $updateStmt = $pdo->prepare("UPDATE saved_queues SET guid = ? WHERE id = ?");
+            $updateStmt->execute([$guid, $row['id']]);
+        }
+        
+        // Add unique constraint after populating GUIDs
+        try {
+            $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_queues_guid ON saved_queues(guid)");
+        } catch (PDOException $e) {
+            // Index already exists, ignore
+        }
+        
         return $pdo;
     } catch (PDOException $e) {
         error_log('Database connection failed: ' . $e->getMessage());
@@ -82,5 +106,15 @@ function sendErrorResponse($message, $status = 400) {
     http_response_code($status);
     echo json_encode(['error' => $message]);
     exit;
+}
+
+function generateGUID() {
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
 }
 ?>

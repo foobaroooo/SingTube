@@ -11,27 +11,57 @@ if ($method === 'POST' || $method === 'PUT') {
 
 switch ($method) {
     case 'GET':
-        // Get all saved queues
-        try {
-            $stmt = $pdo->prepare('SELECT * FROM saved_queues ORDER BY updated_at DESC');
-            $stmt->execute();
-            $queues = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            $result = [];
-            foreach ($queues as $queue) {
-                $result[] = [
+        $guid = $_GET['guid'] ?? null;
+        
+        if ($guid) {
+            // Get specific queue by GUID for sharing
+            try {
+                $stmt = $pdo->prepare('SELECT * FROM saved_queues WHERE guid = ?');
+                $stmt->execute([$guid]);
+                $queue = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$queue) {
+                    sendErrorResponse('Shared queue not found', 404);
+                }
+                
+                $result = [
                     'id' => intval($queue['id']),
+                    'guid' => $queue['guid'],
                     'name' => $queue['name'],
                     'songs' => json_decode($queue['songs'], true),
                     'createdAt' => $queue['created_at'],
                     'updatedAt' => $queue['updated_at']
                 ];
+                
+                sendJsonResponse($result);
+            } catch (PDOException $e) {
+                error_log('Database error: ' . $e->getMessage());
+                sendErrorResponse('Failed to fetch shared queue', 500);
             }
-            
-            sendJsonResponse($result);
-        } catch (PDOException $e) {
-            error_log('Database error: ' . $e->getMessage());
-            sendErrorResponse('Failed to fetch queues', 500);
+        } else {
+            // Get all saved queues
+            try {
+                $stmt = $pdo->prepare('SELECT * FROM saved_queues ORDER BY updated_at DESC');
+                $stmt->execute();
+                $queues = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $result = [];
+                foreach ($queues as $queue) {
+                    $result[] = [
+                        'id' => intval($queue['id']),
+                        'guid' => $queue['guid'],
+                        'name' => $queue['name'],
+                        'songs' => json_decode($queue['songs'], true),
+                        'createdAt' => $queue['created_at'],
+                        'updatedAt' => $queue['updated_at']
+                    ];
+                }
+                
+                sendJsonResponse($result);
+            } catch (PDOException $e) {
+                error_log('Database error: ' . $e->getMessage());
+                sendErrorResponse('Failed to fetch queues', 500);
+            }
         }
         break;
 
@@ -50,8 +80,10 @@ switch ($method) {
         }
         
         try {
-            $stmt = $pdo->prepare('INSERT INTO saved_queues (name, songs) VALUES (?, ?)');
+            $guid = generateGUID();
+            $stmt = $pdo->prepare('INSERT INTO saved_queues (guid, name, songs) VALUES (?, ?, ?)');
             $stmt->execute([
+                $guid,
                 trim($data['name']),
                 json_encode($data['songs'])
             ]);
@@ -60,6 +92,7 @@ switch ($method) {
             
             sendJsonResponse([
                 'id' => intval($queueId),
+                'guid' => $guid,
                 'message' => 'Queue saved successfully'
             ]);
         } catch (PDOException $e) {

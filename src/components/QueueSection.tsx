@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
@@ -291,6 +291,35 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                           >
                             Delete
                           </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={async () => {
+                              const shareUrl = `${window.location.origin}/?share=${savedQueue.guid}`;
+                              try {
+                                await navigator.clipboard.writeText(shareUrl);
+                                toast({
+                                  title: "Share Link Copied",
+                                  description: "The shareable link has been copied to your clipboard",
+                                });
+                              } catch (error) {
+                                // Fallback for older browsers
+                                const textArea = document.createElement('textarea');
+                                textArea.value = shareUrl;
+                                document.body.appendChild(textArea);
+                                textArea.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(textArea);
+                                toast({
+                                  title: "Share Link Copied",
+                                  description: "The shareable link has been copied to your clipboard",
+                                });
+                              }
+                            }}
+                            title="Copy share link"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </Button>
                           <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
                             Load
                           </Button>
@@ -301,6 +330,78 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 </div>
               </DialogContent>
             </Dialog>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={!Array.isArray(queue) || queue.length === 0}
+              onClick={async () => {
+                if (!Array.isArray(queue) || queue.length === 0) {
+                  toast({
+                    title: "Empty Queue",
+                    description: "Cannot share an empty queue",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                // Create a temporary queue object with current queue data
+                const tempQueue = {
+                  name: queueName || "Shared Queue",
+                  songs: queue
+                };
+                
+                try {
+                  // Save the queue temporarily to get a GUID for sharing
+                  const saveResponse = await saveQueue(tempQueue.name, tempQueue.songs);
+                  if (saveResponse) {
+                    // Get the GUID from the latest saved queues
+                    const savedQueues = await getSavedQueues();
+                    // Find the most recently created queue (should be ours)
+                    const newQueue = savedQueues.sort((a, b) => 
+                      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    )[0];
+                    
+                    if (newQueue && newQueue.guid) {
+                      const shareUrl = `${window.location.origin}/?share=${newQueue.guid}`;
+                      try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        toast({
+                          title: "Queue Shared Successfully",
+                          description: `"${tempQueue.name}" share link copied to clipboard`,
+                        });
+                      } catch (error) {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = shareUrl;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        toast({
+                          title: "Queue Shared Successfully", 
+                          description: `"${tempQueue.name}" share link copied to clipboard`,
+                        });
+                      }
+                    } else {
+                      throw new Error("Failed to get GUID for sharing");
+                    }
+                  } else {
+                    throw new Error("Failed to save queue for sharing");
+                  }
+                } catch (error) {
+                  console.error('Share current queue error:', error);
+                  toast({
+                    title: "Share Failed",
+                    description: "Could not create share link for current queue",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              title="Share current queue"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
             
             <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
               <DialogTrigger asChild>

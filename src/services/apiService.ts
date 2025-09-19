@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 export interface SavedQueue {
   id: number;
+  guid: string;
   name: string;
   songs: Song[];
   createdAt: string;
@@ -131,6 +132,16 @@ export const getSavedQueues = async (): Promise<SavedQueue[]> => {
   } catch (error) {
     console.error('Get saved queues error:', error);
     return [];
+  }
+};
+
+export const getSharedQueue = async (guid: string): Promise<SavedQueue | null> => {
+  try {
+    const response = await axios.get<SavedQueue>(`${API_BASE_URL}/queues.php?guid=${guid}`);
+    return response.data;
+  } catch (error) {
+    console.error('Get shared queue error:', error);
+    return null;
   }
 };
 
