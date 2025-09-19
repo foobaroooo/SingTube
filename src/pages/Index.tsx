@@ -829,7 +829,7 @@ const Index = () => {
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
-                  Song Queue ({Array.isArray(queue) ? queue.length : 0} songs)
+                  Song Queue
                 </h2>
                 <Button 
                   size="sm"

@@ -490,7 +490,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 <img 
                   src={song.thumbnail} 
                   alt={song.title}
-                  className="w-12 h-12 object-cover rounded bg-muted flex-shrink-0"
+                  className="w-16 h-16 object-cover rounded bg-muted flex-shrink-0"
                 />
                 
                 <div className="flex-1 min-w-0">
