@@ -181,9 +181,6 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             <Music className="w-5 h-5 text-primary" />
             <div className="flex flex-col">
               <span>{queueName || 'Queue'} ({Array.isArray(queue) ? queue.length : 0})</span>
-              {queueName && (
-                <span className="text-xs text-muted-foreground font-normal">Saved Queue</span>
-              )}
             </div>
           </CardTitle>
           
@@ -396,7 +393,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 />
                 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-base truncate text-card-foreground leading-tight">
+                  <h4 className="font-semibold text-2xl truncate text-card-foreground leading-tight">
                     {song.title}
                   </h4>
                   <p className="text-sm text-muted-foreground truncate mt-1">
