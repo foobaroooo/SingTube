@@ -5,7 +5,7 @@ import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
-import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue } from "@/services/apiService";
+import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ const Index = () => {
             setQueue(sharedQueue.songs);
             setCurrentIndex(0);
             setCurrentQueueName(sharedQueue.name);
+            setCurrentQueueId(sharedQueue.id);
             setActiveView('queue'); // Switch to queue view to show the shared playlist
             
             toast({
@@ -183,19 +184,60 @@ const Index = () => {
     const newQueue = [...queue, song];
     setQueue(newQueue);
     
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
+    // Auto-save queue if it's the first song and queue isn't saved yet
+    if (!currentQueueId && !currentQueueName && queue.length === 0) {
       try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
+        const autoSaveName = `My Queue ${new Date().toLocaleDateString()}`;
+        const success = await saveQueue(autoSaveName, newQueue);
+        if (success) {
+          // Get the newly saved queue to get its ID
+          const savedQueues = await getSavedQueues();
+          const savedQueue = savedQueues.find(q => q.name === autoSaveName);
+          if (savedQueue) {
+            setCurrentQueueName(autoSaveName);
+            setCurrentQueueId(savedQueue.id);
+            toast({
+              title: "Queue Auto-Saved",
+              description: `Created "${autoSaveName}" and added ${song.title}`,
+            });
+            return;
+          }
+        }
       } catch (error) {
-        console.error('Failed to update saved queue:', error);
+        console.error('Failed to auto-save new queue:', error);
       }
     }
     
-    toast({
-      title: "Song Added",
-      description: `${song.title} added to queue`,
-    });
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName) {
+      try {
+        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
+        if (success) {
+          toast({
+            title: "Song Added",
+            description: `${song.title} added to "${currentQueueName}" and saved`,
+          });
+        } else {
+          toast({
+            title: "Song Added",
+            description: `${song.title} added to queue (save failed)`,
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Failed to update saved queue:', error);
+        toast({
+          title: "Song Added",
+          description: `${song.title} added to queue (save failed)`,
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "Song Added",
+        description: `${song.title} added to queue`,
+      });
+    }
   };
 
   const addToFront = async (song: Song) => {
@@ -205,22 +247,64 @@ const Index = () => {
       setCurrentIndex(prev => prev + 1);
     }
     
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
+    // Auto-save queue if it's the first song and queue isn't saved yet
+    if (!currentQueueId && !currentQueueName && queue.length === 0) {
       try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
+        const autoSaveName = `My Queue ${new Date().toLocaleDateString()}`;
+        const success = await saveQueue(autoSaveName, newQueue);
+        if (success) {
+          // Get the newly saved queue to get its ID
+          const savedQueues = await getSavedQueues();
+          const savedQueue = savedQueues.find(q => q.name === autoSaveName);
+          if (savedQueue) {
+            setCurrentQueueName(autoSaveName);
+            setCurrentQueueId(savedQueue.id);
+            toast({
+              title: "Queue Auto-Saved",
+              description: `Created "${autoSaveName}" and added ${song.title} to front`,
+            });
+            return;
+          }
+        }
       } catch (error) {
-        console.error('Failed to update saved queue:', error);
+        console.error('Failed to auto-save new queue:', error);
       }
     }
     
-    toast({
-      title: "Priority Added",
-      description: `${song.title} added to front of queue`,
-    });
+    // Auto-update saved queue if this is a saved queue
+    if (currentQueueId && currentQueueName) {
+      try {
+        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
+        if (success) {
+          toast({
+            title: "Priority Added",
+            description: `${song.title} added to front of "${currentQueueName}" and saved`,
+          });
+        } else {
+          toast({
+            title: "Priority Added",
+            description: `${song.title} added to front of queue (save failed)`,
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Failed to update saved queue:', error);
+        toast({
+          title: "Priority Added",
+          description: `${song.title} added to front of queue (save failed)`,
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "Priority Added",
+        description: `${song.title} added to front of queue`,
+      });
+    }
   };
 
   const removeFromQueue = async (index: number) => {
+    const songToRemove = Array.isArray(queue) && queue[index] ? queue[index] : null;
     const newQueue = Array.isArray(queue) ? queue.filter((_, i) => i !== index) : [];
     setQueue(newQueue);
     
@@ -231,11 +315,30 @@ const Index = () => {
     }
     
     // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName && newQueue.length > 0) {
+    if (currentQueueId && currentQueueName) {
       try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
+        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
+        if (success && songToRemove) {
+          toast({
+            title: "Song Removed",
+            description: `${songToRemove.title} removed from "${currentQueueName}" and saved`,
+          });
+        } else if (!success && songToRemove) {
+          toast({
+            title: "Song Removed",
+            description: `${songToRemove.title} removed from queue (save failed)`,
+            variant: "destructive"
+          });
+        }
       } catch (error) {
         console.error('Failed to update saved queue after removal:', error);
+        if (songToRemove) {
+          toast({
+            title: "Song Removed",
+            description: `${songToRemove.title} removed from queue (save failed)`,
+            variant: "destructive"
+          });
+        }
       }
     }
   };
@@ -263,9 +366,21 @@ const Index = () => {
     // Auto-update saved queue if this is a saved queue
     if (currentQueueId && currentQueueName) {
       try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
+        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
+        if (!success) {
+          toast({
+            title: "Reorder Failed",
+            description: `Failed to save queue changes to "${currentQueueName}"`,
+            variant: "destructive"
+          });
+        }
       } catch (error) {
         console.error('Failed to update saved queue after reorder:', error);
+        toast({
+          title: "Reorder Failed",
+          description: `Failed to save queue changes to "${currentQueueName}"`,
+          variant: "destructive"
+        });
       }
     }
   };
