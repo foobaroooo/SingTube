@@ -54,7 +54,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
             
             {/* Song info in the middle */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-base mb-2 line-clamp-1 text-card-foreground">
+              <h3 className="font-semibold text-2xl mb-2 line-clamp-1 text-card-foreground">
                 {song.title}
               </h3>
               <p className="text-muted-foreground text-sm line-clamp-1">
@@ -123,7 +123,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
           </span>
         </div>
         
-        <h3 className="font-semibold text-sm mb-1 line-clamp-2 text-card-foreground">
+        <h3 className="font-semibold text-2xl mb-1 line-clamp-2 text-card-foreground">
           {song.title}
         </h3>
         <p className="text-muted-foreground text-xs mb-3 line-clamp-1">
