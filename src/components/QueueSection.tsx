@@ -182,7 +182,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
           <CardTitle className="flex items-center gap-2">
             <Music className="w-5 h-5 text-primary" />
             <div className="flex flex-col">
-              <span>{queueName || 'Song Queue'} ({Array.isArray(queue) ? queue.length : 0})</span>
+              <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
             </div>
           </CardTitle>
           
@@ -451,8 +451,8 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
         {!Array.isArray(queue) || queue.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>Your queue is empty</p>
-            <p className="text-sm">Search and add songs to get started!</p>
+            <p>{t('app.queue.emptyMessage')}</p>
+            <p className="text-sm">{t('app.queue.getStarted')}</p>
           </div>
         ) : (
           (Array.isArray(queue) ? queue : []).map((song, index) => {

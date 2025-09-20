@@ -15,6 +15,8 @@
     "queue": {
       "title": "歌單",
       "empty": "您的佇列是空的。請新增一些歌曲！",
+      "emptyMessage": "您的歌單是空的",
+      "getStarted": "搜尋並新增歌曲以開始使用！",
       "currentSong": "目前歌曲",
       "nowPlaying": "正在播放",
       "addToQueue": "加入",
