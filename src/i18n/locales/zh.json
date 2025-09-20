@@ -1,0 +1,68 @@
+{
+  "app": {
+    "title": "星歌管 (測試版)",
+    "search": {
+      "placeholder": "搜尋卡拉OK歌曲...",
+      "resultsTitle": "搜尋結果",
+      "noResults": "找不到符合搜尋條件的歌曲。",
+      "gender": {
+        "all": "全部",
+        "male": "男歌手",
+        "female": "女歌手"
+      }
+    },
+    "queue": {
+      "title": "歌單",
+      "empty": "您的佇列是空的。請新增一些歌曲！",
+      "currentSong": "目前歌曲",
+      "nowPlaying": "正在播放",
+      "addToQueue": "加入",
+      "removeFromQueue": "從佇列中移除",
+      "dragToReorder": "拖曳以重新排序",
+      "saveQueue": "儲存目前歌單",
+      "loadQueue": "載入已儲存歌單",
+      "shareQueue": "分享歌單",
+      "priority": "優先",
+      "tooltips": {
+        "loadQueue": "載入已儲存歌單",
+        "saveQueue": "儲存目前歌單",
+        "shareQueue": "分享目前歌單",
+        "maximizeQueue": "最大化歌單",
+        "restoreQueue": "還原歌單",
+        "removeFromQueue": "從歌單中移除",
+        "dragToReorder": "拖曳以重新排序",
+        "previousSong": "上一首歌",
+        "nextSong": "下一首歌",
+        "noSongSelected": "沒有選擇歌曲",
+        "copyShareLink": "複製分享連結"
+      }
+    },
+    "actions": {
+      "openInYoutube": "在YouTube開啟",
+      "search": "搜尋",
+      "save": "儲存",
+      "load": "載入",
+      "share": "分享",
+      "delete": "刪除",
+      "cancel": "取消",
+      "confirm": "確認",
+      "clear": "清除",
+      "play": "播放",
+      "pause": "暫停"
+    },
+    "pagination": {
+      "previous": "上一頁",
+      "next": "下一頁",
+      "page": "第"
+    },
+    "notifications": {
+      "queueSaved": "佇列儲存成功！",
+      "queueLoaded": "佇列載入成功！",
+      "songAdded": "歌曲已加入佇列！",
+      "songRemoved": "歌曲已從佇列中移除！",
+      "linkCopied": "分享連結已複製到剪貼簿！",
+      "copyFailed": "複製連結失敗",
+      "error": "發生錯誤"
+    }
+  }
+}

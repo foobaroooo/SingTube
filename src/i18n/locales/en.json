@@ -1,0 +1,68 @@
+{
+  "app": {
+    "title": "SingTube (beta)",
+    "search": {
+      "placeholder": "Search for karaoke songs...",
+      "resultsTitle": "Search Results",
+      "noResults": "No songs found for your search.",
+      "gender": {
+        "all": "All",
+        "male": "Male",
+        "female": "Female"
+      }
+    },
+    "queue": {
+      "title": "Song Queue",
+      "empty": "Your queue is empty. Add some songs!",
+      "currentSong": "Current Song",
+      "nowPlaying": "Now Playing",
+      "addToQueue": "Add",
+      "removeFromQueue": "Remove from queue",
+      "dragToReorder": "Drag to reorder",
+      "saveQueue": "Save current queue",
+      "loadQueue": "Load saved queue",
+      "shareQueue": "Share queue",
+      "priority": "Priority",
+      "tooltips": {
+        "loadQueue": "Load saved queue",
+        "saveQueue": "Save current queue",
+        "shareQueue": "Share current queue",
+        "maximizeQueue": "Maximize queue",
+        "restoreQueue": "Restore queue",
+        "removeFromQueue": "Remove song from queue",
+        "dragToReorder": "Drag to reorder",
+        "previousSong": "Previous song",
+        "nextSong": "Next song",
+        "noSongSelected": "No song selected",
+        "copyShareLink": "Copy share link"
+      }
+    },
+    "actions": {
+      "openInYoutube": "Open in YouTube",
+      "search": "Search",
+      "save": "Save",
+      "load": "Load",
+      "share": "Share",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "clear": "Clear",
+      "play": "Play",
+      "pause": "Pause"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page"
+    },
+    "notifications": {
+      "queueSaved": "Queue saved successfully!",
+      "queueLoaded": "Queue loaded successfully!",
+      "songAdded": "Song added to queue!",
+      "songRemoved": "Song removed from queue!",
+      "linkCopied": "Share link copied to clipboard!",
+      "copyFailed": "Failed to copy link",
+      "error": "An error occurred"
+    }
+  }
+}

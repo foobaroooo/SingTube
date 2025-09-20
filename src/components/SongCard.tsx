@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, PlayCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface Song {
   id: string;
@@ -21,6 +22,8 @@ interface SongCardProps {
 }
 
 export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, compact = false, onPreview }: SongCardProps) => {
+  const { t } = useTranslation();
+  
   const handlePlayYouTube = () => {
     window.open(`https://www.youtube.com/watch?v=${song.youtubeId}`, '_blank');
   };
@@ -76,7 +79,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                 className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add
+                {t('app.queue.addToQueue')}
               </Button>
               {onAddToFront && (
                 <Button 
@@ -88,7 +91,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                   }}
                   className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  Priority
+                  {t('app.queue.priority')}
                 </Button>
               )}
             </div>
@@ -137,7 +140,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
             className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add
+            {t('app.queue.addToQueue')}
           </Button>
           {onAddToFront && (
             <Button 
@@ -146,7 +149,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
               onClick={() => onAddToFront(song)}
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
             >
-              Priority
+              {t('app.queue.priority')}
             </Button>
           )}
         </div>

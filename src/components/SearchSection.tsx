@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ interface SearchSectionProps {
 }
 
 export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false, extraButton }: SearchSectionProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
@@ -71,7 +73,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
         <div className="flex gap-3">
           <div className="flex-1">
             <Input
-              placeholder="Search for songs, artists... (e.g. 邓丽君, 周杰伦)"
+              placeholder={t('app.search.placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -135,7 +137,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
       <div className="flex gap-3">
         <div className="flex-1">
           <Input
-            placeholder="Search for songs, artists... (e.g. 邓丽君, 周杰伦)"
+            placeholder={t('app.search.placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}

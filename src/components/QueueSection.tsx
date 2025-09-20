@@ -7,6 +7,7 @@ import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface QueueSectionProps {
   queue: Song[];
@@ -31,6 +32,7 @@ interface QueueSectionProps {
 }
 
 export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
+  const { t } = useTranslation();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -195,7 +197,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   variant="outline"
                   size="icon"
                   className="rounded-full w-10 h-10"
-                  title="Previous song"
+                  title={t('app.queue.tooltips.previousSong')}
                 >
                   <SkipBack className="w-4 h-4" />
                 </Button>
@@ -210,10 +212,10 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-12 h-12"
                   title={
                     currentIndex < 0 || !Array.isArray(queue) || queue.length === 0
-                      ? "No song selected"
+                      ? t('app.queue.tooltips.noSongSelected')
                       : isPlaying
-                      ? `Pause: ${queue[currentIndex]?.title}`
-                      : `Play: ${queue[currentIndex]?.title}`
+                      ? `${t('app.actions.pause')}: ${queue[currentIndex]?.title}`
+                      : `${t('app.actions.play')}: ${queue[currentIndex]?.title}`
                   }
                 >
                   {isPlaying ? (
@@ -232,7 +234,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   variant="outline"
                   size="icon"
                   className="rounded-full w-10 h-10"
-                  title="Next song"
+                  title={t('app.queue.tooltips.nextSong')}
                 >
                   <SkipForward className="w-4 h-4" />
                 </Button>
@@ -246,7 +248,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               if (open) loadSavedQueues();
             }}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" title="Load saved queue">
+                <Button variant="outline" size="sm" title={t('app.queue.tooltips.loadQueue')}>
                   <FolderOpen className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
@@ -316,7 +318,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                                 });
                               }
                             }}
-                            title="Copy share link"
+                            title={t('app.queue.tooltips.copyShareLink')}
                           >
                             <Share2 className="w-4 h-4" />
                           </Button>
@@ -398,14 +400,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   });
                 }
               }}
-              title="Share current queue"
+              title={t('app.queue.tooltips.shareQueue')}
             >
               <Share2 className="w-4 h-4" />
             </Button>
             
             <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title="Save current queue">
+                <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title={t('app.queue.tooltips.saveQueue')}>
                   <Save className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
@@ -437,7 +439,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 variant="outline" 
                 size="sm"
                 onClick={onToggleMaximize}
-                title={isMaximized ? "Restore queue" : "Maximize queue"}
+                title={isMaximized ? t('app.queue.tooltips.restoreQueue') : t('app.queue.tooltips.maximizeQueue')}
               >
                 {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
@@ -484,7 +486,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   }`}>
                     {index + 1}
                   </span>
-                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" title="Drag to reorder" />
+                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" title={t('app.queue.tooltips.dragToReorder')} />
                 </div>
                 
                 <img 
@@ -513,7 +515,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     handleRemoveWithFadeOut(index);
                   }}
                   className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
-                  title="Remove song from queue"
+                  title={t('app.queue.tooltips.removeFromQueue')}
                 >
                   <X className="w-4 h-4" />
                 </Button>

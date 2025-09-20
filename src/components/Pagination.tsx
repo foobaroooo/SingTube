@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PaginationProps {
   currentPage: number;
@@ -20,6 +21,7 @@ export const Pagination = ({
   isLoading = false,
   className = "" 
 }: PaginationProps) => {
+  const { t } = useTranslation();
   console.log('Pagination render:', { currentPage, hasNextPage, hasPrevPage, isLoading });
   
   // Show pagination if we have next page or we're not on page 1
@@ -43,12 +45,12 @@ export const Pagination = ({
         ) : (
           <ChevronLeft className="w-4 h-4" />
         )}
-        Previous
+        {t('app.pagination.previous')}
       </Button>
 
       {/* Current Page Info */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Page</span>
+        <span className="text-sm text-muted-foreground">{t('app.pagination.page')}</span>
         <div className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm font-medium">
           {currentPage}
         </div>
@@ -62,7 +64,7 @@ export const Pagination = ({
         disabled={!hasNextPage || isLoading}
         className="flex items-center gap-2"
       >
-        Next
+        {t('app.pagination.next')}
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (

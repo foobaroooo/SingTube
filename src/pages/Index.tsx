@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +16,7 @@ import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -710,28 +713,31 @@ const Index = () => {
             </div>
             
             {/* Search Section and Controls */}
-            <div className="flex-1 max-w-2xl">
-              <SearchSection 
-                onSearch={handleSearch} 
-                isLoading={isSearchLoading} 
-                refreshHistory={refreshHistory} 
-                compact 
-                extraButton={
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={toggleFullscreen}
-                    className="flex-shrink-0"
-                    title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                  >
-                    {isFullscreen ? (
-                      <Shrink className="w-4 h-4" />
-                    ) : (
-                      <Expand className="w-4 h-4" />
-                    )}
-                  </Button>
-                }
-              />
+            <div className="flex-1 max-w-2xl flex items-center gap-3">
+              <LanguageToggle />
+              <div className="flex-1">
+                <SearchSection 
+                  onSearch={handleSearch} 
+                  isLoading={isSearchLoading} 
+                  refreshHistory={refreshHistory} 
+                  compact 
+                  extraButton={
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={toggleFullscreen}
+                      className="flex-shrink-0"
+                      title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                    >
+                      {isFullscreen ? (
+                        <Shrink className="w-4 h-4" />
+                      ) : (
+                        <Expand className="w-4 h-4" />
+                      )}
+                    </Button>
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -746,7 +752,7 @@ const Index = () => {
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
-                  Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
+                  {t('app.search.resultsTitle')} ({Array.isArray(searchResults) ? searchResults.length : 0})
                 </h2>
                 <div className="flex gap-2">
                   {hasSearched && (
@@ -757,7 +763,7 @@ const Index = () => {
                       className="flex items-center gap-2"
                     >
                       <X className="w-4 h-4" />
-                      Clear
+                      {t('app.actions.clear')}
                     </Button>
                   )}
                   <Button 
@@ -766,7 +772,7 @@ const Index = () => {
                     className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
                   >
                     <List className="w-4 h-4" />
-                    Song Queue
+                    {t('app.queue.title')}
                   </Button>
                 </div>
               </div>
@@ -829,7 +835,7 @@ const Index = () => {
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-foreground">
-                  Song Queue
+                  {t('app.queue.title')}
                 </h2>
                 <Button 
                   size="sm"
@@ -837,7 +843,7 @@ const Index = () => {
                   className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
                 >
                   <Search className="w-4 h-4" />
-                  Search Results
+                  {t('app.search.resultsTitle')}
                 </Button>
               </div>
             <QueueSection
