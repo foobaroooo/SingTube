@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "星歌管 (測試版)",
+    "title": "唱館",
+    "slogan": "你的舞台，你是主角",
     "search": {
       "placeholder": "搜尋卡拉OK歌曲...",
       "resultsTitle": "搜尋結果",

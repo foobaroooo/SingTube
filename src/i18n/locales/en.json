@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "SingTube (beta)",
+    "title": "SingTube",
+    "slogan": "The Missing Karaoke Player for YouTube",
     "search": {
       "placeholder": "Search for karaoke songs...",
       "resultsTitle": "Search Results",
