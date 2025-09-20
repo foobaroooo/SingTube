@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, SkipBack, SkipForward, Play } from "lucide-react";
 import { Song } from "./SongCard";
 import { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 interface PreviewProps {
   currentSong: Song | null;
@@ -20,6 +21,7 @@ interface PreviewProps {
 }
 
 export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoPrevious, shouldAutoplay = false, shouldPause = false, onAutoplayHandled, onPauseHandled, onVideoEnd, autoAdvance = false, onPlaybackStarted }: PreviewProps) => {
+  const { t } = useTranslation();
   const [iframeKey, setIframeKey] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -270,14 +272,14 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
       <Card className="bg-card border-border shadow-card">
         <CardHeader>
           <CardTitle className="text-center text-muted-foreground">
-            No Song Selected
+            {t('app.currentSong.noSongSelected')}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-16">
           <div className="w-32 h-32 mx-auto bg-muted rounded-lg flex items-center justify-center mb-4">
             <Play className="w-12 h-12 text-muted-foreground" />
           </div>
-          <p className="text-muted-foreground">Select a song from your queue to preview!</p>
+          <p className="text-muted-foreground">{t('app.currentSong.selectSong')}</p>
         </CardContent>
       </Card>
     );
@@ -287,7 +289,7 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
     <Card className="bg-gradient-secondary border-border shadow-card">
       <CardHeader>
         <CardTitle className="text-center bg-gradient-primary bg-clip-text text-transparent">
-          Preview
+          {t('app.actions.preview')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -332,7 +334,7 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
             className="bg-gradient-primary hover:shadow-neon transition-bounce px-6"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            Open in YouTube
+            {t('app.actions.openInYoutube')}
           </Button>
           
           <Button 

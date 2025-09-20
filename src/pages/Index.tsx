@@ -166,8 +166,8 @@ const Index = () => {
       }
       
       toast({
-        title: "Search Complete",
-        description: `Found ${result.songs.length} karaoke songs (Page ${currentPage})`,
+        title: t('app.notifications.searchCompleteTitle'),
+        description: t('app.notifications.searchComplete', { count: result.songs.length }) + ` (Page ${currentPage})`,
       });
     } catch (error) {
       console.error('Search error:', error);
@@ -790,7 +790,7 @@ const Index = () => {
                     className="w-full max-w-md mx-auto rounded-lg mb-4 opacity-50"
                   />
                   <p className="text-muted-foreground">
-                    {hasSearched ? "No results found. Try a different search term." : "Search for your favorite Chinese karaoke songs"}
+                    {hasSearched ? t('app.searchResults.noResults') : t('app.searchResults.searchPrompt')}
                   </p>
                 </div>
               ) : (

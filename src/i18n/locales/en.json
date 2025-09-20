@@ -39,6 +39,7 @@
     },
     "actions": {
       "openInYoutube": "Open in YouTube",
+      "preview": "Preview",
       "search": "Search",
       "save": "Save",
       "load": "Load",
@@ -62,7 +63,17 @@
       "songRemoved": "Song removed from queue!",
       "linkCopied": "Share link copied to clipboard!",
       "copyFailed": "Failed to copy link",
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "searchComplete": "Found {{count}} karaoke songs from YouTube",
+      "searchCompleteTitle": "Search Complete"
+    },
+    "currentSong": {
+      "noSongSelected": "No Song Selected",
+      "selectSong": "Select a song from your queue to preview!"
+    },
+    "searchResults": {
+      "noResults": "No results found. Try a different search term.",
+      "searchPrompt": "Search for your favorite Chinese karaoke songs"
     }
   }
 }

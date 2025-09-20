@@ -22,7 +22,7 @@
       "saveQueue": "儲存目前歌單",
       "loadQueue": "載入已儲存歌單",
       "shareQueue": "分享歌單",
-      "priority": "優先",
+      "priority": "插播",
       "tooltips": {
         "loadQueue": "載入已儲存歌單",
         "saveQueue": "儲存目前歌單",
@@ -39,6 +39,7 @@
     },
     "actions": {
       "openInYoutube": "在YouTube開啟",
+      "preview": "预览视频",
       "search": "搜尋",
       "save": "儲存",
       "load": "載入",
@@ -62,7 +63,17 @@
       "songRemoved": "歌曲已從佇列中移除！",
       "linkCopied": "分享連結已複製到剪貼簿！",
       "copyFailed": "複製連結失敗",
-      "error": "發生錯誤"
+      "error": "發生錯誤",
+      "searchComplete": "從YouTube找到{{count}}首卡拉OK歌曲",
+      "searchCompleteTitle": "搜尋完成"
+    },
+    "currentSong": {
+      "noSongSelected": "沒有選擇歌曲",
+      "selectSong": "從歌單中選擇一首歌曲來預覽！"
+    },
+    "searchResults": {
+      "noResults": "找不到結果。請嘗試不同的搜尋詞。",
+      "searchPrompt": "搜尋您最愛的中文卡拉OK歌曲"
     }
   }
 }
