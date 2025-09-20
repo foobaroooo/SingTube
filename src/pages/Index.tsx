@@ -11,7 +11,7 @@ import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQu
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Mic2, X, EyeOff, Search, Expand, Shrink, List } from "lucide-react";
+import { Mic2, X, EyeOff, Search, Expand, Shrink, List, AlertCircle } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
@@ -886,6 +886,29 @@ const Index = () => {
               autoAdvance={autoAdvance}
               onPlaybackStarted={handlePlaybackStarted}
             />
+            
+            {/* API Limit Notice */}
+            <div className="mt-4">
+              <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-card-foreground space-y-2">
+                    <p>
+                      Our app uses the YouTube Data API, which has a daily limit of 10,000 searches. If this limit is reached, your search may fail to return results.
+                    </p>
+                    <p>
+                      If you encounter this issue, please report it to us at:{" "}
+                      <span className="text-primary font-medium">
+                        hello (at) singtube.app
+                      </span>
+                    </p>
+                    <p>
+                      Thank you for your understanding! 🎶
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
