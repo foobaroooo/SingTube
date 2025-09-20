@@ -30,7 +30,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
 
   if (compact) {
     return (
-      <Card className="group hover:shadow-card hover:shadow-primary/20 transition-smooth bg-card border-border cursor-pointer" onClick={() => onPreview?.(song)}>
+      <Card className={`group hover:shadow-card hover:shadow-primary/20 transition-smooth bg-card border-border ${onPreview ? 'cursor-pointer' : ''}`} onClick={onPreview ? () => onPreview(song) : undefined}>
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             {/* Bigger thumbnail on the left */}
@@ -76,9 +76,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                   e.stopPropagation();
                   onAddToQueue(song);
                 }}
-                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+                className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground"
               >
-                <Plus className="w-4 h-4 mr-1" />
                 {t('app.queue.addToQueue')}
               </Button>
               {onAddToFront && (
@@ -137,9 +136,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
           <Button 
             size="sm" 
             onClick={() => onAddToQueue(song)}
-            className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+            className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground"
           >
-            <Plus className="w-4 h-4 mr-1" />
             {t('app.queue.addToQueue')}
           </Button>
           {onAddToFront && (

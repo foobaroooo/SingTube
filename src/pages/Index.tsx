@@ -645,19 +645,6 @@ const Index = () => {
     setActiveView('queue');
   };
 
-  const handlePreviewSong = (song: Song) => {
-    // Create a temporary queue with just this song for preview
-    const tempQueue = [song];
-    setQueue(tempQueue);
-    setCurrentIndex(0);
-    setCurrentQueueName("Preview");
-    setCurrentQueueId(null);
-    
-    toast({
-      title: "Preview Mode",
-      description: `Previewing: ${song.title}`,
-    });
-  };
 
   const currentSong = currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex] ? queue[currentIndex] : null;
   
@@ -802,7 +789,6 @@ const Index = () => {
                         song={song}
                         onAddToQueue={addToQueue}
                         onAddToFront={addToFront}
-                        onPreview={handlePreviewSong}
                         showPlayButton
                         compact
                       />
