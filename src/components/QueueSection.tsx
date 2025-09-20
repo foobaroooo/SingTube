@@ -254,20 +254,20 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Load Saved Queue</DialogTitle>
+                  <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   {loading ? (
-                    <p className="text-muted-foreground">Loading saved queues...</p>
+                    <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
                   ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
-                    <p className="text-muted-foreground">No saved queues found</p>
+                    <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
                   ) : (
                     (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
                       <div key={savedQueue.id} className="flex items-center justify-between p-3 border rounded">
                         <div>
                           <h4 className="font-medium">{savedQueue.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0} songs • {new Date(savedQueue.createdAt).toLocaleDateString()}
+                            {t('app.dialogs.loadQueue.songCount', { count: Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0 })} • {new Date(savedQueue.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -291,7 +291,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                               }
                             }}
                           >
-                            Delete
+                            {t('app.dialogs.loadQueue.deleteButton')}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -323,7 +323,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                             <Share2 className="w-4 h-4" />
                           </Button>
                           <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
-                            Load
+                            {t('app.dialogs.loadQueue.loadButton')}
                           </Button>
                         </div>
                       </div>
@@ -413,21 +413,21 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Save Current Queue</DialogTitle>
+                  <DialogTitle>{t('app.dialogs.saveQueue.title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <Input
-                    placeholder="Enter queue name..."
+                    placeholder={t('app.dialogs.saveQueue.placeholder')}
                     value={saveQueueName}
                     onChange={(e) => setSaveQueueName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSaveQueue()}
                   />
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
-                      Cancel
+                      {t('app.dialogs.saveQueue.cancelButton')}
                     </Button>
                     <Button onClick={handleSaveQueue}>
-                      Save Queue
+                      {t('app.dialogs.saveQueue.saveButton')}
                     </Button>
                   </div>
                 </div>

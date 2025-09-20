@@ -75,6 +75,28 @@
     "searchResults": {
       "noResults": "找不到結果。請嘗試不同的搜尋詞。",
       "searchPrompt": "搜尋您最愛的中文卡拉OK歌曲"
+    },
+    "dialogs": {
+      "loadQueue": {
+        "title": "載入已儲存的歌單",
+        "loading": "正在載入已儲存的歌單...",
+        "noQueues": "沒有找到已儲存的歌單",
+        "songCount": "{{count}}首歌曲",
+        "deleteButton": "刪除",
+        "loadButton": "載入"
+      },
+      "saveQueue": {
+        "title": "儲存目前歌單",
+        "placeholder": "輸入歌單名稱...",
+        "cancelButton": "取消",
+        "saveButton": "儲存歌單"
+      }
+    },
+    "apiNotice": {
+      "description1": "我們的應用程式使用YouTube Data API，每日有10,000次搜尋限制。如果達到此限制，您的搜尋可能無法返回結果。",
+      "description2": "如果您遇到此問題，請向我們回報：",
+      "email": "hello (at) singtube.app",
+      "thankYou": "感謝您的理解！🎶"
     }
   }
 }

@@ -75,6 +75,28 @@
     "searchResults": {
       "noResults": "No results found. Try a different search term.",
       "searchPrompt": "Search for your favorite Chinese karaoke songs"
+    },
+    "dialogs": {
+      "loadQueue": {
+        "title": "Load Saved Queue",
+        "loading": "Loading saved queues...",
+        "noQueues": "No saved queues found",
+        "songCount": "{{count}} songs",
+        "deleteButton": "Delete",
+        "loadButton": "Load"
+      },
+      "saveQueue": {
+        "title": "Save Current Queue",
+        "placeholder": "Enter queue name...",
+        "cancelButton": "Cancel",
+        "saveButton": "Save Queue"
+      }
+    },
+    "apiNotice": {
+      "description1": "Our app uses the YouTube Data API, which has a daily limit of 10,000 searches. If this limit is reached, your search may fail to return results.",
+      "description2": "If you encounter this issue, please report it to us at:",
+      "email": "hello (at) singtube.app",
+      "thankYou": "Thank you for your understanding! 🎶"
     }
   }
 }

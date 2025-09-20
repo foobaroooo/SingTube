@@ -894,16 +894,16 @@ const Index = () => {
                   <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-card-foreground space-y-2">
                     <p>
-                      Our app uses the YouTube Data API, which has a daily limit of 10,000 searches. If this limit is reached, your search may fail to return results.
+                      {t('app.apiNotice.description1')}
                     </p>
                     <p>
-                      If you encounter this issue, please report it to us at:{" "}
+                      {t('app.apiNotice.description2')}{" "}
                       <span className="text-primary font-medium">
-                        hello (at) singtube.app
+                        {t('app.apiNotice.email')}
                       </span>
                     </p>
                     <p>
-                      Thank you for your understanding! 🎶
+                      {t('app.apiNotice.thankYou')}
                     </p>
                   </div>
                 </div>
