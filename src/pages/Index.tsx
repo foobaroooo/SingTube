@@ -713,15 +713,15 @@ const Index = () => {
             </div>
             
             {/* Search Section and Controls */}
-            <div className="flex-1 max-w-2xl flex items-center gap-3">
-              <LanguageToggle />
-              <div className="flex-1">
-                <SearchSection 
-                  onSearch={handleSearch} 
-                  isLoading={isSearchLoading} 
-                  refreshHistory={refreshHistory} 
-                  compact 
-                  extraButton={
+            <div className="flex-1 max-w-2xl">
+              <SearchSection 
+                onSearch={handleSearch} 
+                isLoading={isSearchLoading} 
+                refreshHistory={refreshHistory} 
+                compact 
+                extraButton={
+                  <>
+                    <LanguageToggle />
                     <Button
                       variant="outline"
                       size="icon"
@@ -735,9 +735,9 @@ const Index = () => {
                         <Expand className="w-4 h-4" />
                       )}
                     </Button>
-                  }
-                />
-              </div>
+                  </>
+                }
+              />
             </div>
           </div>
         </div>

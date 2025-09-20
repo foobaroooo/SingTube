@@ -11,20 +11,24 @@ export function LanguageToggle() {
     localStorage.setItem('language', newLang);
   };
 
-  const getCurrentLanguageLabel = () => {
-    return i18n.language === 'en' ? '中文' : 'EN';
-  };
-
   return (
     <Button
       variant="outline"
-      size="sm"
+      size="default"
       onClick={toggleLanguage}
-      className="flex items-center gap-2"
+      className="flex items-center gap-2 hover:bg-transparent hover:text-current h-10 px-3"
       title={i18n.language === 'en' ? 'Switch to Chinese' : '切換至英文'}
     >
       <Globe className="h-4 w-4" />
-      {getCurrentLanguageLabel()}
+      <span className="flex items-center gap-1">
+        <span className={i18n.language === 'en' ? 'text-primary font-semibold' : 'text-muted-foreground'}>
+          EN
+        </span>
+        <span className="text-muted-foreground">/</span>
+        <span className={i18n.language === 'zh' ? 'text-primary font-semibold' : 'text-muted-foreground'}>
+          中文
+        </span>
+      </span>
     </Button>
   );
 }
