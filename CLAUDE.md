@@ -19,6 +19,9 @@ Built with:
 # Start development server (runs on port 8080)
 npm run dev
 
+# Start PHP API backend (runs on port 8082) - Required for queue functionality
+cd api && php -S localhost:8082
+
 # Build for production
 npm run build
 
@@ -46,7 +49,8 @@ npm run preview
 - **QueueSection**: Song queue management with reorder/remove
 
 ### Data Flow
-- Mock data system in `src/data/mockSongs.ts` (will be replaced with YouTube Data API v3)
+- YouTube Data API v3 for video search and metadata
+- PHP backend API (`api/`) for queue management and persistence
 - State managed via React hooks in Index.tsx
 - Toast notifications for user feedback
 
@@ -68,4 +72,22 @@ Uses `@/` alias for `src/` directory:
 - **Vite Configuration**: Custom port 8080, SWC for React, path aliases configured
 - **TypeScript**: Strict mode enabled with separate configs for app and build tools
 - **Styling**: TailwindCSS with typography plugin, custom gradient utilities
-- **Future Integration**: Designed to integrate YouTube Data API v3 for real video search
+- **API Integration**: Uses YouTube Data API v3 for real video search and metadata
+
+## Environment Configuration
+
+### Development
+- Uses `.env.development` for development-specific settings
+- API calls go to `http://localhost:8082` (PHP dev server)
+- Requires both frontend and backend servers running
+
+### Production
+- Uses `.env` for production settings
+- API calls go to `/api` (relative path)
+- Expects PHP files to be served under `/api` path on web server
+
+### Environment Variables
+- `VITE_YOUTUBE_API_KEY`: YouTube Data API v3 key (required)
+- `VITE_API_BASE_URL`: Base URL for backend API
+  - Development: `http://localhost:8082`
+  - Production: `/api`
