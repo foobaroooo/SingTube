@@ -805,11 +805,6 @@ const Index = () => {
                       onNext={nextPage}
                       isLoading={isLoadingMore}
                     />
-                    
-                    {/* Debug info */}
-                    <div className="text-xs text-muted-foreground text-center pt-2">
-                      Debug: Page {currentPage}, Next: {nextPageToken ? 'Yes' : 'No'}, Prev: {currentPage > 1 ? 'Yes' : 'No'}
-                    </div>
                   </div>
                 </>
               )}
