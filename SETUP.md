@@ -142,6 +142,24 @@ user_preferences (key, value, updated_at)
 
 ## Environment Variables
 
+You should create both `.env` and `.env.development` files to handle different build environments:
+
+### `.env` (Production)
+```
+VITE_YOUTUBE_API_KEY=your_youtube_api_key_here
+VITE_API_BASE_URL=/api
+```
+
+### `.env.development` (Development)
+```
+VITE_YOUTUBE_API_KEY=your_youtube_api_key_here
+VITE_API_BASE_URL=http://localhost:8082
+```
+
+**⚠️ Security Warning**: Vite includes any `VITE_*` variables as public in the statically generated code, meaning they will be visible in the browser. It's **strongly recommended** to:
+1. Add API website restrictions in Google Cloud Console to limit your YouTube API key usage to your specific domain(s) only
+2. Exclude the `dist/` folder from Git repository to prevent accidentally committing built files containing API keys
+
 ### Backend (.env)
 - `YOUTUBE_API_KEY`: Your YouTube Data API v3 key (required for PHP backend)
 
