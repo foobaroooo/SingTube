@@ -1,4 +1,6 @@
 .env
+.env.development
 .DS_Store
 node_modules/.bin/acorn
 /node_modules
+/dist
