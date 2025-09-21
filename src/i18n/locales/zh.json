@@ -96,9 +96,9 @@
     },
     "apiNotice": {
       "description1": "我們的應用程式使用YouTube Data API，每日有10,000次搜尋限制。如果達到此限制，您的搜尋可能無法返回結果。",
-      "description2": "如果您遇到此問題，請向我們回報：",
+      "description2": "如果您遇到此問題， 或者有任何其它建議，請聯絡：",
       "email": "hello (at) singtube.app",
-      "thankYou": "感謝您的理解！🎶"
+      "thankYou": "感謝！🎶"
     }
   }
 }
