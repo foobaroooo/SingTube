@@ -1,9 +1,10 @@
 import axios from 'axios';
 import type { Song } from '@/components/SongCard';
-import { searchSongs } from '@/data/mockSongs';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 export interface SavedQueue {
   id: number;
@@ -22,6 +23,106 @@ export interface SearchHistory {
   lastSearched: string;
 }
 
+// YouTube Data API v3 Response Types
+interface YouTubeSearchResult {
+  kind: string;
+  etag: string;
+  nextPageToken?: string;
+  prevPageToken?: string;
+  pageInfo: {
+    totalResults: number;
+    resultsPerPage: number;
+  };
+  items: YouTubeVideoItem[];
+}
+
+interface YouTubeVideoItem {
+  kind: string;
+  etag: string;
+  id: {
+    kind: string;
+    videoId: string;
+  };
+  snippet: {
+    publishedAt: string;
+    channelId: string;
+    title: string;
+    description: string;
+    thumbnails: {
+      default: { url: string; width: number; height: number };
+      medium: { url: string; width: number; height: number };
+      high: { url: string; width: number; height: number };
+    };
+    channelTitle: string;
+    liveBroadcastContent: string;
+    publishTime: string;
+  };
+}
+
+interface YouTubeVideoDetails {
+  kind: string;
+  etag: string;
+  items: Array<{
+    kind: string;
+    etag: string;
+    id: string;
+    contentDetails: {
+      duration: string;
+    };
+  }>;
+}
+
+// Helper function to parse YouTube duration (PT4M13S -> 4:13)
+const parseYouTubeDuration = (duration: string): string => {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return '0:00';
+  
+  const hours = parseInt(match[1] || '0');
+  const minutes = parseInt(match[2] || '0');
+  const seconds = parseInt(match[3] || '0');
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+// Helper function to build search query with gender filtering
+const buildSearchQuery = (query: string, gender: string): string => {
+  let searchTerms = [query];
+  
+  // Add karaoke-related terms to improve results
+  const karaokeTerms = ['karaoke', '伴奏', 'instrumental', 'backing track'];
+  const hasKaraokeTerms = karaokeTerms.some(term => 
+    query.toLowerCase().includes(term) || query.includes(term)
+  );
+  
+  if (!hasKaraokeTerms) {
+    searchTerms.push('karaoke OR 伴奏 OR instrumental');
+  }
+  
+  // Add gender filtering
+  if (gender === 'male') {
+    searchTerms.push('男声 OR male OR 男版');
+  } else if (gender === 'female') {
+    searchTerms.push('女声 OR female OR 女版');
+  }
+  
+  return searchTerms.join(' ');
+};
+
+// Convert YouTube API response to Song format
+const convertYouTubeItemToSong = (item: YouTubeVideoItem, duration: string = '0:00'): Song => {
+  return {
+    id: item.id.videoId,
+    title: item.snippet.title,
+    artist: item.snippet.channelTitle,
+    thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url || '',
+    duration,
+    youtubeId: item.id.videoId,
+  };
+};
+
 // YouTube Search API
 export const searchYouTubeVideos = async (
   query: string,
@@ -35,65 +136,101 @@ export const searchYouTubeVideos = async (
     return { songs: [] };
   }
 
-  // No more fake pagination - let the real API handle everything
+  if (!YOUTUBE_API_KEY) {
+    throw new Error('YouTube API key is not configured. Please set VITE_YOUTUBE_API_KEY in your .env file.');
+  }
 
   try {
-    console.log('📡 Attempting API call to:', `${API_BASE_URL}/youtube.php`);
+    const searchQuery = buildSearchQuery(query, gender);
+    console.log('📡 Searching YouTube with query:', searchQuery);
     
-    const response = await axios.get<{ songs: Song[]; nextPageToken?: string }>(`${API_BASE_URL}/youtube.php`, {
-      params: {
-        q: query,
-        gender,
-        maxResults,
-        pageToken,
-      },
+    // Search for videos
+    const searchParams = new URLSearchParams({
+      part: 'snippet',
+      type: 'video',
+      q: searchQuery,
+      maxResults: maxResults.toString(),
+      order: 'relevance',
+      videoDuration: 'any',
+      videoEmbeddable: 'true',
+      key: YOUTUBE_API_KEY,
     });
 
-    console.log('✅ API response received:', {
-      status: response.status,
-      dataType: typeof response.data,
-      rawData: response.data,
-      dataKeys: Object.keys(response.data || {}),
-      songsCount: Array.isArray(response.data.songs) ? response.data.songs.length : 'not array',
-      hasNextPageToken: !!response.data.nextPageToken
-    });
-
-    // Ensure we always return the expected format
-    const data = response.data;
-    let songs: Song[] = [];
-    let nextPageToken: string | undefined = undefined;
-    
-    // Handle different response formats from PHP API
-    if (Array.isArray(data)) {
-      // Direct array response
-      songs = data;
-    } else if (data && Array.isArray(data.songs)) {
-      // Wrapped in songs property
-      songs = data.songs;
-      nextPageToken = data.nextPageToken;
-    } else if (data && typeof data === 'object') {
-      // Check if data has song properties
-      songs = Object.values(data).filter((item: any) => 
-        item && typeof item === 'object' && item.id && item.title
-      ) as Song[];
-      nextPageToken = data.nextPageToken;
+    if (pageToken) {
+      searchParams.append('pageToken', pageToken);
     }
+
+    const searchResponse = await axios.get<YouTubeSearchResult>(
+      `${YOUTUBE_API_BASE}/search?${searchParams.toString()}`
+    );
+
+    console.log('✅ YouTube search response received:', {
+      status: searchResponse.status,
+      itemsCount: searchResponse.data.items?.length || 0,
+      hasNextPageToken: !!searchResponse.data.nextPageToken
+    });
+
+    if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
+      return { songs: [], nextPageToken: undefined };
+    }
+
+    // Get video IDs for duration lookup
+    const videoIds = searchResponse.data.items.map(item => item.id.videoId);
     
+    // Fetch video details for durations
+    const detailsParams = new URLSearchParams({
+      part: 'contentDetails',
+      id: videoIds.join(','),
+      key: YOUTUBE_API_KEY,
+    });
+
+    const detailsResponse = await axios.get<YouTubeVideoDetails>(
+      `${YOUTUBE_API_BASE}/videos?${detailsParams.toString()}`
+    );
+
+    console.log('✅ YouTube details response received:', {
+      status: detailsResponse.status,
+      itemsCount: detailsResponse.data.items?.length || 0
+    });
+
+    // Create a map of video ID to duration
+    const durationMap = new Map<string, string>();
+    if (detailsResponse.data.items) {
+      detailsResponse.data.items.forEach(item => {
+        durationMap.set(item.id, parseYouTubeDuration(item.contentDetails.duration));
+      });
+    }
+
+    // Convert to Song format
+    const songs: Song[] = searchResponse.data.items.map(item => 
+      convertYouTubeItemToSong(item, durationMap.get(item.id.videoId) || '0:00')
+    );
+
     const result = {
       songs,
-      nextPageToken,
+      nextPageToken: searchResponse.data.nextPageToken,
     };
     
-    console.log('📤 API result:', { songsCount: result.songs.length, hasNext: !!result.nextPageToken });
+    console.log('📤 Final result:', { songsCount: result.songs.length, hasNext: !!result.nextPageToken });
     return result;
-  } catch (error) {
-    console.error('❌ YouTube Search API Error, falling back to mock data:', error);
-    console.log('🎭 Using mock data instead');
     
-    // Fallback to mock data when API is not available
-    const mockResults = searchSongs(query, gender, maxResults, pageToken);
-    console.log('📤 Mock result:', { songsCount: mockResults.songs.length, hasNext: !!mockResults.nextPageToken });
-    return mockResults;
+  } catch (error) {
+    console.error('❌ YouTube Search API Error:', error);
+    
+    if (axios.isAxiosError(error) && error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      if (status === 403) {
+        throw new Error('YouTube API quota exceeded or invalid API key. Please check your API key and quota limits.');
+      } else if (status === 400) {
+        throw new Error(`Invalid search request: ${data.error?.message || 'Bad request'}`);
+      } else {
+        throw new Error(`YouTube API error (${status}): ${data.error?.message || 'Unknown error'}`);
+      }
+    }
+    
+    throw new Error('Failed to connect to YouTube API. Please check your internet connection.');
   }
 };
 
