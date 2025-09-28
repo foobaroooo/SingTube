@@ -85,7 +85,8 @@
         "noQueues": "沒有找到已儲存的歌單",
         "songCount": "{{count}}首歌曲",
         "deleteButton": "刪除",
-        "loadButton": "載入"
+        "loadButton": "載入",
+        "scrollHint": "看不到你的播放清單？動動滑鼠 ;)"
       },
       "saveQueue": {
         "title": "儲存目前歌單",

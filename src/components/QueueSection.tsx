@@ -334,6 +334,12 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   </div>
                   <ScrollBar className="opacity-100" />
                 </ScrollArea>
+                {/* Show scroll hint when there are many saved queues */}
+                {savedQueues.length > 4 && (
+                  <p className="text-xs text-muted-foreground text-center mt-2 opacity-70">
+                    {t('app.dialogs.loadQueue.scrollHint')}
+                  </p>
+                )}
               </DialogContent>
             </Dialog>
             

@@ -85,7 +85,8 @@
         "noQueues": "No saved queues found",
         "songCount": "{{count}} songs",
         "deleteButton": "Delete",
-        "loadButton": "Load"
+        "loadButton": "Load",
+        "scrollHint": "Can't see your playlist? Try scroll ;)"
       },
       "saveQueue": {
         "title": "Save Current Queue",
