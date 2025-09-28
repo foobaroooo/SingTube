@@ -177,7 +177,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
       {isMaximized && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onToggleMaximize} />
       )}
-      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`}>
+      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`} data-tutorial="queue-section">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -189,7 +189,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
           
           {/* Playback Controls */}
           {(onPlay || onPause || onNext || onPrevious) && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-tutorial="playback-controls">
               {/* Previous Button */}
               {onPrevious && (
                 <Button
@@ -243,7 +243,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             </div>
           )}
           
-          <div className="flex gap-2">
+          <div className="flex gap-2" data-tutorial="queue-actions">
             <Dialog open={loadDialogOpen} onOpenChange={(open) => {
               setLoadDialogOpen(open);
               if (open) loadSavedQueues();
@@ -450,6 +450,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 size="sm"
                 onClick={onToggleMaximize}
                 title={isMaximized ? t('app.queue.tooltips.restoreQueue') : t('app.queue.tooltips.maximizeQueue')}
+                data-tutorial="maximize-button"
               >
                 {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>

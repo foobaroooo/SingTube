@@ -100,6 +100,56 @@
       "description2": "If you encounter this issue, or any feedback or suggestions, please email:",
       "email": "hello (at) singtube.app",
       "thankYou": "Thank you! 🎶"
+    },
+    "tutorial": {
+      "welcome": {
+        "title": "Welcome to SingTube!",
+        "description": "Let's take a quick tour of your personal karaoke stage. We'll show you how to search for songs, manage your queue, and make the most of all the features."
+      },
+      "searchInput": {
+        "title": "Search Input",
+        "description": "This is where you type your search! Enter song titles, artist names, or any keywords. You can search in English, Chinese, or any language. Try typing something like '周杰伦' or 'Jay Chou'."
+      },
+      "searchButton": {
+        "title": "Search Button",
+        "description": "Click this button to start searching for songs! You can also press Enter after typing in the search box. The search will find karaoke versions and instrumental tracks."
+      },
+      "language": {
+        "title": "Language Toggle",
+        "description": "Switch between English and Chinese interface at any time. Click the EN/中文 button in the top right to change the language instantly."
+      },
+      "queue": {
+        "title": "Your Song Queue",
+        "description": "This is where your selected songs live! Add songs from search results, reorder them by dragging, and see what's currently playing. Double-click any song to start playing it immediately."
+      },
+      "controls": {
+        "title": "Playback Controls",
+        "description": "Control your karaoke session with these buttons. Play/pause the current song, skip to the next track, or go back to the previous one."
+      },
+      "management": {
+        "title": "Queue Management",
+        "description": "Save your queues for later, load previously saved playlists, and share your favorite collections with friends. These tools help you organize your karaoke sessions."
+      },
+      "maximize": {
+        "title": "Maximize Display",
+        "description": "Need more space? Click the maximize button to expand your queue to full screen. Perfect for when you have a long playlist or want to focus on queue management."
+      },
+      "complete": {
+        "title": "You're All Set!",
+        "description": "That's it! You're ready to start your karaoke journey. Search for songs, build your queue, and enjoy singing your heart out. Have fun! 🎤"
+      },
+      "icons": {
+        "load": "Load Queue",
+        "save": "Save Queue",
+        "share": "Share Queue",
+        "previous": "Previous",
+        "play": "Play/Pause",
+        "next": "Next"
+      },
+      "previous": "Previous",
+      "next": "Next",
+      "skip": "Skip Tour",
+      "finish": "Get Started!"
     }
   }
 }

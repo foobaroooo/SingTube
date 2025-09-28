@@ -7,6 +7,7 @@ import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +41,7 @@ const Index = () => {
   const [autoAdvance, setAutoAdvance] = useState(true); // Enable auto-advance by default
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeView, setActiveView] = useState<'search' | 'queue'>('queue'); // Track which view is active
+  const [showTutorial, setShowTutorial] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -95,6 +97,13 @@ const Index = () => {
     };
     
     loadInitialQueue();
+    
+    // Check if tutorial should be shown
+    const tutorialCompleted = localStorage.getItem('singtube_tutorial_completed');
+    if (!tutorialCompleted) {
+      // Delay showing tutorial to allow UI to render
+      setTimeout(() => setShowTutorial(true), 1000);
+    }
   }, []);
 
   // Auto-save queue whenever it changes
@@ -700,7 +709,7 @@ const Index = () => {
             </div>
             
             {/* Search Section and Controls */}
-            <div className="flex-1 max-w-2xl">
+            <div className="flex-1 max-w-2xl" data-tutorial="search-section">
               <SearchSection 
                 onSearch={handleSearch} 
                 isLoading={isSearchLoading} 
@@ -708,7 +717,18 @@ const Index = () => {
                 compact 
                 extraButton={
                   <>
-                    <LanguageToggle />
+                    <div data-tutorial="language-toggle">
+                      <LanguageToggle />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowTutorial(true)}
+                      className="flex-shrink-0"
+                      title="Show tutorial"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
@@ -918,6 +938,12 @@ const Index = () => {
           />
         )}
       </div>
+      
+      {/* Onboarding Tutorial */}
+      <OnboardingTutorial 
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </div>
   );
 };

@@ -42,6 +42,7 @@ export function LanguageToggle() {
       onClick={toggleLanguage}
       className="flex items-center gap-2 hover:bg-transparent hover:text-current h-10 px-3"
       title={currentLang === 'en' ? 'Switch to Chinese' : '切換至英文'}
+      data-tutorial="language-button"
     >
       <Globe className="h-4 w-4" />
       <span className="flex items-center gap-1">

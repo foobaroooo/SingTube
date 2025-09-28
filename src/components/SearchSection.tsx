@@ -78,6 +78,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               className="bg-input border-border focus:ring-2 focus:ring-primary transition-smooth"
+              data-tutorial="search-input"
             />
           </div>
           
@@ -85,6 +86,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             onClick={handleSearch}
             className="px-4 bg-gradient-primary hover:shadow-neon transition-bounce"
             disabled={!searchQuery.trim() || isLoading}
+            data-tutorial="search-button"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
