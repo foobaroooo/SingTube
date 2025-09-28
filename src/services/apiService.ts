@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Song } from '@/components/SongCard';
+import { searchSongs } from '@/data/mockSongs';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -123,7 +124,7 @@ const convertYouTubeItemToSong = (item: YouTubeVideoItem, duration: string = '0:
   };
 };
 
-// YouTube Search API
+// YouTube Search API with conditional mock fallback
 export const searchYouTubeVideos = async (
   query: string,
   gender: string = 'all',
@@ -136,101 +137,129 @@ export const searchYouTubeVideos = async (
     return { songs: [] };
   }
 
-  if (!YOUTUBE_API_KEY) {
-    throw new Error('YouTube API key is not configured. Please set VITE_YOUTUBE_API_KEY in your .env file.');
-  }
-
-  try {
-    const searchQuery = buildSearchQuery(query, gender);
-    console.log('📡 Searching YouTube with query:', searchQuery);
+  // Check if we're on production domain - use real YouTube API
+  const isProduction = window.location.hostname === 'singtube.app';
+  
+  if (isProduction && YOUTUBE_API_KEY) {
+    console.log('🌐 Using real YouTube API (production domain)');
     
-    // Search for videos
-    const searchParams = new URLSearchParams({
-      part: 'snippet',
-      type: 'video',
-      q: searchQuery,
-      maxResults: maxResults.toString(),
-      order: 'relevance',
-      videoDuration: 'any',
-      videoEmbeddable: 'true',
-      key: YOUTUBE_API_KEY,
-    });
-
-    if (pageToken) {
-      searchParams.append('pageToken', pageToken);
-    }
-
-    const searchResponse = await axios.get<YouTubeSearchResult>(
-      `${YOUTUBE_API_BASE}/search?${searchParams.toString()}`
-    );
-
-    console.log('✅ YouTube search response received:', {
-      status: searchResponse.status,
-      itemsCount: searchResponse.data.items?.length || 0,
-      hasNextPageToken: !!searchResponse.data.nextPageToken
-    });
-
-    if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
-      return { songs: [], nextPageToken: undefined };
-    }
-
-    // Get video IDs for duration lookup
-    const videoIds = searchResponse.data.items.map(item => item.id.videoId);
-    
-    // Fetch video details for durations
-    const detailsParams = new URLSearchParams({
-      part: 'contentDetails',
-      id: videoIds.join(','),
-      key: YOUTUBE_API_KEY,
-    });
-
-    const detailsResponse = await axios.get<YouTubeVideoDetails>(
-      `${YOUTUBE_API_BASE}/videos?${detailsParams.toString()}`
-    );
-
-    console.log('✅ YouTube details response received:', {
-      status: detailsResponse.status,
-      itemsCount: detailsResponse.data.items?.length || 0
-    });
-
-    // Create a map of video ID to duration
-    const durationMap = new Map<string, string>();
-    if (detailsResponse.data.items) {
-      detailsResponse.data.items.forEach(item => {
-        durationMap.set(item.id, parseYouTubeDuration(item.contentDetails.duration));
-      });
-    }
-
-    // Convert to Song format
-    const songs: Song[] = searchResponse.data.items.map(item => 
-      convertYouTubeItemToSong(item, durationMap.get(item.id.videoId) || '0:00')
-    );
-
-    const result = {
-      songs,
-      nextPageToken: searchResponse.data.nextPageToken,
-    };
-    
-    console.log('📤 Final result:', { songsCount: result.songs.length, hasNext: !!result.nextPageToken });
-    return result;
-    
-  } catch (error) {
-    console.error('❌ YouTube Search API Error:', error);
-    
-    if (axios.isAxiosError(error) && error.response) {
-      const status = error.response.status;
-      const data = error.response.data;
+    try {
+      const searchQuery = buildSearchQuery(query, gender);
+      console.log('📡 Searching YouTube with query:', searchQuery);
       
-      if (status === 403) {
-        throw new Error('YouTube API quota exceeded or invalid API key. Please check your API key and quota limits.');
-      } else if (status === 400) {
-        throw new Error(`Invalid search request: ${data.error?.message || 'Bad request'}`);
-      } else {
-        throw new Error(`YouTube API error (${status}): ${data.error?.message || 'Unknown error'}`);
+      // Search for videos
+      const searchParams = new URLSearchParams({
+        part: 'snippet',
+        type: 'video',
+        q: searchQuery,
+        maxResults: maxResults.toString(),
+        order: 'relevance',
+        videoDuration: 'any',
+        videoEmbeddable: 'true',
+        key: YOUTUBE_API_KEY,
+      });
+
+      if (pageToken) {
+        searchParams.append('pageToken', pageToken);
       }
+
+      const searchResponse = await axios.get<YouTubeSearchResult>(
+        `${YOUTUBE_API_BASE}/search?${searchParams.toString()}`
+      );
+
+      console.log('✅ YouTube search response received:', {
+        status: searchResponse.status,
+        itemsCount: searchResponse.data.items?.length || 0,
+        hasNextPageToken: !!searchResponse.data.nextPageToken
+      });
+
+      if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
+        return { songs: [], nextPageToken: undefined };
+      }
+
+      // Get video IDs for duration lookup
+      const videoIds = searchResponse.data.items.map(item => item.id.videoId);
+      
+      // Fetch video details for durations
+      const detailsParams = new URLSearchParams({
+        part: 'contentDetails',
+        id: videoIds.join(','),
+        key: YOUTUBE_API_KEY,
+      });
+
+      const detailsResponse = await axios.get<YouTubeVideoDetails>(
+        `${YOUTUBE_API_BASE}/videos?${detailsParams.toString()}`
+      );
+
+      console.log('✅ YouTube details response received:', {
+        status: detailsResponse.status,
+        itemsCount: detailsResponse.data.items?.length || 0
+      });
+
+      // Create a map of video ID to duration
+      const durationMap = new Map<string, string>();
+      if (detailsResponse.data.items) {
+        detailsResponse.data.items.forEach(item => {
+          durationMap.set(item.id, parseYouTubeDuration(item.contentDetails.duration));
+        });
+      }
+
+      // Convert to Song format
+      const songs: Song[] = searchResponse.data.items.map(item => 
+        convertYouTubeItemToSong(item, durationMap.get(item.id.videoId) || '0:00')
+      );
+
+      const result = {
+        songs,
+        nextPageToken: searchResponse.data.nextPageToken,
+      };
+      
+      console.log('📤 Final YouTube API result:', { songsCount: result.songs.length, hasNext: !!result.nextPageToken });
+      return result;
+      
+    } catch (error) {
+      console.error('❌ YouTube Search API Error:', error);
+      
+      if (axios.isAxiosError(error) && error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (status === 403) {
+          throw new Error('YouTube API quota exceeded or invalid API key. Please check your API key and quota limits.');
+        } else if (status === 400) {
+          throw new Error(`Invalid search request: ${data.error?.message || 'Bad request'}`);
+        } else {
+          throw new Error(`YouTube API error (${status}): ${data.error?.message || 'Unknown error'}`);
+        }
+      }
+      
+      throw new Error('Failed to connect to YouTube API. Please check your internet connection.');
     }
+  } else {
+    // Use mock data for development/testing
+    console.log('🧪 Using mock data (development/local environment)');
     
-    throw new Error('Failed to connect to YouTube API. Please check your internet connection.');
+    // Simulate API delay for realistic UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      const result = searchSongs(query, gender, maxResults, pageToken);
+      
+      console.log('✅ Mock search response:', {
+        query,
+        gender,
+        maxResults,
+        pageToken,
+        songsCount: result.songs.length,
+        hasNext: !!result.nextPageToken
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Mock Search Error:', error);
+      throw new Error('Search temporarily unavailable. Please try again.');
+    }
   }
 };
 

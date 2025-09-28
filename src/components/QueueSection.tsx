@@ -256,7 +256,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 <DialogHeader>
                   <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-96 overflow-y-scroll">
                   {loading ? (
                     <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
                   ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
