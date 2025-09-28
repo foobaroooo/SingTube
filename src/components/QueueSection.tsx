@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
@@ -256,13 +257,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 <DialogHeader>
                   <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-3 max-h-96 overflow-y-scroll">
-                  {loading ? (
-                    <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
-                  ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
-                    <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
-                  ) : (
-                    (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
+                <ScrollArea className="h-96 w-full">
+                  <div className="space-y-3 pr-4">
+                    {loading ? (
+                      <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
+                    ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
+                      <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
+                    ) : (
+                      (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
                       <div key={savedQueue.id} className="flex items-center justify-between p-3 border rounded">
                         <div>
                           <h4 className="font-medium">{savedQueue.name}</h4>
@@ -329,7 +331,9 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                       </div>
                     ))
                   )}
-                </div>
+                  </div>
+                  <ScrollBar className="opacity-100" />
+                </ScrollArea>
               </DialogContent>
             </Dialog>
             
