@@ -11,7 +11,9 @@
       "Bash(kill:*)",
       "Bash(npm run dev:*)",
       "WebFetch(domain:developers.google.com)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(grep:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
