@@ -460,7 +460,6 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     onClick={onToggleMaximize}
                     title={isMaximized ? t('app.queue.tooltips.restoreQueue') : t('app.queue.tooltips.maximizeQueue')}
                     data-tutorial="maximize-button"
-                    className="hidden md:flex"
                   >
                     {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </Button>

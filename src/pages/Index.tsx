@@ -726,7 +726,7 @@ const Index = () => {
                   variant="outline"
                   size="icon"
                   onClick={toggleFullscreen}
-                  className="w-8 h-8"
+                  className="w-8 h-8 hidden"
                   title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                 >
                   {isFullscreen ? (
