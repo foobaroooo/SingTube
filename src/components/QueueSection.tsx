@@ -178,364 +178,369 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onToggleMaximize} />
       )}
       <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`} data-tutorial="queue-section">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Music className="w-5 h-5 text-primary" />
-            <div className="flex flex-col">
-              <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
-            </div>
-          </CardTitle>
-          
-          {/* Playback Controls */}
-          {(onPlay || onPause || onNext || onPrevious) && (
-            <div className="flex items-center gap-2" data-tutorial="playback-controls">
-              {/* Previous Button */}
-              {onPrevious && (
-                <Button
-                  onClick={onPrevious}
-                  disabled={!canGoPrevious}
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full w-10 h-10"
-                  title={t('app.queue.tooltips.previousSong')}
-                >
-                  <SkipBack className="w-4 h-4" />
-                </Button>
-              )}
-              
-              {/* Play/Pause Button */}
-              {(onPlay || onPause) && (
-                <Button
-                  onClick={isPlaying ? onPause : onPlay}
-                  disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
-                  size="icon"
-                  className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-12 h-12"
-                  title={
-                    currentIndex < 0 || !Array.isArray(queue) || queue.length === 0
-                      ? t('app.queue.tooltips.noSongSelected')
-                      : isPlaying
-                      ? `${t('app.actions.pause')}: ${queue[currentIndex]?.title}`
-                      : `${t('app.actions.play')}: ${queue[currentIndex]?.title}`
-                  }
-                >
-                  {isPlaying ? (
-                    <Pause className="w-5 h-5 fill-current" />
-                  ) : (
-                    <Play className="w-5 h-5 fill-current" />
-                  )}
-                </Button>
-              )}
-              
-              {/* Next Button */}
-              {onNext && (
-                <Button
-                  onClick={onNext}
-                  disabled={!canGoNext}
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full w-10 h-10"
-                  title={t('app.queue.tooltips.nextSong')}
-                >
-                  <SkipForward className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          )}
-          
-          <div className="flex gap-2" data-tutorial="queue-actions">
-            <Dialog open={loadDialogOpen} onOpenChange={(open) => {
-              setLoadDialogOpen(open);
-              if (open) loadSavedQueues();
-            }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" title={t('app.queue.tooltips.loadQueue')}>
-                  <FolderOpen className="w-4 h-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="h-96 w-full">
-                  <div className="space-y-3 pr-4">
-                    {loading ? (
-                      <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
-                    ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
-                      <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
-                    ) : (
-                      (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
-                      <div key={savedQueue.id} className="flex items-center justify-between p-3 border rounded">
-                        <div>
-                          <h4 className="font-medium">{savedQueue.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {t('app.dialogs.loadQueue.songCount', { count: Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0 })} • {new Date(savedQueue.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                await deleteQueue(savedQueue.id);
-                                await loadSavedQueues();
-                                toast({
-                                  title: "Queue Deleted",
-                                  description: `"${savedQueue.name}" has been deleted`,
-                                });
-                              } catch (error) {
-                                toast({
-                                  title: "Delete Failed",
-                                  description: "Could not delete the queue",
-                                  variant: "destructive"
-                                });
-                              }
-                            }}
-                          >
-                            {t('app.dialogs.loadQueue.deleteButton')}
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={async () => {
-                              const shareUrl = `${window.location.origin}/?share=${savedQueue.guid}`;
-                              try {
-                                await navigator.clipboard.writeText(shareUrl);
-                                toast({
-                                  title: "Share Link Copied",
-                                  description: "The shareable link has been copied to your clipboard",
-                                });
-                              } catch (error) {
-                                // Fallback for older browsers
-                                const textArea = document.createElement('textarea');
-                                textArea.value = shareUrl;
-                                document.body.appendChild(textArea);
-                                textArea.select();
-                                document.execCommand('copy');
-                                document.body.removeChild(textArea);
-                                toast({
-                                  title: "Share Link Copied",
-                                  description: "The shareable link has been copied to your clipboard",
-                                });
-                              }
-                            }}
-                            title={t('app.queue.tooltips.copyShareLink')}
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </Button>
-                          <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
-                            {t('app.dialogs.loadQueue.loadButton')}
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  </div>
-                  <ScrollBar className="opacity-100" />
-                </ScrollArea>
-                {/* Show scroll hint when there are many saved queues */}
-                {savedQueues.length > 4 && (
-                  <p className="text-xs text-muted-foreground text-center mt-2 opacity-70">
-                    {t('app.dialogs.loadQueue.scrollHint')}
-                  </p>
-                )}
-              </DialogContent>
-            </Dialog>
+        <CardHeader>
+          {/* Mobile Layout: Title on top row, controls below */}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
+            <CardTitle className="flex items-center gap-2">
+              <Music className="w-5 h-5 text-primary" />
+              <div className="flex flex-col">
+                <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
+              </div>
+            </CardTitle>
             
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={!Array.isArray(queue) || queue.length === 0}
-              onClick={async () => {
-                if (!Array.isArray(queue) || queue.length === 0) {
-                  toast({
-                    title: "Empty Queue",
-                    description: "Cannot share an empty queue",
-                    variant: "destructive"
-                  });
-                  return;
-                }
-                
-                // Create a temporary queue object with current queue data
-                const tempQueue = {
-                  name: queueName || "Shared Queue",
-                  songs: queue
-                };
-                
-                try {
-                  // Save the queue temporarily to get a GUID for sharing
-                  const saveResponse = await saveQueue(tempQueue.name, tempQueue.songs);
-                  if (saveResponse) {
-                    // Get the GUID from the latest saved queues
-                    const savedQueues = await getSavedQueues();
-                    // Find the most recently created queue (should be ours)
-                    const newQueue = savedQueues.sort((a, b) => 
-                      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                    )[0];
-                    
-                    if (newQueue && newQueue.guid) {
-                      const shareUrl = `${window.location.origin}/?share=${newQueue.guid}`;
-                      try {
-                        await navigator.clipboard.writeText(shareUrl);
-                        toast({
-                          title: "Queue Shared Successfully",
-                          description: `"${tempQueue.name}" share link copied to clipboard`,
-                        });
-                      } catch (error) {
-                        // Fallback for older browsers
-                        const textArea = document.createElement('textarea');
-                        textArea.value = shareUrl;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        toast({
-                          title: "Queue Shared Successfully", 
-                          description: `"${tempQueue.name}" share link copied to clipboard`,
-                        });
+            {/* Controls row - wraps on mobile */}
+            <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end">
+              {/* Playback Controls */}
+              {(onPlay || onPause || onNext || onPrevious) && (
+                <div className="flex items-center gap-2" data-tutorial="playback-controls">
+                  {/* Previous Button */}
+                  {onPrevious && (
+                    <Button
+                      onClick={onPrevious}
+                      disabled={!canGoPrevious}
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full w-8 h-8 md:w-10 md:h-10"
+                      title={t('app.queue.tooltips.previousSong')}
+                    >
+                      <SkipBack className="w-3 h-3 md:w-4 md:h-4" />
+                    </Button>
+                  )}
+                  
+                  {/* Play/Pause Button */}
+                  {(onPlay || onPause) && (
+                    <Button
+                      onClick={isPlaying ? onPause : onPlay}
+                      disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
+                      size="icon"
+                      className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-10 h-10 md:w-12 md:h-12"
+                      title={
+                        currentIndex < 0 || !Array.isArray(queue) || queue.length === 0
+                          ? t('app.queue.tooltips.noSongSelected')
+                          : isPlaying
+                          ? `${t('app.actions.pause')}: ${queue[currentIndex]?.title}`
+                          : `${t('app.actions.play')}: ${queue[currentIndex]?.title}`
                       }
-                    } else {
-                      throw new Error("Failed to get GUID for sharing");
-                    }
-                  } else {
-                    throw new Error("Failed to save queue for sharing");
-                  }
-                } catch (error) {
-                  console.error('Share current queue error:', error);
-                  toast({
-                    title: "Share Failed",
-                    description: "Could not create share link for current queue",
-                    variant: "destructive"
-                  });
-                }
-              }}
-              title={t('app.queue.tooltips.shareQueue')}
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-            
-            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title={t('app.queue.tooltips.saveQueue')}>
-                  <Save className="w-4 h-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('app.dialogs.saveQueue.title')}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Input
-                    placeholder={t('app.dialogs.saveQueue.placeholder')}
-                    value={saveQueueName}
-                    onChange={(e) => setSaveQueueName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSaveQueue()}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
-                      {t('app.dialogs.saveQueue.cancelButton')}
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                      ) : (
+                        <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                      )}
                     </Button>
-                    <Button onClick={handleSaveQueue}>
-                      {t('app.dialogs.saveQueue.saveButton')}
+                  )}
+                  
+                  {/* Next Button */}
+                  {onNext && (
+                    <Button
+                      onClick={onNext}
+                      disabled={!canGoNext}
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full w-8 h-8 md:w-10 md:h-10"
+                      title={t('app.queue.tooltips.nextSong')}
+                    >
+                      <SkipForward className="w-3 h-3 md:w-4 md:h-4" />
                     </Button>
-                  </div>
+                  )}
                 </div>
-              </DialogContent>
-            </Dialog>
-            
-            {onToggleMaximize && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onToggleMaximize}
-                title={isMaximized ? t('app.queue.tooltips.restoreQueue') : t('app.queue.tooltips.maximizeQueue')}
-                data-tutorial="maximize-button"
-              >
-                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className={`p-4 space-y-3 overflow-y-scroll flex-1 min-h-0 ${isMaximized ? '' : ''}`}>
-        {!Array.isArray(queue) || queue.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>{t('app.queue.emptyMessage')}</p>
-            <p className="text-sm">{t('app.queue.getStarted')}</p>
-          </div>
-        ) : (
-          (Array.isArray(queue) ? queue : []).map((song, index) => {
-            const itemKey = `${song.id}-${index}`;
-            const isFadingOut = fadingOutItems.has(itemKey);
-            
-            return (
-              <div 
-                key={itemKey}
-                draggable={true}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
-                  ${index === currentIndex 
-                    ? 'bg-primary/10 border-primary' 
-                    : 'bg-secondary/50 border-border hover:bg-secondary'
-                  }
-                  ${draggedIndex === index ? 'opacity-50' : ''}
-                  ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
-                  ${isFadingOut ? 'opacity-0 scale-95 translate-x-4' : ''}
-                `}
-                onClick={() => onSelect(index)}
-                onDoubleClick={() => onDoubleClickPlay && onDoubleClickPlay(index)}
-              >
-                <div className="flex items-center gap-3 mr-3">
-                  <span className={`text-lg font-mono font-bold w-8 text-center ${
-                    index === currentIndex ? 'text-primary' : 'text-foreground'
-                  }`}>
-                    {index + 1}
-                  </span>
-                  <GripVertical className="w-4 h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" title={t('app.queue.tooltips.dragToReorder')} />
-                </div>
-                
-                <img 
-                  src={song.thumbnail} 
-                  alt={song.title}
-                  className="w-16 h-16 object-cover rounded bg-muted flex-shrink-0"
-                />
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-2xl truncate text-card-foreground leading-tight">
-                    {song.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground truncate mt-1">
-                    {song.artist}
-                  </p>
-                  <span className="text-xs text-muted-foreground">
-                    {song.duration}
-                  </span>
-                </div>
+              )}
+              
+              <div className="flex gap-2" data-tutorial="queue-actions">
+                <Dialog open={loadDialogOpen} onOpenChange={(open) => {
+                  setLoadDialogOpen(open);
+                  if (open) loadSavedQueues();
+                }}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" title={t('app.queue.tooltips.loadQueue')}>
+                      <FolderOpen className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="h-96 w-full">
+                      <div className="space-y-3 pr-4">
+                        {loading ? (
+                          <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
+                        ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
+                          <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
+                        ) : (
+                          (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
+                          <div key={savedQueue.id} className="flex items-center justify-between p-3 border rounded">
+                            <div>
+                              <h4 className="font-medium">{savedQueue.name}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {t('app.dialogs.loadQueue.songCount', { count: Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0 })} • {new Date(savedQueue.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await deleteQueue(savedQueue.id);
+                                    await loadSavedQueues();
+                                    toast({
+                                      title: "Queue Deleted",
+                                      description: `"${savedQueue.name}" has been deleted`,
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Delete Failed",
+                                      description: "Could not delete the queue",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }}
+                              >
+                                {t('app.dialogs.loadQueue.deleteButton')}
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={async () => {
+                                  const shareUrl = `${window.location.origin}/?share=${savedQueue.guid}`;
+                                  try {
+                                    await navigator.clipboard.writeText(shareUrl);
+                                    toast({
+                                      title: "Share Link Copied",
+                                      description: "The shareable link has been copied to your clipboard",
+                                    });
+                                  } catch (error) {
+                                    // Fallback for older browsers
+                                    const textArea = document.createElement('textarea');
+                                    textArea.value = shareUrl;
+                                    document.body.appendChild(textArea);
+                                    textArea.select();
+                                    document.execCommand('copy');
+                                    document.body.removeChild(textArea);
+                                    toast({
+                                      title: "Share Link Copied",
+                                      description: "The shareable link has been copied to your clipboard",
+                                    });
+                                  }
+                                }}
+                                title={t('app.queue.tooltips.copyShareLink')}
+                              >
+                                <Share2 className="w-4 h-4" />
+                              </Button>
+                              <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
+                                {t('app.dialogs.loadQueue.loadButton')}
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      </div>
+                      <ScrollBar className="opacity-100" />
+                    </ScrollArea>
+                    {/* Show scroll hint when there are many saved queues */}
+                    {savedQueues.length > 4 && (
+                      <p className="text-xs text-muted-foreground text-center mt-2 opacity-70">
+                        {t('app.dialogs.loadQueue.scrollHint')}
+                      </p>
+                    )}
+                  </DialogContent>
+                </Dialog>
                 
                 <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveWithFadeOut(index);
+                  variant="outline" 
+                  size="sm" 
+                  disabled={!Array.isArray(queue) || queue.length === 0}
+                  onClick={async () => {
+                    if (!Array.isArray(queue) || queue.length === 0) {
+                      toast({
+                        title: "Empty Queue",
+                        description: "Cannot share an empty queue",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    
+                    // Create a temporary queue object with current queue data
+                    const tempQueue = {
+                      name: queueName || "Shared Queue",
+                      songs: queue
+                    };
+                    
+                    try {
+                      // Save the queue temporarily to get a GUID for sharing
+                      const saveResponse = await saveQueue(tempQueue.name, tempQueue.songs);
+                      if (saveResponse) {
+                        // Get the GUID from the latest saved queues
+                        const savedQueues = await getSavedQueues();
+                        // Find the most recently created queue (should be ours)
+                        const newQueue = savedQueues.sort((a, b) => 
+                          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                        )[0];
+                        
+                        if (newQueue && newQueue.guid) {
+                          const shareUrl = `${window.location.origin}/?share=${newQueue.guid}`;
+                          try {
+                            await navigator.clipboard.writeText(shareUrl);
+                            toast({
+                              title: "Queue Shared Successfully",
+                              description: `"${tempQueue.name}" share link copied to clipboard`,
+                            });
+                          } catch (error) {
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = shareUrl;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            toast({
+                              title: "Queue Shared Successfully", 
+                              description: `"${tempQueue.name}" share link copied to clipboard`,
+                            });
+                          }
+                        } else {
+                          throw new Error("Failed to get GUID for sharing");
+                        }
+                      } else {
+                        throw new Error("Failed to save queue for sharing");
+                      }
+                    } catch (error) {
+                      console.error('Share current queue error:', error);
+                      toast({
+                        title: "Share Failed",
+                        description: "Could not create share link for current queue",
+                        variant: "destructive"
+                      });
+                    }
                   }}
-                  className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
-                  title={t('app.queue.tooltips.removeFromQueue')}
+                  title={t('app.queue.tooltips.shareQueue')}
                 >
-                  <X className="w-4 h-4" />
+                  <Share2 className="w-4 h-4" />
                 </Button>
+                
+                <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title={t('app.queue.tooltips.saveQueue')}>
+                      <Save className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t('app.dialogs.saveQueue.title')}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder={t('app.dialogs.saveQueue.placeholder')}
+                        value={saveQueueName}
+                        onChange={(e) => setSaveQueueName(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSaveQueue()}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+                          {t('app.dialogs.saveQueue.cancelButton')}
+                        </Button>
+                        <Button onClick={handleSaveQueue}>
+                          {t('app.dialogs.saveQueue.saveButton')}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                {onToggleMaximize && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onToggleMaximize}
+                    title={isMaximized ? t('app.queue.tooltips.restoreQueue') : t('app.queue.tooltips.maximizeQueue')}
+                    data-tutorial="maximize-button"
+                    className="hidden md:flex"
+                  >
+                    {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  </Button>
+                )}
               </div>
-            );
-          })
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className={`p-4 space-y-3 overflow-y-scroll flex-1 min-h-0 ${isMaximized ? '' : ''}`}>
+          {!Array.isArray(queue) || queue.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>{t('app.queue.emptyMessage')}</p>
+              <p className="text-sm">{t('app.queue.getStarted')}</p>
+            </div>
+          ) : (
+            (Array.isArray(queue) ? queue : []).map((song, index) => {
+              const itemKey = `${song.id}-${index}`;
+              const isFadingOut = fadingOutItems.has(itemKey);
+              
+              return (
+                <div 
+                  key={itemKey}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
+                    ${index === currentIndex 
+                      ? 'bg-primary/10 border-primary' 
+                      : 'bg-secondary/50 border-border hover:bg-secondary'
+                    }
+                    ${draggedIndex === index ? 'opacity-50' : ''}
+                    ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
+                    ${isFadingOut ? 'opacity-0 scale-95 translate-x-4' : ''}
+                  `}
+                  onClick={() => onSelect(index)}
+                  onDoubleClick={() => onDoubleClickPlay && onDoubleClickPlay(index)}
+                >
+                  <div className="flex items-center gap-2 md:gap-3 mr-2 md:mr-3">
+                    <span className={`text-sm md:text-lg font-mono font-bold w-6 md:w-8 text-center ${
+                      index === currentIndex ? 'text-primary' : 'text-foreground'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <GripVertical className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                  </div>
+                  
+                  <img 
+                    src={song.thumbnail} 
+                    alt={song.title}
+                    className="w-12 h-12 md:w-16 md:h-16 object-cover rounded bg-muted flex-shrink-0"
+                  />
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-lg md:text-2xl truncate text-card-foreground leading-tight">
+                      {song.title}
+                    </h4>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate mt-1">
+                      {song.artist}
+                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      {song.duration}
+                    </span>
+                  </div>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveWithFadeOut(index);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
+                    title={t('app.queue.tooltips.removeFromQueue')}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
     </>
   );
 };

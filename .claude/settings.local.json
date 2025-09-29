@@ -13,7 +13,8 @@
       "WebFetch(domain:developers.google.com)",
       "Bash(git checkout:*)",
       "Bash(grep:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
