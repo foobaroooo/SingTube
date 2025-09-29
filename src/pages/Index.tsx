@@ -12,6 +12,7 @@ import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQu
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Mic2, X, EyeOff, Search, Expand, Shrink, List, AlertCircle } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
@@ -690,8 +691,67 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-2 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="container mx-auto px-2 py-3 lg:py-4">
+          {/* Mobile: Stacked Layout */}
+          <div className="block lg:hidden space-y-3">
+            {/* Mobile Top Row: Logo + Essential Controls */}
+            <div className="flex items-center justify-between">
+              <div 
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleLogoClick}
+              >
+                <Mic2 className="w-6 h-6 text-primary" />
+                <div className="flex flex-col">
+                  <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    {t('app.title')} <sup className="text-xs font-semibold text-white -top-3 relative">Beta</sup>
+                  </h1>
+                </div>
+              </div>
+              
+              {/* Mobile Controls Row */}
+              <div className="flex items-center gap-2">
+                <div data-tutorial="language-toggle">
+                  <LanguageToggle />
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowTutorial(true)}
+                  className="w-8 h-8"
+                  title="Show tutorial"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleFullscreen}
+                  className="w-8 h-8"
+                  title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                >
+                  {isFullscreen ? (
+                    <Shrink className="w-3 h-3" />
+                  ) : (
+                    <Expand className="w-3 h-3" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Mobile Search Row - Full Width */}
+            <div className="w-full" data-tutorial="search-section">
+              <SearchSection 
+                onSearch={handleSearch} 
+                isLoading={isSearchLoading} 
+                refreshHistory={refreshHistory} 
+                compact 
+                mobileOptimized
+              />
+            </div>
+          </div>
+          
+          {/* Desktop: Original Single Row Layout */}
+          <div className="hidden lg:flex items-center justify-between gap-4">
             {/* Logo and Title */}
             <div 
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
@@ -750,36 +810,36 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-2 py-3 flex-1 flex flex-col">
+      <div className="container mx-auto px-2 py-3 pb-20 lg:pb-3 flex-1 flex flex-col">
 
         {/* Main Content Grid */}
-        <div className={`grid gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
+        <div className={`grid gap-4 lg:gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
           {/* Search Results */}
           {showSearchResults && (
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.search.resultsTitle')} ({Array.isArray(searchResults) ? searchResults.length : 0})
                 </h2>
-                <div className="flex gap-2">
+                <div className="flex gap-1 lg:gap-2">
                   {hasSearched && (
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={clearSearch}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-3"
                     >
-                      <X className="w-4 h-4" />
-                      {t('app.actions.clear')}
+                      <X className="w-3 h-3 lg:w-4 lg:h-4" />
+                      <span className="hidden sm:inline">{t('app.actions.clear')}</span>
                     </Button>
                   )}
                   <Button 
                     size="sm"
                     onClick={toggleView}
-                    className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
+                    className="hidden lg:flex items-center gap-1 lg:gap-2 bg-gradient-primary hover:shadow-neon transition-bounce text-xs lg:text-sm px-2 lg:px-3"
                   >
-                    <List className="w-4 h-4" />
-                    {t('app.queue.title')}
+                    <List className="w-3 h-3 lg:w-4 lg:h-4" />
+                    <span className="hidden sm:inline">{t('app.queue.title')}</span>
                   </Button>
                 </div>
               </div>
@@ -834,17 +894,17 @@ const Index = () => {
           {/* Queue */}
           {showQueueSection && (
             <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.queue.title')}
                 </h2>
                 <Button 
                   size="sm"
                   onClick={toggleView}
-                  className="flex items-center gap-2 bg-gradient-primary hover:shadow-neon transition-bounce"
+                  className="hidden lg:flex items-center gap-1 lg:gap-2 bg-gradient-primary hover:shadow-neon transition-bounce text-xs lg:text-sm px-2 lg:px-3"
                 >
-                  <Search className="w-4 h-4" />
-                  {t('app.search.resultsTitle')}
+                  <Search className="w-3 h-3 lg:w-4 lg:h-4" />
+                  <span className="hidden sm:inline">{t('app.search.resultsTitle')}</span>
                 </Button>
               </div>
             <QueueSection
@@ -937,6 +997,47 @@ const Index = () => {
             queueId={currentQueueId}
           />
         )}
+      </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
+        <div className="container mx-auto px-2">
+          <div className="flex justify-center py-2">
+            <div className="flex bg-muted rounded-full p-1">
+              <Button
+                variant={activeView === 'search' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('search')}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all ${
+                  activeView === 'search' 
+                    ? 'bg-gradient-primary text-white shadow-md' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Search className="w-4 h-4" />
+                <span className="text-sm font-medium">{t('app.actions.search')}</span>
+              </Button>
+              <Button
+                variant={activeView === 'queue' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('queue')}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all ${
+                  activeView === 'queue' 
+                    ? 'bg-gradient-primary text-white shadow-md' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                <span className="text-sm font-medium">{t('app.queue.title')}</span>
+                {Array.isArray(queue) && queue.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 bg-background/20 text-white text-xs">
+                    {queue.length}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Onboarding Tutorial */}
