@@ -137,16 +137,29 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
   useEffect(() => {
     if (!isOpen || !currentTutorialStep.highlightSelector) return;
 
-    const element = document.querySelector(currentTutorialStep.highlightSelector);
-    if (element) {
-      element.classList.add('tutorial-highlight');
-    }
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const element = document.querySelector(currentTutorialStep.highlightSelector);
+      console.log('Tutorial step:', currentStep, 'Looking for:', currentTutorialStep.highlightSelector, 'Found:', element);
+      
+      if (element) {
+        // Remove any existing highlights first
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+          el.classList.remove('tutorial-highlight');
+        });
+        
+        element.classList.add('tutorial-highlight');
+        console.log('Added highlight to:', element);
+      } else {
+        console.warn('Element not found for selector:', currentTutorialStep.highlightSelector);
+      }
+    }, 200);
 
     return () => {
-      const element = document.querySelector(currentTutorialStep.highlightSelector);
-      if (element) {
-        element.classList.remove('tutorial-highlight');
-      }
+      clearTimeout(timer);
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
     };
   }, [isOpen, currentStep, currentTutorialStep.highlightSelector]);
 
@@ -154,8 +167,6 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
 
   return (
     <>
-      {/* Overlay with highlighting effect */}
-      <div className="fixed inset-0 bg-black/50 z-[60] tutorial-overlay" />
       
       {/* Tutorial Dialog */}
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -173,41 +184,6 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
               <p className="text-muted-foreground leading-relaxed">
                 {t(currentTutorialStep.descriptionKey)}
               </p>
-              
-              {/* Special content for specific steps */}
-              {currentStep === 7 && (
-                <div className="grid grid-cols-3 gap-3 p-4 bg-muted/50 rounded-lg">
-                  <div className="text-center space-y-2">
-                    <FolderOpen className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.load')}</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Save className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.save')}</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Share2 className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.share')}</p>
-                  </div>
-                </div>
-              )}
-              
-              {currentStep === 6 && (
-                <div className="grid grid-cols-3 gap-3 p-4 bg-muted/50 rounded-lg">
-                  <div className="text-center space-y-2">
-                    <SkipBack className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.previous')}</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Play className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.play')}</p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <SkipForward className="w-6 h-6 mx-auto text-primary" />
-                    <p className="text-xs font-medium">{t('app.tutorial.icons.next')}</p>
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* Progress Indicator */}
@@ -266,21 +242,25 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
       </Dialog>
       
       {/* CSS for tutorial highlighting */}
-      <style jsx global>{`
+      <style>{`
         .tutorial-highlight {
-          position: relative;
-          z-index: 65;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 8px rgba(59, 130, 246, 0.2);
-          border-radius: 8px;
-          animation: tutorial-pulse 2s infinite;
+          position: relative !important;
+          z-index: 55 !important;
+          outline: 4px solid #3b82f6 !important;
+          outline-offset: 3px !important;
+          border-radius: 8px !important;
+          animation: tutorial-pulse 2s infinite !important;
+          box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
         }
         
         @keyframes tutorial-pulse {
           0%, 100% {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 8px rgba(59, 130, 246, 0.2);
+            outline-color: #3b82f6 !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
           }
           50% {
-            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.7), 0 0 0 12px rgba(59, 130, 246, 0.3);
+            outline-color: #60a5fa !important;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.8) !important;
           }
         }
       `}</style>
