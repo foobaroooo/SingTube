@@ -3,7 +3,7 @@
     "title": "SingTube",
     "slogan": "The Missing Karaoke Player for YouTube",
     "search": {
-      "placeholder": "Search for karaoke songs...",
+      "placeholder": "Search for YouTube karaoke songs...",
       "resultsTitle": "Search Results",
       "noResults": "No songs found for your search.",
       "gender": {
