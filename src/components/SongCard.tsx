@@ -38,7 +38,7 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
               <img 
                 src={song.thumbnail} 
                 alt={song.title}
-                className="w-32 h-24 object-cover rounded-md bg-muted"
+                className="w-20 h-16 md:w-32 md:h-24 object-cover rounded-md bg-muted"
               />
               {showPlayButton && (
                 <Button
@@ -57,42 +57,46 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
             
             {/* Song info in the middle */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-2xl mb-2 line-clamp-1 text-card-foreground">
+              <h3 className="font-semibold text-lg md:text-2xl mb-1 md:mb-2 line-clamp-2 md:line-clamp-1 text-card-foreground">
                 {song.title}
               </h3>
-              <p className="text-muted-foreground text-sm line-clamp-1">
+              <p className="text-muted-foreground text-xs md:text-sm line-clamp-1">
                 {song.artist}
               </p>
             </div>
             
             {/* Duration and actions on the right */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-muted-foreground text-sm font-medium">
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-2 md:gap-3 flex-shrink-0">
+              <span className="text-muted-foreground text-xs md:text-sm font-medium">
                 {song.duration}
               </span>
-              <Button 
-                size="sm" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToQueue(song);
-                }}
-                className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground"
-              >
-                {t('app.queue.addToQueue')}
-              </Button>
-              {onAddToFront && (
+              <div className="flex gap-1 md:gap-2">
                 <Button 
                   size="sm" 
-                  variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onAddToFront(song);
+                    onAddToQueue(song);
                   }}
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3"
                 >
-                  {t('app.queue.priority')}
+                  <Plus className="w-3 h-3 md:hidden" />
+                  <span className="hidden md:inline">{t('app.queue.addToQueue')}</span>
                 </Button>
-              )}
+                {onAddToFront && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToFront(song);
+                    }}
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3"
+                  >
+                    <span className="hidden md:inline">{t('app.queue.priority')}</span>
+                    <span className="md:hidden">!</span>
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -125,10 +129,10 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
           </span>
         </div>
         
-        <h3 className="font-semibold text-2xl mb-1 line-clamp-2 text-card-foreground">
+        <h3 className="font-semibold text-lg md:text-2xl mb-1 line-clamp-2 text-card-foreground">
           {song.title}
         </h3>
-        <p className="text-muted-foreground text-xs mb-3 line-clamp-1">
+        <p className="text-muted-foreground text-xs mb-2 md:mb-3 line-clamp-1">
           {song.artist}
         </p>
         

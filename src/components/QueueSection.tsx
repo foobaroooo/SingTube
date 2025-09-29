@@ -256,11 +256,11 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                       <FolderOpen className="w-4 h-4" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-[95vw] max-h-[90vh] w-full md:max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
                     </DialogHeader>
-                    <ScrollArea className="h-96 w-full">
+                    <ScrollArea className="h-[60vh] md:h-96 w-full">
                       <div className="space-y-3 pr-4">
                         {loading ? (
                           <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
@@ -268,14 +268,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                           <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
                         ) : (
                           (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
-                          <div key={savedQueue.id} className="flex items-center justify-between p-3 border rounded">
-                            <div>
-                              <h4 className="font-medium">{savedQueue.name}</h4>
+                          <div key={savedQueue.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-3 border rounded gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium truncate">{savedQueue.name}</h4>
                               <p className="text-sm text-muted-foreground">
                                 {t('app.dialogs.loadQueue.songCount', { count: Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0 })} • {new Date(savedQueue.createdAt).toLocaleDateString()}
                               </p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap justify-end">
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -295,6 +295,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                                     });
                                   }
                                 }}
+                                className="text-xs px-2"
                               >
                                 {t('app.dialogs.loadQueue.deleteButton')}
                               </Button>
@@ -324,10 +325,15 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                                   }
                                 }}
                                 title={t('app.queue.tooltips.copyShareLink')}
+                                className="px-2"
                               >
                                 <Share2 className="w-4 h-4" />
                               </Button>
-                              <Button onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}>
+                              <Button 
+                                onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}
+                                size="sm"
+                                className="text-xs px-2"
+                              >
                                 {t('app.dialogs.loadQueue.loadButton')}
                               </Button>
                             </div>
