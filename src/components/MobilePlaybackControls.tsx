@@ -38,7 +38,7 @@ export const MobilePlaybackControls = ({
   }
 
   return (
-    <div className="xl:hidden fixed bottom-14 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-30">
+    <div className="fixed bottom-14 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-30">
       <div className="container mx-auto px-4 py-3">
         {/* Song Info Row */}
         <div className="flex items-center justify-between mb-3">

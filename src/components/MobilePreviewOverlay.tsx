@@ -283,7 +283,7 @@ export const MobilePreviewOverlay = ({
   }
 
   return (
-    <div className="xl:hidden fixed inset-x-0 bottom-28 top-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-x-0 bottom-28 top-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="w-full h-full max-h-full bg-card border border-border rounded-lg shadow-xl overflow-hidden flex flex-col">
         {/* Header with close button */}
         <div className="flex items-center justify-between p-3 bg-gradient-secondary border-b border-border">

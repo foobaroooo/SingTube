@@ -412,10 +412,8 @@ const Index = () => {
       setCurrentIndex(prev => prev + 1);
       // Reset playing state when changing songs
       setIsPlaying(false);
-      // Close preview overlay on mobile when changing songs
-      if (isMobileDevice()) {
-        setShowMobilePreview(false);
-      }
+      // Close preview overlay when changing songs
+      setShowMobilePreview(false);
     }
   };
 
@@ -424,10 +422,8 @@ const Index = () => {
       setCurrentIndex(prev => prev - 1);
       // Reset playing state when changing songs  
       setIsPlaying(false);
-      // Close preview overlay on mobile when changing songs
-      if (isMobileDevice()) {
-        setShowMobilePreview(false);
-      }
+      // Close preview overlay when changing songs
+      setShowMobilePreview(false);
     }
   };
 
@@ -455,10 +451,8 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
-      // Auto-show preview on mobile devices when play is triggered
-      if (isMobileDevice()) {
-        setShowMobilePreview(true);
-      }
+      // Auto-show preview when play is triggered
+      setShowMobilePreview(true);
       
       toast({
         title: "Playing Song",
@@ -471,10 +465,8 @@ const Index = () => {
     setShouldPause(true);
     setIsPlaying(false);
     
-    // Close preview overlay on mobile when pausing
-    if (isMobileDevice()) {
-      setShowMobilePreview(false);
-    }
+    // Close preview overlay when pausing
+    setShowMobilePreview(false);
     
     toast({
       title: "Paused",
@@ -509,10 +501,8 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
-      // Auto-show preview on mobile devices when double-click play is triggered
-      if (isMobileDevice()) {
-        setShowMobilePreview(true);
-      }
+      // Auto-show preview when double-click play is triggered
+      setShowMobilePreview(true);
       
       toast({
         title: "Double-click Play",
@@ -538,10 +528,8 @@ const Index = () => {
         setShouldAutoplay(true);
         setIsPlaying(true);
         
-        // Keep preview open on mobile during auto-advance
-        if (isMobileDevice()) {
-          setShowMobilePreview(true);
-        }
+        // Keep preview open during auto-advance
+        setShowMobilePreview(true);
       }, 500); // Small delay to allow iframe to update
     } else {
       // End of queue or auto-advance disabled
@@ -690,9 +678,9 @@ const Index = () => {
     setShowMobilePreview(false);
   };
 
-  // Helper function to check if we're on mobile/tablet
-  const isMobileDevice = () => {
-    return window.innerWidth < 1280; // xl breakpoint
+  // Helper function to always show preview (now universal for all devices)
+  const shouldShowPreview = () => {
+    return true; // Always show preview overlay when playing
   };
 
 
@@ -703,16 +691,11 @@ const Index = () => {
   const showSearchResults = activeView === 'search' && (hasSearched || isSearchLoading);
   const showQueueSection = activeView === 'queue';
   
-  // Dynamic grid configuration - only show one main section at a time
-  const getGridConfig = () => {
-    return {
-      gridCols: "grid-cols-1 lg:grid-cols-4",
-      mainSpan: "lg:col-span-3", // Main content (search OR queue) gets 3 columns
-      previewSpan: "lg:col-span-1" // Preview always gets 1 column
-    };
+  // Single column layout for consistency across all devices
+  const gridConfig = {
+    gridCols: "grid-cols-1",
+    mainSpan: "col-span-1"
   };
-  
-  const gridConfig = getGridConfig();
 
   // Infinite scroll hook
   const { targetRef, isFetching, setIsFetchingMore } = useInfiniteScroll(
@@ -850,13 +833,13 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-2 py-3 pb-32 xl:pb-3 flex-1 flex flex-col">
+      <div className="container mx-auto px-2 py-3 pb-32 flex-1 flex flex-col">
 
-        {/* Main Content Grid */}
-        <div className={`grid gap-4 lg:gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
+        {/* Main Content - Single Column */}
+        <div className={`flex-1 ${isQueueMaximized ? 'hidden' : 'block'}`}>
           {/* Search Results */}
           {showSearchResults && (
-            <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
+            <div className="flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-3 lg:mb-4">
                 <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.search.resultsTitle')} ({Array.isArray(searchResults) ? searchResults.length : 0})
@@ -873,14 +856,6 @@ const Index = () => {
                       <span className="hidden sm:inline">{t('app.actions.clear')}</span>
                     </Button>
                   )}
-                  <Button 
-                    size="sm"
-                    onClick={toggleView}
-                    className="hidden lg:flex items-center gap-1 lg:gap-2 bg-gradient-primary hover:shadow-neon transition-bounce text-xs lg:text-sm px-2 lg:px-3"
-                  >
-                    <List className="w-3 h-3 lg:w-4 lg:h-4" />
-                    <span className="hidden sm:inline">{t('app.queue.title')}</span>
-                  </Button>
                 </div>
               </div>
               
@@ -933,19 +908,11 @@ const Index = () => {
 
           {/* Queue */}
           {showQueueSection && (
-            <div className={`${gridConfig.mainSpan} flex flex-col min-h-0`}>
+            <div className="flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-3 lg:mb-4">
                 <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.queue.title')}
                 </h2>
-                <Button 
-                  size="sm"
-                  onClick={toggleView}
-                  className="hidden lg:flex items-center gap-1 lg:gap-2 bg-gradient-primary hover:shadow-neon transition-bounce text-xs lg:text-sm px-2 lg:px-3"
-                >
-                  <Search className="w-3 h-3 lg:w-4 lg:h-4" />
-                  <span className="hidden sm:inline">{t('app.search.resultsTitle')}</span>
-                </Button>
               </div>
             <QueueSection
               queue={queue}
@@ -971,43 +938,26 @@ const Index = () => {
             </div>
           )}
 
-          {/* Preview */}
-          <div className={gridConfig.previewSpan}>
-            <CurrentSong
-              currentSong={currentSong}
-              onNext={nextSong}
-              onPrevious={previousSong}
-              canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
-              canGoPrevious={currentIndex > 0}
-              shouldAutoplay={shouldAutoplay}
-              shouldPause={shouldPause}
-              onAutoplayHandled={handleAutoplayComplete}
-              onPauseHandled={handlePauseComplete}
-              onVideoEnd={handleVideoEnd}
-              autoAdvance={autoAdvance}
-              onPlaybackStarted={handlePlaybackStarted}
-            />
-            
-            {/* API Limit Notice */}
-            <div className="mt-4">
-              <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-card-foreground space-y-2">
-                    <p>
-                      {t('app.apiNotice.description1')}
-                    </p>
-                    <p>
-                      {t('app.apiNotice.description2')}{" "}
-                      <span className="text-primary font-medium">
-                        {t('app.apiNotice.email')}
-                      </span>
-                    </p>
-                    <p>
-                      {t('app.apiNotice.thankYou')}
-                    </p>
-                  </div>
-                </div>
+        </div>
+
+        {/* API Limit Notice - Bottom of page */}
+        <div className="mt-8 mb-4">
+          <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-card-foreground space-y-2">
+                <p>
+                  {t('app.apiNotice.description1')}
+                </p>
+                <p>
+                  {t('app.apiNotice.description2')}{" "}
+                  <span className="text-primary font-medium">
+                    {t('app.apiNotice.email')}
+                  </span>
+                </p>
+                <p>
+                  {t('app.apiNotice.thankYou')}
+                </p>
               </div>
             </div>
           </div>
@@ -1039,7 +989,7 @@ const Index = () => {
         )}
       </div>
       
-      {/* Mobile Playback Controls */}
+      {/* Playback Controls - Now universal for all screen sizes */}
       <MobilePlaybackControls
         currentSong={currentSong}
         isPlaying={isPlaying}
@@ -1051,7 +1001,7 @@ const Index = () => {
         canGoPrevious={currentIndex > 0}
       />
 
-      {/* Mobile Preview Overlay */}
+      {/* Preview Overlay - Now universal for all screen sizes */}
       <MobilePreviewOverlay
         currentSong={currentSong}
         isVisible={showMobilePreview}
@@ -1066,8 +1016,8 @@ const Index = () => {
         onPlaybackStarted={handlePlaybackStarted}
       />
 
-      {/* Mobile Bottom Navigation */}
-      <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
+      {/* Bottom Navigation - Now universal for all screen sizes */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
         <div className="container mx-auto px-2">
           <div className="flex justify-center py-2">
             <div className="flex bg-muted rounded-full p-1">
