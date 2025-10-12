@@ -190,9 +190,9 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             
             {/* Controls row - wraps on mobile */}
             <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end">
-              {/* Playback Controls */}
+              {/* Playback Controls - Hidden on mobile since we have sticky controls */}
               {(onPlay || onPause || onNext || onPrevious) && (
-                <div className="flex items-center gap-2" data-tutorial="playback-controls">
+                <div className="hidden xl:flex items-center gap-2" data-tutorial="playback-controls">
                   {/* Previous Button */}
                   {onPrevious && (
                     <Button
