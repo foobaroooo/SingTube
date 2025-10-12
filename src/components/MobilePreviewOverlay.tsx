@@ -283,8 +283,8 @@ export const MobilePreviewOverlay = ({
   }
 
   return (
-    <div className="xl:hidden fixed inset-x-0 bottom-28 top-0 bg-black/80 backdrop-blur-sm z-50 flex items-end">
-      <div className="w-full max-w-md mx-auto mb-4 bg-card border border-border rounded-lg shadow-xl overflow-hidden">
+    <div className="xl:hidden fixed inset-x-0 bottom-28 top-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full h-full max-h-full bg-card border border-border rounded-lg shadow-xl overflow-hidden flex flex-col">
         {/* Header with close button */}
         <div className="flex items-center justify-between p-3 bg-gradient-secondary border-b border-border">
           <h3 className="text-sm font-medium text-foreground truncate flex-1">
@@ -300,9 +300,9 @@ export const MobilePreviewOverlay = ({
           </Button>
         </div>
 
-        {/* Video Container */}
-        <div className="p-3">
-          <div className="aspect-video w-full mb-3">
+        {/* Video Container - Full Height */}
+        <div className="flex-1 p-3 flex flex-col">
+          <div className="flex-1 w-full mb-3">
             <iframe
               ref={iframeRef}
               key={iframeKey}
@@ -318,7 +318,7 @@ export const MobilePreviewOverlay = ({
           </div>
           
           {/* Song Info */}
-          <div className="text-center">
+          <div className="text-center flex-shrink-0">
             <h4 className="font-medium text-card-foreground mb-1 text-sm truncate">
               {currentSong.title}
             </h4>
