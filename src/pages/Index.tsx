@@ -8,6 +8,7 @@ import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
+import { MobilePlaybackControls } from "@/components/MobilePlaybackControls";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
@@ -810,7 +811,7 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-2 py-3 pb-20 lg:pb-3 flex-1 flex flex-col">
+      <div className="container mx-auto px-2 py-3 pb-32 xl:pb-3 flex-1 flex flex-col">
 
         {/* Main Content Grid */}
         <div className={`grid gap-4 lg:gap-6 flex-1 ${isQueueMaximized ? 'hidden' : gridConfig.gridCols}`}>
@@ -999,8 +1000,20 @@ const Index = () => {
         )}
       </div>
       
+      {/* Mobile Playback Controls */}
+      <MobilePlaybackControls
+        currentSong={currentSong}
+        isPlaying={isPlaying}
+        onPlay={handlePlayCurrentSong}
+        onPause={handlePauseCurrentSong}
+        onNext={nextSong}
+        onPrevious={previousSong}
+        canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
+        canGoPrevious={currentIndex > 0}
+      />
+
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
         <div className="container mx-auto px-2">
           <div className="flex justify-center py-2">
             <div className="flex bg-muted rounded-full p-1">
