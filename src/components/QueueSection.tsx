@@ -188,65 +188,8 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               </div>
             </CardTitle>
             
-            {/* Controls row - wraps on mobile */}
-            <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end">
-              {/* Playback Controls - Hidden on mobile since we have sticky controls */}
-              {(onPlay || onPause || onNext || onPrevious) && (
-                <div className="hidden xl:flex items-center gap-2" data-tutorial="playback-controls">
-                  {/* Previous Button */}
-                  {onPrevious && (
-                    <Button
-                      onClick={onPrevious}
-                      disabled={!canGoPrevious}
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full w-8 h-8 md:w-10 md:h-10"
-                      title={t('app.queue.tooltips.previousSong')}
-                    >
-                      <SkipBack className="w-3 h-3 md:w-4 md:h-4" />
-                    </Button>
-                  )}
-                  
-                  {/* Play/Pause Button */}
-                  {(onPlay || onPause) && (
-                    <Button
-                      onClick={isPlaying ? onPause : onPlay}
-                      disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
-                      size="icon"
-                      className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-10 h-10 md:w-12 md:h-12"
-                      title={
-                        currentIndex < 0 || !Array.isArray(queue) || queue.length === 0
-                          ? t('app.queue.tooltips.noSongSelected')
-                          : isPlaying
-                          ? `${t('app.actions.pause')}: ${queue[currentIndex]?.title}`
-                          : `${t('app.actions.play')}: ${queue[currentIndex]?.title}`
-                      }
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                      ) : (
-                        <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                      )}
-                    </Button>
-                  )}
-                  
-                  {/* Next Button */}
-                  {onNext && (
-                    <Button
-                      onClick={onNext}
-                      disabled={!canGoNext}
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full w-8 h-8 md:w-10 md:h-10"
-                      title={t('app.queue.tooltips.nextSong')}
-                    >
-                      <SkipForward className="w-3 h-3 md:w-4 md:h-4" />
-                    </Button>
-                  )}
-                </div>
-              )}
-              
-              <div className="flex gap-2" data-tutorial="queue-actions">
+            {/* Queue Actions */}
+            <div className="flex gap-2" data-tutorial="queue-actions">
                 <Dialog open={loadDialogOpen} onOpenChange={(open) => {
                   setLoadDialogOpen(open);
                   if (open) loadSavedQueues();
@@ -466,7 +409,6 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 )}
               </div>
             </div>
-          </div>
         </CardHeader>
         <CardContent className={`p-4 space-y-3 overflow-y-scroll flex-1 min-h-0 ${isMaximized ? '' : ''}`}>
           {!Array.isArray(queue) || queue.length === 0 ? (
