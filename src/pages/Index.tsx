@@ -9,6 +9,7 @@ import { Pagination } from "@/components/Pagination";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { MobilePlaybackControls } from "@/components/MobilePlaybackControls";
+import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
 import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +45,7 @@ const Index = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeView, setActiveView] = useState<'search' | 'queue'>('queue'); // Track which view is active
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -410,6 +412,10 @@ const Index = () => {
       setCurrentIndex(prev => prev + 1);
       // Reset playing state when changing songs
       setIsPlaying(false);
+      // Close preview overlay on mobile when changing songs
+      if (isMobileDevice()) {
+        setShowMobilePreview(false);
+      }
     }
   };
 
@@ -418,6 +424,10 @@ const Index = () => {
       setCurrentIndex(prev => prev - 1);
       // Reset playing state when changing songs  
       setIsPlaying(false);
+      // Close preview overlay on mobile when changing songs
+      if (isMobileDevice()) {
+        setShowMobilePreview(false);
+      }
     }
   };
 
@@ -445,6 +455,11 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
+      // Auto-show preview on mobile devices when play is triggered
+      if (isMobileDevice()) {
+        setShowMobilePreview(true);
+      }
+      
       toast({
         title: "Playing Song",
         description: `Playing: ${song.title}`,
@@ -455,6 +470,11 @@ const Index = () => {
   const handlePauseCurrentSong = () => {
     setShouldPause(true);
     setIsPlaying(false);
+    
+    // Close preview overlay on mobile when pausing
+    if (isMobileDevice()) {
+      setShowMobilePreview(false);
+    }
     
     toast({
       title: "Paused",
@@ -489,6 +509,11 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
+      // Auto-show preview on mobile devices when double-click play is triggered
+      if (isMobileDevice()) {
+        setShowMobilePreview(true);
+      }
+      
       toast({
         title: "Double-click Play",
         description: `Playing: ${song.title}`,
@@ -512,6 +537,11 @@ const Index = () => {
       setTimeout(() => {
         setShouldAutoplay(true);
         setIsPlaying(true);
+        
+        // Keep preview open on mobile during auto-advance
+        if (isMobileDevice()) {
+          setShowMobilePreview(true);
+        }
       }, 500); // Small delay to allow iframe to update
     } else {
       // End of queue or auto-advance disabled
@@ -654,6 +684,15 @@ const Index = () => {
 
   const switchToQueue = () => {
     setActiveView('queue');
+  };
+
+  const handleCloseMobilePreview = () => {
+    setShowMobilePreview(false);
+  };
+
+  // Helper function to check if we're on mobile/tablet
+  const isMobileDevice = () => {
+    return window.innerWidth < 1280; // xl breakpoint
   };
 
 
@@ -1010,6 +1049,21 @@ const Index = () => {
         onPrevious={previousSong}
         canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
         canGoPrevious={currentIndex > 0}
+      />
+
+      {/* Mobile Preview Overlay */}
+      <MobilePreviewOverlay
+        currentSong={currentSong}
+        isVisible={showMobilePreview}
+        onClose={handleCloseMobilePreview}
+        onPause={handlePauseCurrentSong}
+        shouldAutoplay={shouldAutoplay}
+        shouldPause={shouldPause}
+        onAutoplayHandled={handleAutoplayComplete}
+        onPauseHandled={handlePauseComplete}
+        onVideoEnd={handleVideoEnd}
+        autoAdvance={autoAdvance}
+        onPlaybackStarted={handlePlaybackStarted}
       />
 
       {/* Mobile Bottom Navigation */}
