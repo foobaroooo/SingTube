@@ -844,73 +844,7 @@ const Index = () => {
                 <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.search.resultsTitle')} ({Array.isArray(searchResults) ? searchResults.length : 0})
                 </h2>
-                <div className="flex items-center gap-2">
-                  {/* Desktop Playback Controls */}
-                  <div className="hidden lg:flex items-center gap-2">
-                    <Button 
-                      onClick={previousSong}
-                      disabled={currentIndex <= 0}
-                      variant="outline" 
-                      size="icon"
-                      className="rounded-full w-8 h-8"
-                      title="Previous song"
-                    >
-                      <SkipBack className="w-3 h-3" />
-                    </Button>
-                    
-                    <Button
-                      onClick={isPlaying ? handlePauseCurrentSong : handlePlayCurrentSong}
-                      disabled={currentIndex < 0 || !Array.isArray(queue) || queue.length === 0}
-                      size="icon"
-                      className="rounded-full bg-gradient-primary hover:shadow-neon transition-bounce w-10 h-10"
-                      title={isPlaying ? 'Pause' : 'Play'}
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-4 h-4 fill-current" />
-                      ) : (
-                        <Play className="w-4 h-4 fill-current" />
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      onClick={nextSong}
-                      disabled={!Array.isArray(queue) || currentIndex >= queue.length - 1}
-                      variant="outline" 
-                      size="icon"
-                      className="rounded-full w-8 h-8"
-                      title="Next song"
-                    >
-                      <SkipForward className="w-3 h-3" />
-                    </Button>
-                  </div>
-
-                  {/* Desktop View Toggle */}
-                  <div className="hidden lg:flex bg-muted rounded-full p-1">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="flex items-center gap-2 rounded-full px-4 py-2 bg-gradient-primary text-white shadow-md text-xs"
-                    >
-                      <Search className="w-3 h-3" />
-                      <span>{t('app.actions.search')}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setActiveView('queue')}
-                      className="flex items-center gap-2 rounded-full px-4 py-2 text-muted-foreground hover:text-foreground text-xs"
-                    >
-                      <List className="w-3 h-3" />
-                      <span>{t('app.queue.title')}</span>
-                      {Array.isArray(queue) && queue.length > 0 && (
-                        <Badge variant="secondary" className="ml-1 bg-background/20 text-xs">
-                          {queue.length}
-                        </Badge>
-                      )}
-                    </Button>
-                  </div>
-                  
-                  <div className="flex gap-1 lg:gap-2">
+                <div className="flex gap-1 lg:gap-2">
                   {hasSearched && (
                     <Button 
                       variant="outline" 
@@ -922,7 +856,6 @@ const Index = () => {
                       <span className="hidden sm:inline">{t('app.actions.clear')}</span>
                     </Button>
                   )}
-                  </div>
                 </div>
               </div>
               
@@ -976,36 +909,10 @@ const Index = () => {
           {/* Queue */}
           {showQueueSection && (
             <div className="flex flex-col min-h-0">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <div className="mb-3 lg:mb-4">
                 <h2 className="text-lg lg:text-xl font-semibold text-foreground">
                   {t('app.queue.title')}
                 </h2>
-                
-                {/* Desktop View Toggle */}
-                <div className="hidden lg:flex bg-muted rounded-full p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveView('search')}
-                    className="flex items-center gap-2 rounded-full px-4 py-2 text-muted-foreground hover:text-foreground text-xs"
-                  >
-                    <Search className="w-3 h-3" />
-                    <span>{t('app.actions.search')}</span>
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="flex items-center gap-2 rounded-full px-4 py-2 bg-gradient-primary text-white shadow-md text-xs"
-                  >
-                    <List className="w-3 h-3" />
-                    <span>{t('app.queue.title')}</span>
-                    {Array.isArray(queue) && queue.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 bg-background/20 text-white text-xs">
-                        {queue.length}
-                      </Badge>
-                    )}
-                  </Button>
-                </div>
               </div>
             <QueueSection
               queue={queue}
