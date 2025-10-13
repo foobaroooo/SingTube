@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp } from "lucide-react";
 import { Song } from "./SongCard";
+import { ShareQRDialog } from "./ShareQRDialog";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +39,8 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
   const navigate = useNavigate();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [shareQRDialogOpen, setShareQRDialogOpen] = useState(false);
+  const [shareData, setShareData] = useState<{ url: string; name: string }>({ url: "", name: "" });
   const [saveQueueName, setSaveQueueName] = useState("");
   const [savedQueues, setSavedQueues] = useState<SavedQueue[]>([]);
   const [loading, setLoading] = useState(false);
@@ -258,29 +261,12 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={async () => {
+                                onClick={() => {
                                   const shareUrl = `${window.location.origin}/join/${savedQueue.guid}`;
-                                  try {
-                                    await navigator.clipboard.writeText(shareUrl);
-                                    toast({
-                                      title: "Share Link Copied",
-                                      description: "The shareable link has been copied to your clipboard",
-                                    });
-                                  } catch (error) {
-                                    // Fallback for older browsers
-                                    const textArea = document.createElement('textarea');
-                                    textArea.value = shareUrl;
-                                    document.body.appendChild(textArea);
-                                    textArea.select();
-                                    document.execCommand('copy');
-                                    document.body.removeChild(textArea);
-                                    toast({
-                                      title: "Share Link Copied",
-                                      description: "The shareable link has been copied to your clipboard",
-                                    });
-                                  }
+                                  setShareData({ url: shareUrl, name: savedQueue.name });
+                                  setShareQRDialogOpen(true);
                                 }}
-                                title={t('app.queue.tooltips.copyShareLink')}
+                                title={t('app.queue.tooltips.shareQueue')}
                                 className="px-2"
                               >
                                 <Share2 className="w-4 h-4" />
@@ -341,25 +327,8 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                         
                         if (newQueue && newQueue.guid) {
                           const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
-                          try {
-                            await navigator.clipboard.writeText(shareUrl);
-                            toast({
-                              title: "Queue Shared Successfully",
-                              description: `"${tempQueue.name}" share link copied to clipboard`,
-                            });
-                          } catch (error) {
-                            // Fallback for older browsers
-                            const textArea = document.createElement('textarea');
-                            textArea.value = shareUrl;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                            toast({
-                              title: "Queue Shared Successfully", 
-                              description: `"${tempQueue.name}" share link copied to clipboard`,
-                            });
-                          }
+                          setShareData({ url: shareUrl, name: tempQueue.name });
+                          setShareQRDialogOpen(true);
                         } else {
                           throw new Error("Failed to get GUID for sharing");
                         }
@@ -501,6 +470,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
           )}
         </CardContent>
       </Card>
+
+      {/* Share QR Dialog */}
+      <ShareQRDialog
+        isOpen={shareQRDialogOpen}
+        onClose={() => setShareQRDialogOpen(false)}
+        shareUrl={shareData.url}
+        queueName={shareData.name}
+      />
     </>
   );
 };
