@@ -85,12 +85,22 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
         </DialogHeader>
         
         <div className="flex flex-col items-center space-y-4 py-4">
+          {/* Instructions */}
+          <div className="text-center space-y-2">
+            <p className="text-sm font-medium text-foreground">
+              Share this karaoke room with friends
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Scan with your phone or share the link to join the same queue
+            </p>
+          </div>
+
           {/* QR Code */}
-          <div className="bg-white p-4 rounded-lg border">
+          <div className="bg-white p-4 rounded-lg border shadow-sm">
             {qrCodeUrl ? (
               <img
                 src={qrCodeUrl}
-                alt="QR Code for sharing queue"
+                alt="QR Code for joining karaoke room"
                 className="w-48 h-48"
               />
             ) : (
@@ -99,7 +109,7 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
           </div>
 
           {/* Share URL with copy button */}
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-3">
             <div className="flex items-center space-x-2">
               <div className="flex-1 px-3 py-2 bg-muted rounded text-sm text-muted-foreground break-all">
                 {shareUrl}
@@ -109,13 +119,19 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
                 size="icon"
                 onClick={handleCopyUrl}
                 className="flex-shrink-0"
+                title="Copy link to clipboard"
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center">
-              Scan QR code or copy link to share this queue
-            </p>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground">
+                📱 <strong>Mobile:</strong> Scan QR code with camera
+              </p>
+              <p className="text-xs text-muted-foreground">
+                💻 <strong>Desktop:</strong> Copy and share the link above
+              </p>
+            </div>
           </div>
         </div>
       </DialogContent>

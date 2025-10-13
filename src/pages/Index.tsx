@@ -5,6 +5,7 @@ import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
 import { QueueSection } from "@/components/QueueSection";
+import { ShareQRDialog } from "@/components/ShareQRDialog";
 import { Pagination } from "@/components/Pagination";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
@@ -45,6 +46,8 @@ const Index = () => {
   const [activeView, setActiveView] = useState<'search' | 'queue'>('queue'); // Track which view is active
   const [showTutorial, setShowTutorial] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareDialogData, setShareDialogData] = useState<{ url: string; name: string }>({ url: "", name: "" });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -446,6 +449,53 @@ const Index = () => {
 
   const handleUpdateQueueName = (newName: string) => {
     setCurrentQueueName(newName);
+  };
+
+  const handleOpenShareDialog = async () => {
+    if (!Array.isArray(queue) || queue.length === 0) {
+      toast({
+        title: "Empty Queue",
+        description: "Add some songs to share your karaoke room",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Create a temporary queue object with current queue data
+    const tempQueue = {
+      name: currentQueueName || "My Karaoke Room",
+      songs: queue
+    };
+    
+    try {
+      // Save the queue temporarily to get a GUID for sharing
+      const saveResponse = await saveQueue(tempQueue.name, tempQueue.songs);
+      if (saveResponse) {
+        // Get the GUID from the latest saved queues
+        const savedQueues = await getSavedQueues();
+        // Find the most recently created queue (should be ours)
+        const newQueue = savedQueues.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )[0];
+        
+        if (newQueue && newQueue.guid) {
+          const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
+          setShareDialogData({ url: shareUrl, name: tempQueue.name });
+          setShareDialogOpen(true);
+        } else {
+          throw new Error("Failed to get GUID for sharing");
+        }
+      } else {
+        throw new Error("Failed to save queue for sharing");
+      }
+    } catch (error) {
+      console.error('Share dialog error:', error);
+      toast({
+        title: "Share Failed",
+        description: "Could not create share link for karaoke room",
+        variant: "destructive"
+      });
+    }
   };
 
   const toggleQueueMaximize = () => {
@@ -937,7 +987,22 @@ const Index = () => {
             <div className="flex flex-col min-h-0">
               <div className="mb-3 lg:mb-4">
                 <h2 className="text-lg lg:text-xl font-semibold text-foreground">
-                  {t('app.queue.title')}
+                  {t('app.queue.title')} 
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={handleOpenShareDialog}
+                    className="text-sm font-normal p-0 h-auto ml-2 underline-offset-4 hover:underline transition-all duration-200 ease-out"
+                    style={{ 
+                      background: 'linear-gradient(135deg, hsl(280 100% 70%), hsl(320 100% 70%))',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    (How to join?)
+                  </Button>
                 </h2>
               </div>
             <QueueSection
@@ -1117,6 +1182,14 @@ const Index = () => {
           </div>
         </div>
       </div>
+      
+      {/* Share QR Dialog */}
+      <ShareQRDialog
+        isOpen={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        shareUrl={shareDialogData.url}
+        queueName={shareDialogData.name}
+      />
       
       {/* Onboarding Tutorial */}
       <OnboardingTutorial 

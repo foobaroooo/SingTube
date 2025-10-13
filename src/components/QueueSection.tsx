@@ -225,6 +225,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                 </Button>
                 
                 
+                
                 <Button 
                   variant="outline" 
                   size="sm" 
