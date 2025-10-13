@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mic, Clock, Loader2, X } from "lucide-react";
+import { Search, Mic, Clock, Loader2, X, MoreHorizontal } from "lucide-react";
 import { getSearchHistory, deleteSearchHistory, type SearchHistory } from "@/services/apiService";
 
 interface SearchSectionProps {
@@ -17,6 +18,7 @@ interface SearchSectionProps {
 
 export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false, extraButton, mobileOptimized = false }: SearchSectionProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
 
@@ -111,7 +113,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
         {/* Recent Searches - Optimized for mobile */}
         {Array.isArray(searchHistory) && searchHistory.length > 0 && (
           <div className="mt-2">
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 items-center">
                 {(Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3).map((history) => (
                 <Badge
                   key={`${history.query}-${history.gender}-${history.id}`}
@@ -131,6 +133,15 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                   </button>
                 </Badge>
               ))}
+              
+              {/* Three dots link to top search page */}
+              <button
+                onClick={() => navigate('/top-search')}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
+                title={t('app.topSearch.viewMore')}
+              >
+                <MoreHorizontal className="w-3 h-3" />
+              </button>
             </div>
           </div>
         )}
@@ -179,7 +190,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Recent Searches</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
               {(Array.isArray(searchHistory) ? searchHistory : []).map((history) => (
               <Badge
                 key={`${history.query}-${history.gender}-${history.id}`}
@@ -204,6 +215,15 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                 </button>
               </Badge>
             ))}
+            
+            {/* Three dots link to top search page */}
+            <button
+              onClick={() => navigate('/top-search')}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
+              title={t('app.topSearch.viewMore')}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

@@ -155,6 +155,23 @@
       "next": "Next",
       "skip": "Skip Tour",
       "finish": "Get Started!"
+    },
+    "topSearch": {
+      "title": "Top Search",
+      "viewMore": "View top searches",
+      "loading": "Loading top searches...",
+      "noData": "No search data available yet",
+      "periods": {
+        "week": "This Week",
+        "month": "This Month",
+        "all": "All Time"
+      },
+      "stats": {
+        "totalKeywords": "Total Keywords",
+        "totalSearches": "Total Searches",
+        "topKeywordCount": "Top Keyword"
+      },
+      "topList": "Top Search Rankings"
     }
   }
 }

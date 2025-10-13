@@ -357,6 +357,74 @@ export const deleteSearchHistory = async (id: number): Promise<boolean> => {
   }
 };
 
+// Analytics API
+export const trackSearch = async (query: string, gender: string = 'all'): Promise<boolean> => {
+  try {
+    await axios.post(`${API_BASE_URL}/analytics.php?action=track_search`, {
+      query,
+      gender,
+    });
+    return true;
+  } catch (error) {
+    console.error('Track search error:', error);
+    return false;
+  }
+};
+
+export const trackSongPlay = async (song: Song): Promise<boolean> => {
+  try {
+    await axios.post(`${API_BASE_URL}/analytics.php?action=track_play`, {
+      youtube_id: song.id,
+      title: song.title,
+      artist: song.artist,
+      duration: song.duration,
+      thumbnail: song.thumbnail,
+    });
+    return true;
+  } catch (error) {
+    console.error('Track song play error:', error);
+    return false;
+  }
+};
+
+export interface TopSong {
+  youtubeId: string;
+  title: string;
+  artist: string;
+  duration: string;
+  thumbnail: string;
+  playCount: number;
+  firstPlayed: string;
+  lastPlayed: string;
+}
+
+export interface TopKeyword {
+  query: string;
+  gender: string;
+  searchCount: number;
+  lastSearched: string;
+}
+
+export const getTopSongs = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopSong[]> => {
+  try {
+    const response = await axios.get<TopSong[]>(`${API_BASE_URL}/analytics.php?type=top_songs&period=${period}&limit=${limit}`);
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('Get top songs error:', error);
+    return [];
+  }
+};
+
+export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopKeyword[]> => {
+  try {
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/analytics.php?type=top_keywords&period=${period}&limit=${limit}`);
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('Get top keywords error:', error);
+    return [];
+  }
+};
+
 // Fallback to localStorage for offline functionality
 export const saveCurrentQueue = (songs: Song[], currentIndex: number = -1, queueName: string = ""): boolean => {
   try {

@@ -61,6 +61,19 @@ function initDatabase() {
                 value TEXT NOT NULL,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS played_songs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                youtube_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                artist TEXT NOT NULL,
+                duration TEXT,
+                thumbnail TEXT,
+                play_count INTEGER DEFAULT 1,
+                first_played DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_played DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(youtube_id)
+            );
         ");
         
         // Add GUID column if it doesn't exist (for existing databases)

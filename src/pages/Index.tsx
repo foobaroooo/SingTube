@@ -10,7 +10,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { MobilePlaybackControls } from "@/components/MobilePlaybackControls";
 import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
-import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues } from "@/services/apiService";
+import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues, trackSearch, trackSongPlay } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,8 @@ const Index = () => {
       // Check for shared queue in URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const shareGuid = urlParams.get('share');
+      const searchQuery = urlParams.get('search');
+      const searchGender = urlParams.get('gender') || 'all';
       
       if (shareGuid) {
         try {
@@ -91,7 +93,23 @@ const Index = () => {
         }
       }
       
-      // Load regular saved queue if no shared queue
+      // Handle search query from URL (e.g., from TopSearch page)
+      if (searchQuery && !shareGuid) {
+        try {
+          // Clean up URL to remove search parameters
+          window.history.replaceState({}, '', window.location.pathname);
+          
+          // Trigger search with the query from URL
+          setTimeout(() => {
+            handleSearch(searchQuery, searchGender);
+          }, 500); // Small delay to ensure component is ready
+          return;
+        } catch (error) {
+          console.error('Failed to handle search from URL:', error);
+        }
+      }
+      
+      // Load regular saved queue if no shared queue and no search query
       const savedData = loadCurrentQueue();
       if (Array.isArray(savedData.songs) && savedData.songs.length > 0) {
         setQueue(savedData.songs);
@@ -174,6 +192,8 @@ const Index = () => {
       // Save search to history (only for new searches, not pagination)
       if (!pageToken) {
         await saveSearchHistory(query, gender);
+        // Track search in analytics database
+        await trackSearch(query, gender);
         // Trigger history refresh
         setRefreshHistory(prev => !prev);
       }
@@ -451,6 +471,11 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
+      // Track song play in analytics database
+      trackSongPlay(song).catch(error => {
+        console.error('Failed to track song play:', error);
+      });
+      
       // Auto-show preview when play is triggered
       setShowMobilePreview(true);
       
@@ -501,6 +526,11 @@ const Index = () => {
       setShouldAutoplay(true);
       setIsPlaying(true);
       
+      // Track song play in analytics database
+      trackSongPlay(song).catch(error => {
+        console.error('Failed to track song play:', error);
+      });
+      
       // Auto-show preview when double-click play is triggered
       setShowMobilePreview(true);
       
@@ -527,6 +557,13 @@ const Index = () => {
       setTimeout(() => {
         setShouldAutoplay(true);
         setIsPlaying(true);
+        
+        // Track the auto-advanced song play
+        if (queue[nextIndex]) {
+          trackSongPlay(queue[nextIndex]).catch(error => {
+            console.error('Failed to track auto-advanced song play:', error);
+          });
+        }
         
         // Keep preview open during auto-advance
         setShowMobilePreview(true);
