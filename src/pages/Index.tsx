@@ -995,26 +995,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Copyright Disclaimer */}
-        <div className="mt-4 mb-4">
-          <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="bold" fill="currentColor">C</text>
-              </svg>
-              <div className="text-sm text-card-foreground space-y-2">
-                <p className="font-medium">{t('app.copyright.title')}</p>
-                <p>
-                  {t('app.copyright.contentOwnership')}
-                </p>
-                <p>
-                  {t('app.copyright.usage')}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Maximized Queue */}
         {isQueueMaximized && (
@@ -1042,21 +1022,6 @@ const Index = () => {
         )}
       </div>
 
-      
-      {/* Playback Controls - Mobile only (desktop uses combined bottom bar) */}
-      <div className="lg:hidden">
-        <MobilePlaybackControls
-        currentSong={currentSong}
-        isPlaying={isPlaying}
-        onPlay={handlePlayCurrentSong}
-        onPause={handlePauseCurrentSong}
-        onNext={nextSong}
-        onPrevious={previousSong}
-        canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
-        canGoPrevious={currentIndex > 0}
-        />
-      </div>
-
       {/* Preview Overlay - Now universal for all screen sizes */}
       <MobilePreviewOverlay
         currentSong={currentSong}
@@ -1072,48 +1037,41 @@ const Index = () => {
         onPlaybackStarted={handlePlaybackStarted}
       />
 
-      {/* Bottom Navigation - Now universal for all screen sizes */}
+      {/* Bottom Navigation - Universal single row layout */}
       <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-40">
         <div className="container mx-auto px-2">
-          {/* Desktop: Combined layout with playback controls and navigation */}
-          <div className="hidden lg:flex justify-between items-center py-2">
-            {/* Current song info on desktop */}
-            {currentSong && (
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-medium text-foreground truncate">
-                    {currentSong.title}
-                  </h4>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {currentSong.artist} • {currentSong.duration}
-                  </p>
-                </div>
-              </div>
-            )}
+          {/* Universal layout: playback controls and navigation in same row */}
+          <div className="flex justify-between items-center py-2">
+            {/* Copyright info */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>©</span>
+              <span className="hidden sm:inline">{t('app.copyright.usage')}</span>
+              <span className="sm:hidden">SingTube</span>
+            </div>
             
             {/* Combined playback controls and view toggle */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               {/* Playback controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button 
                   onClick={previousSong}
                   disabled={currentIndex <= 0}
                   variant="outline" 
                   size="icon"
-                  className="h-8 w-8 border-border hover:bg-secondary"
+                  className="h-7 w-7 sm:h-8 sm:w-8 border-border hover:bg-secondary"
                 >
-                  <SkipBack className="w-4 h-4" />
+                  <SkipBack className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
                 
                 <Button 
                   onClick={isPlaying ? handlePauseCurrentSong : handlePlayCurrentSong}
-                  className="h-10 w-10 bg-gradient-primary hover:shadow-neon transition-bounce rounded-full"
+                  className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-primary hover:shadow-neon transition-bounce rounded-full"
                   disabled={!currentSong}
                 >
                   {isPlaying ? (
-                    <Pause className="w-5 h-5" />
+                    <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Play className="w-5 h-5" />
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </Button>
                 
@@ -1122,9 +1080,9 @@ const Index = () => {
                   disabled={!Array.isArray(queue) || currentIndex >= queue.length - 1}
                   variant="outline" 
                   size="icon"
-                  className="h-8 w-8 border-border hover:bg-secondary"
+                  className="h-7 w-7 sm:h-8 sm:w-8 border-border hover:bg-secondary"
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
               
@@ -1134,27 +1092,29 @@ const Index = () => {
                   variant={activeView === 'search' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setActiveView('search')}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
+                  className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
                     activeView === 'search' 
                       ? 'bg-gradient-primary text-white shadow-md' 
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Search className="w-4 h-4" />
-                  <span>Search</span>
+                  <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Search</span>
+                  <span className="sm:hidden">{t('app.actions.search')}</span>
                 </Button>
                 <Button
                   variant={activeView === 'queue' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setActiveView('queue')}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
+                  className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
                     activeView === 'queue' 
                       ? 'bg-gradient-primary text-white shadow-md' 
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <List className="w-4 h-4" />
-                  <span>Queue</span>
+                  <List className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Queue</span>
+                  <span className="sm:hidden">{t('app.queue.title')}</span>
                   {Array.isArray(queue) && queue.length > 0 && (
                     <Badge variant="secondary" className={`ml-1 text-xs ${
                       activeView === 'queue' ? 'bg-background/20 text-white' : 'bg-background/20'
@@ -1164,43 +1124,6 @@ const Index = () => {
                   )}
                 </Button>
               </div>
-            </div>
-          </div>
-          
-          {/* Mobile: Original centered navigation */}
-          <div className="lg:hidden flex justify-center py-2">
-            <div className="flex bg-muted rounded-full p-1">
-              <Button
-                variant={activeView === 'search' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('search')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all ${
-                  activeView === 'search' 
-                    ? 'bg-gradient-primary text-white shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Search className="w-4 h-4" />
-                <span className="text-sm font-medium">{t('app.actions.search')}</span>
-              </Button>
-              <Button
-                variant={activeView === 'queue' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('queue')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all ${
-                  activeView === 'queue' 
-                    ? 'bg-gradient-primary text-white shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <List className="w-4 h-4" />
-                <span className="text-sm font-medium">{t('app.queue.title')}</span>
-                {Array.isArray(queue) && queue.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 bg-background/20 text-white text-xs">
-                    {queue.length}
-                  </Badge>
-                )}
-              </Button>
             </div>
           </div>
         </div>

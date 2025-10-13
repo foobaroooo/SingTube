@@ -13,7 +13,7 @@
       }
     },
     "queue": {
-      "title": "Song Queue",
+      "title": "Queue",
       "empty": "Your queue is empty. Add some songs!",
       "emptyMessage": "Your queue is empty",
       "getStarted": "Search and add songs to get started!",
