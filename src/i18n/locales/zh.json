@@ -101,6 +101,11 @@
       "email": "hello (at) singtube.app",
       "thankYou": "感謝！🎶"
     },
+    "copyright": {
+      "title": "© 唱館(SingTube) — 版權聲明：",
+      "contentOwnership": "唱館不擁有任何音樂或影片內容。所有媒體均從YouTube串流，並屬於Google LLC及各自版權所有者所有。",
+      "usage": "唱館僅供個人、非商業用途使用。"
+    },
     "tutorial": {
       "welcome": {
         "title": "歡迎來到唱館！",

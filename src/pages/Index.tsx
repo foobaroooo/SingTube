@@ -955,8 +955,26 @@ const Index = () => {
                     {t('app.apiNotice.email')}
                   </span>
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright Disclaimer */}
+        <div className="mt-4 mb-4">
+          <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="bold" fill="currentColor">C</text>
+              </svg>
+              <div className="text-sm text-card-foreground space-y-2">
+                <p className="font-medium">{t('app.copyright.title')}</p>
                 <p>
-                  {t('app.apiNotice.thankYou')}
+                  {t('app.copyright.contentOwnership')}
+                </p>
+                <p>
+                  {t('app.copyright.usage')}
                 </p>
               </div>
             </div>
@@ -988,6 +1006,7 @@ const Index = () => {
           />
         )}
       </div>
+
       
       {/* Playback Controls - Mobile only (desktop uses combined bottom bar) */}
       <div className="lg:hidden">

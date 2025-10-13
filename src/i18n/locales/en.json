@@ -101,6 +101,11 @@
       "email": "hello (at) singtube.app",
       "thankYou": "Thank you! 🎶"
     },
+    "copyright": {
+      "title": "© SingTube — Copyright Disclaimer:",
+      "contentOwnership": "SingTube does not own any music or video content. All media is streamed from YouTube and remains the property of Google LLC and the respective copyright owners.",
+      "usage": "SingTube is for personal, non-commercial use only."
+    },
     "tutorial": {
       "welcome": {
         "title": "Welcome to SingTube!",
