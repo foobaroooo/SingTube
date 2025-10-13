@@ -137,7 +137,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               {/* Three dots link to top search page */}
               <button
                 onClick={() => navigate('/top-search')}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
                 title={t('app.topSearch.viewMore')}
               >
                 <MoreHorizontal className="w-3 h-3" />
@@ -219,7 +219,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             {/* Three dots link to top search page */}
             <button
               onClick={() => navigate('/top-search')}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
               title={t('app.topSearch.viewMore')}
             >
               <MoreHorizontal className="w-4 h-4" />
