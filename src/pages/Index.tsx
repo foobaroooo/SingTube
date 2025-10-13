@@ -1037,76 +1037,79 @@ const Index = () => {
               </div>
             )}
             
-            {/* Playback controls */}
-            <div className="flex items-center gap-2">
-              <Button 
-                onClick={previousSong}
-                disabled={currentIndex <= 0}
-                variant="outline" 
-                size="icon"
-                className="h-8 w-8 border-border hover:bg-secondary"
-              >
-                <SkipBack className="w-4 h-4" />
-              </Button>
+            {/* Combined playback controls and view toggle */}
+            <div className="flex items-center gap-4">
+              {/* Playback controls */}
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={previousSong}
+                  disabled={currentIndex <= 0}
+                  variant="outline" 
+                  size="icon"
+                  className="h-8 w-8 border-border hover:bg-secondary"
+                >
+                  <SkipBack className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  onClick={isPlaying ? handlePauseCurrentSong : handlePlayCurrentSong}
+                  className="h-10 w-10 bg-gradient-primary hover:shadow-neon transition-bounce rounded-full"
+                  disabled={!currentSong}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5" />
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={nextSong}
+                  disabled={!Array.isArray(queue) || currentIndex >= queue.length - 1}
+                  variant="outline" 
+                  size="icon"
+                  className="h-8 w-8 border-border hover:bg-secondary"
+                >
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+              </div>
               
-              <Button 
-                onClick={isPlaying ? handlePauseCurrentSong : handlePlayCurrentSong}
-                className="h-10 w-10 bg-gradient-primary hover:shadow-neon transition-bounce rounded-full"
-                disabled={!currentSong}
-              >
-                {isPlaying ? (
-                  <Pause className="w-5 h-5" />
-                ) : (
-                  <Play className="w-5 h-5" />
-                )}
-              </Button>
-              
-              <Button 
-                onClick={nextSong}
-                disabled={!Array.isArray(queue) || currentIndex >= queue.length - 1}
-                variant="outline" 
-                size="icon"
-                className="h-8 w-8 border-border hover:bg-secondary"
-              >
-                <SkipForward className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            {/* View toggle */}
-            <div className="flex bg-muted rounded-full p-1">
-              <Button
-                variant={activeView === 'search' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('search')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
-                  activeView === 'search' 
-                    ? 'bg-gradient-primary text-white shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Search className="w-4 h-4" />
-                <span>Search</span>
-              </Button>
-              <Button
-                variant={activeView === 'queue' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('queue')}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
-                  activeView === 'queue' 
-                    ? 'bg-gradient-primary text-white shadow-md' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <List className="w-4 h-4" />
-                <span>Queue</span>
-                {Array.isArray(queue) && queue.length > 0 && (
-                  <Badge variant="secondary" className={`ml-1 text-xs ${
-                    activeView === 'queue' ? 'bg-background/20 text-white' : 'bg-background/20'
-                  }`}>
-                    {queue.length}
-                  </Badge>
-                )}
-              </Button>
+              {/* View toggle */}
+              <div className="flex bg-muted rounded-full p-1">
+                <Button
+                  variant={activeView === 'search' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveView('search')}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
+                    activeView === 'search' 
+                      ? 'bg-gradient-primary text-white shadow-md' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Search</span>
+                </Button>
+                <Button
+                  variant={activeView === 'queue' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveView('queue')}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 transition-all text-sm ${
+                    activeView === 'queue' 
+                      ? 'bg-gradient-primary text-white shadow-md' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  <span>Queue</span>
+                  {Array.isArray(queue) && queue.length > 0 && (
+                    <Badge variant="secondary" className={`ml-1 text-xs ${
+                      activeView === 'queue' ? 'bg-background/20 text-white' : 'bg-background/20'
+                    }`}>
+                      {queue.length}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
           
