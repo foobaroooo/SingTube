@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import TopSearch from "./pages/TopSearch";
 import TopSongs from "./pages/TopSongs";
+import Join from "./pages/Join";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/top-search" element={<TopSearch />} />
           <Route path="/top-songs" element={<TopSongs />} />
+          <Route path="/join/:guid" element={<Join />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

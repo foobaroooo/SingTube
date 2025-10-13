@@ -8,7 +8,6 @@ import { QueueSection } from "@/components/QueueSection";
 import { Pagination } from "@/components/Pagination";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
-import { MobilePlaybackControls } from "@/components/MobilePlaybackControls";
 import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
 import { searchYouTubeVideos, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues, trackSearch, trackSongPlay } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";

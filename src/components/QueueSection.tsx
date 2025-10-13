@@ -259,7 +259,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                                 variant="outline" 
                                 size="sm"
                                 onClick={async () => {
-                                  const shareUrl = `${window.location.origin}/?share=${savedQueue.guid}`;
+                                  const shareUrl = `${window.location.origin}/join/${savedQueue.guid}`;
                                   try {
                                     await navigator.clipboard.writeText(shareUrl);
                                     toast({
@@ -340,7 +340,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                         )[0];
                         
                         if (newQueue && newQueue.guid) {
-                          const shareUrl = `${window.location.origin}/?share=${newQueue.guid}`;
+                          const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
                           try {
                             await navigator.clipboard.writeText(shareUrl);
                             toast({
