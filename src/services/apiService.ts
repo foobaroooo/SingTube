@@ -359,6 +359,14 @@ export const deleteSearchHistory = async (id: number): Promise<boolean> => {
 
 // Analytics API
 export const trackSearch = async (query: string, gender: string = 'all'): Promise<boolean> => {
+  // Import deduplication utility dynamically to avoid circular imports
+  const { shouldTrackSearch } = await import('@/utils/trackingUtils');
+  
+  // Check if we should track this search (prevents React double-mount duplicates)
+  if (!shouldTrackSearch(query, gender)) {
+    return true; // Return true since it's not an error, just a duplicate
+  }
+
   try {
     await axios.post(`${API_BASE_URL}/analytics.php?action=track_search`, {
       query,
@@ -372,6 +380,14 @@ export const trackSearch = async (query: string, gender: string = 'all'): Promis
 };
 
 export const trackSongPlay = async (song: Song): Promise<boolean> => {
+  // Import deduplication utility dynamically to avoid circular imports
+  const { shouldTrackSongPlay } = await import('@/utils/trackingUtils');
+  
+  // Check if we should track this song play (prevents React double-mount duplicates)
+  if (!shouldTrackSongPlay(song)) {
+    return true; // Return true since it's not an error, just a duplicate
+  }
+
   try {
     await axios.post(`${API_BASE_URL}/analytics.php?action=track_play`, {
       youtube_id: song.id,
@@ -421,6 +437,27 @@ export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', 
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get top keywords error:', error);
+    return [];
+  }
+};
+
+// Get search history from analytics (replaces the old getSearchHistory)
+export const getSearchHistoryFromAnalytics = async (limit: number = 50): Promise<SearchHistory[]> => {
+  try {
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/analytics.php?type=top_keywords&period=all&limit=${limit}`);
+    
+    // Convert TopKeyword format to SearchHistory format for compatibility
+    const searchHistory: SearchHistory[] = response.data.map((keyword) => ({
+      id: `${keyword.query}-${keyword.gender}`, // Create a unique ID
+      query: keyword.query,
+      gender: keyword.gender,
+      searchCount: keyword.searchCount,
+      lastSearched: keyword.lastSearched
+    }));
+    
+    return searchHistory;
+  } catch (error) {
+    console.error('Get search history from analytics error:', error);
     return [];
   }
 };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Mic, Clock, Loader2, X, MoreHorizontal } from "lucide-react";
-import { getSearchHistory, deleteSearchHistory, type SearchHistory } from "@/services/apiService";
+import { getSearchHistoryFromAnalytics, type SearchHistory } from "@/services/apiService";
 
 interface SearchSectionProps {
   onSearch: (query: string, gender: string) => void;
@@ -24,8 +24,8 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
   const loadHistory = async () => {
     try {
-      const history = await getSearchHistory();
-      setSearchHistory(history.slice(0, 5)); // Show only last 5 searches
+      const history = await getSearchHistoryFromAnalytics(10); // Get recent 10 searches
+      setSearchHistory(history.slice(0, 5)); // Show only last 5 searches in UI
     } catch (error) {
       console.error('Failed to load search history:', error);
     }
@@ -58,16 +58,11 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
     onSearch(historyQuery, historyGender);
   };
 
-  const handleDeleteHistory = async (e: React.MouseEvent, id: number) => {
+  const handleDeleteHistory = async (e: React.MouseEvent, id: string | number) => {
     e.stopPropagation(); // Prevent triggering the search
-    try {
-      const success = await deleteSearchHistory(id);
-      if (success) {
-        await loadHistory(); // Refresh the history list
-      }
-    } catch (error) {
-      console.error('Failed to delete search history:', error);
-    }
+    // Since analytics data shouldn't be deleted by users, just remove from local state
+    // This is a UI-only operation - the analytics database remains intact for reporting
+    setSearchHistory(prev => prev.filter(item => item.id !== id));
   };
 
   if (compact) {

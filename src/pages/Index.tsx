@@ -10,7 +10,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { MobilePlaybackControls } from "@/components/MobilePlaybackControls";
 import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
-import { searchYouTubeVideos, saveSearchHistory, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues, trackSearch, trackSongPlay } from "@/services/apiService";
+import { searchYouTubeVideos, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues, trackSearch, trackSongPlay } from "@/services/apiService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -189,10 +189,8 @@ const Index = () => {
         hasPrev: pageTokenHistory.length > 0
       });
       
-      // Save search to history (only for new searches, not pagination)
+      // Track search in analytics database (only for new searches, not pagination)
       if (!pageToken) {
-        await saveSearchHistory(query, gender);
-        // Track search in analytics database
         await trackSearch(query, gender);
         // Trigger history refresh
         setRefreshHistory(prev => !prev);
