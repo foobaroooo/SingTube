@@ -104,6 +104,8 @@ switch ($method) {
                     $whereClause = "WHERE last_played >= datetime('now', '-7 days')";
                 } else if ($period === 'month') {
                     $whereClause = "WHERE last_played >= datetime('now', '-30 days')";
+                } else if ($period === 'year') {
+                    $whereClause = "WHERE last_played >= datetime('now', '-365 days')";
                 }
                 
                 $stmt = $pdo->prepare("SELECT youtube_id, title, artist, duration, thumbnail, play_count, first_played, last_played FROM played_songs $whereClause ORDER BY play_count DESC, last_played DESC LIMIT ?");
@@ -133,6 +135,8 @@ switch ($method) {
                     $whereClause = "WHERE last_searched >= datetime('now', '-7 days')";
                 } else if ($period === 'month') {
                     $whereClause = "WHERE last_searched >= datetime('now', '-30 days')";
+                } else if ($period === 'year') {
+                    $whereClause = "WHERE last_searched >= datetime('now', '-365 days')";
                 }
                 
                 $stmt = $pdo->prepare("SELECT query, gender, search_count, last_searched FROM search_history $whereClause ORDER BY search_count DESC, last_searched DESC LIMIT ?");

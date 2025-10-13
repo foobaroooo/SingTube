@@ -172,6 +172,29 @@
         "topKeywordCount": "Top Keyword"
       },
       "topList": "Top Search Rankings"
+    },
+    "topSongs": {
+      "title": "Top Songs",
+      "viewTopSongs": "View top played songs",
+      "loading": "Loading top songs...",
+      "noData": "No song data available yet",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "allTime": "All Time",
+      "periods": {
+        "week": "This Week",
+        "month": "This Month",
+        "all": "All Time"
+      },
+      "topSongsTitle": "Top Played Songs",
+      "totalSongs": "Showing {{count}} songs",
+      "stats": {
+        "totalSongs": "Total Songs",
+        "totalPlays": "Total Plays",
+        "topSongPlays": "Top Song Plays"
+      },
+      "podium": "Top 3 Most Played",
+      "fullRankings": "Complete Rankings"
     }
   }
 }

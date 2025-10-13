@@ -172,6 +172,29 @@
         "topKeywordCount": "最熱門關鍵字"
       },
       "topList": "熱門搜尋排行榜"
+    },
+    "topSongs": {
+      "title": "熱門歌曲",
+      "viewTopSongs": "查看最受歡迎歌曲",
+      "loading": "正在載入熱門歌曲...",
+      "noData": "暫無歌曲數據",
+      "thisWeek": "本週",
+      "thisMonth": "本月",
+      "allTime": "全部時間",
+      "periods": {
+        "week": "本週",
+        "month": "本月",
+        "all": "全部時間"
+      },
+      "topSongsTitle": "最受歡迎歌曲",
+      "totalSongs": "顯示 {{count}} 首歌曲",
+      "stats": {
+        "totalSongs": "總歌曲數",
+        "totalPlays": "總播放次數",
+        "topSongPlays": "最熱門歌曲播放次數"
+      },
+      "podium": "播放次數前三名",
+      "fullRankings": "完整排行榜"
     }
   }
 }

@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy } from "lucide-react";
+import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp } from "lucide-react";
 import { Song } from "./SongCard";
 import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 interface QueueSectionProps {
   queue: Song[];
@@ -34,6 +35,7 @@ interface QueueSectionProps {
 
 export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [saveQueueName, setSaveQueueName] = useState("");
@@ -190,6 +192,17 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             
             {/* Queue Actions */}
             <div className="flex gap-2" data-tutorial="queue-actions">
+                {/* Top Songs Link */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/top-songs')}
+                  title={t('app.topSongs.viewTopSongs')}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 hover:border-primary/40"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                </Button>
+                
                 <Dialog open={loadDialogOpen} onOpenChange={(open) => {
                   setLoadDialogOpen(open);
                   if (open) loadSavedQueues();
