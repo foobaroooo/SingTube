@@ -201,7 +201,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                         size="icon"
                         onClick={handleEditTitle}
                         className="h-6 w-6 opacity-60 hover:opacity-100"
-                        title="Edit queue name"
+                        title={t('app.queue.editQueueName')}
                       >
                         <Edit className="h-3 w-3" />
                       </Button>

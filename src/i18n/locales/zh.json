@@ -25,6 +25,8 @@
       "saveQueue": "儲存目前歌單",
       "loadQueue": "載入已儲存歌單",
       "shareQueue": "分享歌單",
+      "howToJoin": "如何加入？",
+      "editQueueName": "編輯歌單名稱",
       "priority": "插播",
       "tooltips": {
         "loadQueue": "載入已儲存歌單",

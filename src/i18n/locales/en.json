@@ -25,6 +25,8 @@
       "saveQueue": "Save current queue",
       "loadQueue": "Load saved queue",
       "shareQueue": "Share queue",
+      "howToJoin": "How to join?",
+      "editQueueName": "Edit queue name",
       "priority": "Priority",
       "tooltips": {
         "loadQueue": "Load saved queue",

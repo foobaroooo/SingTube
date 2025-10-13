@@ -1001,7 +1001,7 @@ const Index = () => {
                       transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    (How to join?)
+({t('app.queue.howToJoin')})
                   </Button>
                 </h2>
               </div>
@@ -1153,7 +1153,7 @@ const Index = () => {
                   }`}
                 >
                   <Search className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Search</span>
+                  <span className="hidden sm:inline">{t('app.actions.search')}</span>
                   <span className="sm:hidden">{t('app.actions.search')}</span>
                 </Button>
                 <Button
@@ -1167,7 +1167,7 @@ const Index = () => {
                   }`}
                 >
                   <List className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Queue</span>
+                  <span className="hidden sm:inline">{t('app.queue.title')}</span>
                   <span className="sm:hidden">{t('app.queue.title')}</span>
                   {Array.isArray(queue) && queue.length > 0 && (
                     <Badge variant="secondary" className={`ml-1 text-xs ${
