@@ -444,22 +444,14 @@ const Index = () => {
     }
   };
 
-  const loadQueue = (songs: Song[], queueName: string = "", queueId: number | null = null) => {
-    const safeSongs = Array.isArray(songs) ? songs : [];
-    setQueue(safeSongs);
-    setCurrentIndex(safeSongs.length > 0 ? 0 : -1);
-    setCurrentQueueName(queueName);
-    setCurrentQueueId(queueId);
+  const handleUpdateQueueName = (newName: string) => {
+    setCurrentQueueName(newName);
   };
 
   const toggleQueueMaximize = () => {
     setIsQueueMaximized(prev => !prev);
   };
 
-  const handleQueueSaved = (queueName: string, queueId: number | null = null) => {
-    setCurrentQueueName(queueName);
-    setCurrentQueueId(queueId);
-  };
 
   const handlePlayCurrentSong = () => {
     if (currentIndex >= 0 && Array.isArray(queue) && queue[currentIndex]) {
@@ -962,12 +954,11 @@ const Index = () => {
               isPlaying={isPlaying}
               canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
               canGoPrevious={currentIndex > 0}
-              onLoadQueue={loadQueue}
-              onQueueSaved={handleQueueSaved}
               isMaximized={isQueueMaximized}
               onToggleMaximize={toggleQueueMaximize}
               queueName={currentQueueName}
               queueId={currentQueueId}
+              onUpdateQueueName={handleUpdateQueueName}
             />
             </div>
           )}
@@ -1011,12 +1002,11 @@ const Index = () => {
             isPlaying={isPlaying}
             canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
             canGoPrevious={currentIndex > 0}
-            onLoadQueue={loadQueue}
-            onQueueSaved={handleQueueSaved}
             isMaximized={isQueueMaximized}
             onToggleMaximize={toggleQueueMaximize}
             queueName={currentQueueName}
             queueId={currentQueueId}
+            onUpdateQueueName={handleUpdateQueueName}
           />
         )}
       </div>

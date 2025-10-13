@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { X, GripVertical, Music, Save, FolderOpen, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp } from "lucide-react";
+import { X, GripVertical, Music, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp, Edit, Check } from "lucide-react";
 import { Song } from "./SongCard";
 import { ShareQRDialog } from "./ShareQRDialog";
-import { saveQueue, getSavedQueues, deleteQueue, type SavedQueue } from "@/services/apiService";
+import { saveQueue, getSavedQueues, deleteQueue, updateQueue, type SavedQueue } from "@/services/apiService";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -26,106 +26,27 @@ interface QueueSectionProps {
   isPlaying?: boolean;
   canGoNext?: boolean;
   canGoPrevious?: boolean;
-  onLoadQueue?: (songs: Song[], queueName: string, queueId?: number) => void;
-  onQueueSaved?: (queueName: string, queueId?: number) => void;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
   queueName?: string;
   queueId?: number | null;
+  onUpdateQueueName?: (newName: string) => void;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, onLoadQueue, onQueueSaved, isMaximized = false, onToggleMaximize, queueName, queueId }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, isMaximized = false, onToggleMaximize, queueName, queueId, onUpdateQueueName }: QueueSectionProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [shareQRDialogOpen, setShareQRDialogOpen] = useState(false);
   const [shareData, setShareData] = useState<{ url: string; name: string }>({ url: "", name: "" });
-  const [saveQueueName, setSaveQueueName] = useState("");
-  const [savedQueues, setSavedQueues] = useState<SavedQueue[]>([]);
-  const [loading, setLoading] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [fadingOutItems, setFadingOutItems] = useState<Set<string>>(new Set());
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitleValue, setEditTitleValue] = useState(queueName || "");
   const { toast } = useToast();
 
-  const loadSavedQueues = async () => {
-    try {
-      setLoading(true);
-      const queues = await getSavedQueues();
-      setSavedQueues(queues);
-    } catch (error) {
-      console.error('Failed to load saved queues:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleSaveQueue = async () => {
-    if (!saveQueueName.trim()) {
-      toast({
-        title: "Invalid Name",
-        description: "Please enter a queue name",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    if (!Array.isArray(queue) || queue.length === 0) {
-      toast({
-        title: "Empty Queue",
-        description: "Cannot save an empty queue",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const success = await saveQueue(saveQueueName.trim(), queue);
-      if (success) {
-        const newQueueName = saveQueueName.trim();
-        toast({
-          title: "Queue Saved",
-          description: `"${newQueueName}" has been saved successfully`,
-        });
-        setSaveDialogOpen(false);
-        setSaveQueueName("");
-        
-        // Update the queue name in the parent component
-        if (onQueueSaved) {
-          onQueueSaved(newQueueName);
-        }
-        
-        await loadSavedQueues(); // Refresh the list
-      } else {
-        toast({
-          title: "Save Failed",
-          description: "Could not save the queue",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Save Failed",
-        description: "Could not save the queue",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLoadQueue = (songs: Song[], savedQueueName: string, savedQueueId: number) => {
-    if (onLoadQueue) {
-      onLoadQueue(songs, savedQueueName, savedQueueId);
-      setLoadDialogOpen(false);
-      toast({
-        title: "Queue Loaded",
-        description: `Loaded "${savedQueueName}" with ${Array.isArray(songs) ? songs.length : 0} songs`,
-      });
-    }
-  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -175,6 +96,69 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
     }, 300);
   };
 
+  const handleEditTitle = () => {
+    setEditTitleValue(queueName || "");
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = async () => {
+    if (!editTitleValue.trim()) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      // If we have a queueId, update the queue in the database
+      if (queueId && queueId > 0) {
+        const success = await updateQueue(queueId, editTitleValue.trim(), queue);
+        if (success) {
+          toast({
+            title: "Queue name updated",
+            description: `Queue renamed to "${editTitleValue.trim()}"`,
+          });
+        } else {
+          toast({
+            title: "Update failed",
+            description: "Could not update queue name",
+            variant: "destructive"
+          });
+          setEditTitleValue(queueName || "");
+          setIsEditingTitle(false);
+          return;
+        }
+      }
+
+      // Call the parent callback to update the local state
+      if (onUpdateQueueName) {
+        onUpdateQueueName(editTitleValue.trim());
+      }
+      
+      setIsEditingTitle(false);
+    } catch (error) {
+      console.error('Update queue name error:', error);
+      toast({
+        title: "Update failed",
+        description: "Could not update queue name",
+        variant: "destructive"
+      });
+      setEditTitleValue(queueName || "");
+      setIsEditingTitle(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditTitleValue(queueName || "");
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
 
 
   return (
@@ -188,8 +172,42 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
             <CardTitle className="flex items-center gap-2">
               <Music className="w-5 h-5 text-primary" />
-              <div className="flex flex-col">
-                <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
+              <div className="flex items-center gap-2 flex-1">
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={editTitleValue}
+                      onChange={(e) => setEditTitleValue(e.target.value)}
+                      onKeyPress={handleTitleKeyPress}
+                      onBlur={handleCancelEdit}
+                      className="flex-1"
+                      autoFocus
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleSaveTitle}
+                      className="h-6 w-6"
+                    >
+                      <Check className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-1">
+                    <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
+                    {onUpdateQueueName && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleEditTitle}
+                        className="h-6 w-6 opacity-60 hover:opacity-100"
+                        title="Edit queue name"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </CardTitle>
             
@@ -206,93 +224,6 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   <TrendingUp className="w-4 h-4" />
                 </Button>
                 
-                <Dialog open={loadDialogOpen} onOpenChange={(open) => {
-                  setLoadDialogOpen(open);
-                  if (open) loadSavedQueues();
-                }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" title={t('app.queue.tooltips.loadQueue')}>
-                      <FolderOpen className="w-4 h-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] max-h-[90vh] w-full md:max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>{t('app.dialogs.loadQueue.title')}</DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] md:h-96 w-full">
-                      <div className="space-y-3 pr-4">
-                        {loading ? (
-                          <p className="text-muted-foreground">{t('app.dialogs.loadQueue.loading')}</p>
-                        ) : !Array.isArray(savedQueues) || savedQueues.length === 0 ? (
-                          <p className="text-muted-foreground">{t('app.dialogs.loadQueue.noQueues')}</p>
-                        ) : (
-                          (Array.isArray(savedQueues) ? savedQueues : []).map((savedQueue) => (
-                          <div key={savedQueue.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-3 border rounded gap-3">
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium truncate">{savedQueue.name}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {t('app.dialogs.loadQueue.songCount', { count: Array.isArray(savedQueue.songs) ? savedQueue.songs.length : 0 })} • {new Date(savedQueue.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex gap-2 flex-wrap justify-end">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={async () => {
-                                  try {
-                                    await deleteQueue(savedQueue.id);
-                                    await loadSavedQueues();
-                                    toast({
-                                      title: "Queue Deleted",
-                                      description: `"${savedQueue.name}" has been deleted`,
-                                    });
-                                  } catch (error) {
-                                    toast({
-                                      title: "Delete Failed",
-                                      description: "Could not delete the queue",
-                                      variant: "destructive"
-                                    });
-                                  }
-                                }}
-                                className="text-xs px-2"
-                              >
-                                {t('app.dialogs.loadQueue.deleteButton')}
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                  const shareUrl = `${window.location.origin}/join/${savedQueue.guid}`;
-                                  setShareData({ url: shareUrl, name: savedQueue.name });
-                                  setShareQRDialogOpen(true);
-                                }}
-                                title={t('app.queue.tooltips.shareQueue')}
-                                className="px-2"
-                              >
-                                <Share2 className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                                onClick={() => handleLoadQueue(savedQueue.songs, savedQueue.name, savedQueue.id)}
-                                size="sm"
-                                className="text-xs px-2"
-                              >
-                                {t('app.dialogs.loadQueue.loadButton')}
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                      </div>
-                      <ScrollBar className="opacity-100" />
-                    </ScrollArea>
-                    {/* Show scroll hint when there are many saved queues */}
-                    {savedQueues.length > 4 && (
-                      <p className="text-xs text-muted-foreground text-center mt-2 opacity-70">
-                        {t('app.dialogs.loadQueue.scrollHint')}
-                      </p>
-                    )}
-                  </DialogContent>
-                </Dialog>
                 
                 <Button 
                   variant="outline" 
@@ -349,34 +280,6 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   <Share2 className="w-4 h-4" />
                 </Button>
                 
-                <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" disabled={!Array.isArray(queue) || queue.length === 0} title={t('app.queue.tooltips.saveQueue')}>
-                      <Save className="w-4 h-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t('app.dialogs.saveQueue.title')}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder={t('app.dialogs.saveQueue.placeholder')}
-                        value={saveQueueName}
-                        onChange={(e) => setSaveQueueName(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSaveQueue()}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
-                          {t('app.dialogs.saveQueue.cancelButton')}
-                        </Button>
-                        <Button onClick={handleSaveQueue}>
-                          {t('app.dialogs.saveQueue.saveButton')}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
                 
                 {onToggleMaximize && (
                   <Button 
