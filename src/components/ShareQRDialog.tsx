@@ -47,8 +47,8 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({
-        title: "Link Copied",
-        description: "Share link copied to clipboard",
+        title: t('app.notifications.linkCopiedTitle'),
+        description: t('app.notifications.linkCopiedDesc'),
       });
     } catch (error) {
       // Fallback for older browsers
@@ -59,8 +59,8 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
       document.execCommand('copy');
       document.body.removeChild(textArea);
       toast({
-        title: "Link Copied",
-        description: "Share link copied to clipboard",
+        title: t('app.notifications.linkCopiedTitle'),
+        description: t('app.notifications.linkCopiedDesc'),
       });
     }
   };
@@ -71,7 +71,7 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
-              Share "{queueName}"
+{t('app.queue.shareQueueTitle', { name: queueName })}
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -80,10 +80,10 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
           {/* Instructions */}
           <div className="text-center space-y-2">
             <p className="text-sm font-medium text-foreground">
-              Share this karaoke room with friends
+              {t('app.queue.shareDescription')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Scan with your phone or share the link to join the same queue
+              {t('app.queue.shareInstructions')}
             </p>
           </div>
 
@@ -111,17 +111,17 @@ export const ShareQRDialog = ({ isOpen, onClose, shareUrl, queueName }: ShareQRD
                 size="icon"
                 onClick={handleCopyUrl}
                 className="flex-shrink-0"
-                title="Copy link to clipboard"
+                title={t('app.queue.copyToClipboard')}
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
             <div className="text-center space-y-1">
               <p className="text-xs text-muted-foreground">
-                📱 <strong>Mobile:</strong> Scan QR code with camera
+                📱 <strong>{t('app.queue.mobileLabel')}:</strong> {t('app.queue.mobileInstructions')}
               </p>
               <p className="text-xs text-muted-foreground">
-                💻 <strong>Desktop:</strong> Copy and share the link above
+                💻 <strong>{t('app.queue.desktopLabel')}:</strong> {t('app.queue.desktopInstructions')}
               </p>
             </div>
           </div>
