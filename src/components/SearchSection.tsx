@@ -24,8 +24,20 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
   const loadHistory = async () => {
     try {
+      console.log('📋 Loading search history...');
       const history = await getSearchHistoryFromAnalytics(10); // Get recent 10 searches
-      setSearchHistory(history.slice(0, 5)); // Show only last 5 searches in UI
+      console.log('📋 Raw history from API:', history);
+      const historyToSet = history.slice(0, 5);
+      setSearchHistory(historyToSet); // Show only last 5 searches in UI
+      console.log('📋 Search history set:', historyToSet);
+      
+      // Debug: Check what's actually in the state after setting
+      setTimeout(() => {
+        console.log('📋 Checking searchHistory state after setting...');
+        console.log('📋 searchHistory length:', historyToSet.length);
+        console.log('📋 searchHistory content:', historyToSet);
+        console.log('📋 Array.isArray(searchHistory):', Array.isArray(historyToSet));
+      }, 100);
     } catch (error) {
       console.error('Failed to load search history:', error);
     }
@@ -36,9 +48,8 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   }, []);
 
   useEffect(() => {
-    if (refreshHistory) {
-      loadHistory();
-    }
+    console.log('🔄 Refresh history triggered, refreshHistory:', refreshHistory);
+    loadHistory();
   }, [refreshHistory]);
 
   const handleSearch = () => {
@@ -106,10 +117,23 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
         </div>
 
         {/* Recent Searches - Optimized for mobile */}
-        {Array.isArray(searchHistory) && searchHistory.length > 0 && (
+        {(() => {
+          console.log('📋 RENDER: Checking searchHistory for display...', {
+            isArray: Array.isArray(searchHistory),
+            length: searchHistory.length,
+            content: searchHistory,
+            firstItem: searchHistory[0],
+            itemsToRender: (Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3)
+          });
+          const shouldShow = Array.isArray(searchHistory) && searchHistory.length > 0;
+          console.log('📋 RENDER: Should show search history?', shouldShow);
+          return shouldShow;
+        })() && (
           <div className="mt-2">
             <div className="flex flex-wrap gap-1 items-center">
-                {(Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3).map((history) => (
+                {(Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3).map((history, index) => {
+                  console.log(`📋 RENDER: Mapping history item ${index}:`, history);
+                  return (
                 <Badge
                   key={`${history.query}-${history.gender}-${history.id}`}
                   variant="secondary"
@@ -127,7 +151,8 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                     <X className="w-2 h-2" />
                   </button>
                 </Badge>
-              ))}
+                  );
+                })}
               
               {/* Three dots link to top search page */}
               <button
@@ -179,14 +204,26 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
       </div>
 
       {/* Search History */}
-      {Array.isArray(searchHistory) && searchHistory.length > 0 && (
+      {(() => {
+        console.log('📋 NON-COMPACT RENDER: Checking searchHistory for display...', {
+          isArray: Array.isArray(searchHistory),
+          length: searchHistory.length,
+          content: searchHistory,
+          firstItem: searchHistory[0]
+        });
+        const shouldShow = Array.isArray(searchHistory) && searchHistory.length > 0;
+        console.log('📋 NON-COMPACT RENDER: Should show search history?', shouldShow);
+        return shouldShow;
+      })() && (
         <div className="mt-3 pt-3 border-t border-border">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Recent Searches</span>
           </div>
           <div className="flex flex-wrap gap-2 items-center">
-              {(Array.isArray(searchHistory) ? searchHistory : []).map((history) => (
+              {(Array.isArray(searchHistory) ? searchHistory : []).map((history, index) => {
+                console.log(`📋 NON-COMPACT RENDER: Mapping history item ${index}:`, history);
+                return (
               <Badge
                 key={`${history.query}-${history.gender}-${history.id}`}
                 variant="secondary"
@@ -209,7 +246,8 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                   <X className="w-3 h-3" />
                 </button>
               </Badge>
-            ))}
+                );
+              })}
             
             {/* Three dots link to top search page */}
             <button

@@ -193,9 +193,12 @@ const Index = () => {
       
       // Track search in analytics database (only for new searches, not pagination)
       if (!pageToken) {
-        await trackSearch(query, gender);
+        console.log('🔍 About to track search:', query, gender);
+        const trackResult = await trackSearch(query, gender);
+        console.log('📊 Track search result:', trackResult);
         // Trigger history refresh
         setRefreshHistory(prev => !prev);
+        console.log('🔄 History refresh triggered');
       }
       
       toast({
