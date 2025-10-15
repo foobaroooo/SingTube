@@ -363,9 +363,19 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     <p className="text-xs md:text-sm text-muted-foreground truncate mt-1">
                       {song.artist}
                     </p>
-                    <span className="text-xs text-muted-foreground">
-                      {song.duration}
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {song.duration}
+                      </span>
+                      {song.addedBy && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-xs text-primary font-medium">
+                            Added by {song.addedBy}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                   
                   <Button 

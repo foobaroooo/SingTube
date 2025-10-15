@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useUser } from "@/contexts/UserContext";
 import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
 import { CurrentSong } from "@/components/CurrentSong";
@@ -21,6 +22,7 @@ import heroImage from "@/assets/karaoke-hero.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { userName, setIsHost } = useUser();
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -117,6 +119,11 @@ const Index = () => {
         setQueue(savedData.songs);
         setCurrentIndex(savedData.currentIndex);
         setCurrentQueueName(savedData.queueName);
+      }
+
+      // Set user as host if not joining via shared link
+      if (!shareGuid) {
+        setIsHost(true);
       }
     };
     
@@ -220,7 +227,8 @@ const Index = () => {
   };
 
   const addToQueue = async (song: Song) => {
-    const newQueue = [...queue, song];
+    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+    const newQueue = [...queue, songWithUser];
     setQueue(newQueue);
     
     // Auto-save queue if it's the first song and queue isn't saved yet
@@ -280,7 +288,8 @@ const Index = () => {
   };
 
   const addToFront = async (song: Song) => {
-    const newQueue = [song, ...queue];
+    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+    const newQueue = [songWithUser, ...queue];
     setQueue(newQueue);
     if (currentIndex >= 0) {
       setCurrentIndex(prev => prev + 1);

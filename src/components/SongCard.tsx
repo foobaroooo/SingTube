@@ -10,6 +10,7 @@ export interface Song {
   thumbnail: string;
   duration: string;
   youtubeId: string;
+  addedBy?: string; // Name of the user who added this song
 }
 
 interface SongCardProps {
