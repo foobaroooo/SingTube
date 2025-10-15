@@ -22,7 +22,7 @@ import heroImage from "@/assets/karaoke-hero.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { userName, setIsHost } = useUser();
+  const { userName, isHost, setIsHost } = useUser();
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -143,6 +143,68 @@ const Index = () => {
       saveCurrentQueue(queue, currentIndex, currentQueueName);
     }
   }, [queue, currentIndex, currentQueueName]);
+
+  // Real-time sync for host when users add songs from their phones
+  useEffect(() => {
+    const hostRoomGuid = localStorage.getItem('singtube_host_room_guid');
+    const hostRoomId = localStorage.getItem('singtube_host_room_id');
+    
+    console.log('🔄 Sync check:', { hostRoomGuid, isHost, hasQueue: queue.length > 0 });
+    
+    if (!hostRoomGuid || !isHost) {
+      console.log('❌ Sync disabled:', { hasGuid: !!hostRoomGuid, isHost });
+      return; // Only sync if we're the host and have a room
+    }
+
+    console.log('✅ Starting real-time sync for host with GUID:', hostRoomGuid);
+
+    const syncInterval = setInterval(async () => {
+      try {
+        console.log('🔍 Syncing with shared queue...');
+        const sharedQueue = await getSharedQueue(hostRoomGuid);
+        if (sharedQueue && sharedQueue.songs) {
+          console.log('📊 Queue comparison:', { 
+            shared: sharedQueue.songs.length, 
+            local: queue.length,
+            sharedSongs: sharedQueue.songs.map(s => s.title + ' by ' + s.addedBy)
+          });
+          
+          // Check if the shared queue has more songs than our local queue
+          if (sharedQueue.songs.length > queue.length) {
+            const newSongs = sharedQueue.songs.slice(queue.length);
+            console.log('🎵 New songs detected:', newSongs.map(s => s.title + ' by ' + s.addedBy));
+            
+            // Add new songs to local queue
+            setQueue(sharedQueue.songs);
+            
+            // Show notification for each new song
+            newSongs.forEach(song => {
+              if (song.addedBy && song.addedBy !== userName) {
+                toast({
+                  title: "New Song Added!",
+                  description: `"${song.title}" added by ${song.addedBy}`,
+                });
+              }
+            });
+          }
+          // Also sync if songs were removed or reordered
+          else if (JSON.stringify(sharedQueue.songs) !== JSON.stringify(queue)) {
+            console.log('🔄 Queue structure changed, syncing...');
+            setQueue(sharedQueue.songs);
+          }
+        } else {
+          console.log('❌ No shared queue found or empty');
+        }
+      } catch (error) {
+        console.error('❌ Failed to sync with shared queue:', error);
+      }
+    }, 3000); // Sync every 3 seconds
+
+    return () => {
+      console.log('🛑 Stopping sync interval');
+      clearInterval(syncInterval);
+    };
+  }, [isHost, queue.length, userName, toast]); // Changed queue to queue.length to avoid infinite loops
 
   const handleSearch = async (query: string, gender: string, pageToken?: string) => {
     if (!query.trim()) {
@@ -494,6 +556,15 @@ const Index = () => {
           const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
           setShareDialogData({ url: shareUrl, name: tempQueue.name });
           setShareDialogOpen(true);
+          
+          // Store the GUID for real-time sync
+          localStorage.setItem('singtube_host_room_guid', newQueue.guid);
+          localStorage.setItem('singtube_host_room_id', newQueue.id.toString());
+          
+          // Set user as host when they create a room
+          setIsHost(true);
+          
+          console.log('🏠 Host room GUID stored:', newQueue.guid);
         } else {
           throw new Error("Failed to get GUID for sharing");
         }
@@ -1017,6 +1088,7 @@ const Index = () => {
               queueId={currentQueueId}
               onUpdateQueueName={handleUpdateQueueName}
               onOpenShareDialog={handleOpenShareDialog}
+              onBecomeHost={() => setIsHost(true)}
             />
             </div>
           )}
@@ -1065,6 +1137,7 @@ const Index = () => {
             queueName={currentQueueName}
             queueId={currentQueueId}
             onUpdateQueueName={handleUpdateQueueName}
+            onBecomeHost={() => setIsHost(true)}
           />
         )}
       </div>

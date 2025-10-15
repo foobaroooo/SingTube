@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { X, GripVertical, Music, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp, Edit, Check } from "lucide-react";
+import { X, GripVertical, Music, Maximize2, Minimize2, Play, Pause, SkipBack, SkipForward, Share2, Copy, TrendingUp, Edit, Check, Users } from "lucide-react";
 import { Song } from "./SongCard";
 import { ShareQRDialog } from "./ShareQRDialog";
 import { saveQueue, getSavedQueues, deleteQueue, updateQueue, type SavedQueue } from "@/services/apiService";
@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
 
 interface QueueSectionProps {
   queue: Song[];
@@ -32,11 +33,13 @@ interface QueueSectionProps {
   queueId?: number | null;
   onUpdateQueueName?: (newName: string) => void;
   onOpenShareDialog?: () => void;
+  onBecomeHost?: () => void;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, isMaximized = false, onToggleMaximize, queueName, queueId, onUpdateQueueName, onOpenShareDialog }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, isMaximized = false, onToggleMaximize, queueName, queueId, onUpdateQueueName, onOpenShareDialog, onBecomeHost }: QueueSectionProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { userName } = useUser();
   const [shareQRDialogOpen, setShareQRDialogOpen] = useState(false);
   const [shareData, setShareData] = useState<{ url: string; name: string }>({ url: "", name: "" });
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -273,6 +276,17 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                           const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
                           setShareData({ url: shareUrl, name: tempQueue.name });
                           setShareQRDialogOpen(true);
+                          
+                          // Store the GUID for real-time sync
+                          localStorage.setItem('singtube_host_room_guid', newQueue.guid);
+                          localStorage.setItem('singtube_host_room_id', newQueue.id.toString());
+                          
+                          // Notify parent to set host status
+                          if (onBecomeHost) {
+                            onBecomeHost();
+                          }
+                          
+                          console.log('🏠 Host room GUID stored from QueueSection:', newQueue.guid);
                         } else {
                           throw new Error("Failed to get GUID for sharing");
                         }
@@ -319,6 +333,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
             (Array.isArray(queue) ? queue : []).map((song, index) => {
               const itemKey = `${song.id}-${index}`;
               const isFadingOut = fadingOutItems.has(itemKey);
+              const isAddedByOther = song.addedBy && song.addedBy !== userName && song.addedBy !== "Unknown";
               
               return (
                 <div 
@@ -332,7 +347,9 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
                     ${index === currentIndex 
                       ? 'bg-primary/10 border-primary' 
-                      : 'bg-secondary/50 border-border hover:bg-secondary'
+                      : isAddedByOther 
+                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:hover:bg-blue-900/30'
+                        : 'bg-secondary/50 border-border hover:bg-secondary'
                     }
                     ${draggedIndex === index ? 'opacity-50' : ''}
                     ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
@@ -370,9 +387,16 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                       {song.addedBy && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-primary font-medium">
-                            Added by {song.addedBy}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            {isAddedByOther && <Users className="w-3 h-3 text-blue-600 dark:text-blue-400" />}
+                            <span className={`text-xs font-medium ${
+                              isAddedByOther 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-primary'
+                            }`}>
+                              Added by {song.addedBy}
+                            </span>
+                          </div>
                         </>
                       )}
                     </div>
