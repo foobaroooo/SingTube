@@ -282,9 +282,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
                     ${index === currentIndex 
                       ? 'bg-primary/10 border-primary' 
-                      : isAddedByOther 
-                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:hover:bg-blue-900/30'
-                        : 'bg-secondary/50 border-border hover:bg-secondary'
+                      : 'bg-secondary/50 border-border hover:bg-secondary'
                     }
                     ${draggedIndex === index ? 'opacity-50' : ''}
                     ${dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''}
