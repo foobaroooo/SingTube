@@ -31,9 +31,10 @@ interface QueueSectionProps {
   queueName?: string;
   queueId?: number | null;
   onUpdateQueueName?: (newName: string) => void;
+  onOpenShareDialog?: () => void;
 }
 
-export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, isMaximized = false, onToggleMaximize, queueName, queueId, onUpdateQueueName }: QueueSectionProps) => {
+export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onPause, onNext, onPrevious, onDoubleClickPlay, currentIndex, isPlaying = false, canGoNext = false, canGoPrevious = false, isMaximized = false, onToggleMaximize, queueName, queueId, onUpdateQueueName, onOpenShareDialog }: QueueSectionProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [shareQRDialogOpen, setShareQRDialogOpen] = useState(false);
@@ -193,17 +194,28 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 flex-1">
-                    <span>{queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})</span>
-                    {onUpdateQueueName && (
+                  <div className="flex items-center justify-between gap-2 flex-1">
+                    <h3 className="flex items-center gap-2">
+                      {queueName || t('app.queue.title')} ({Array.isArray(queue) ? queue.length : 0})
+                      {onUpdateQueueName && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleEditTitle}
+                          className="h-6 w-6 opacity-60 hover:opacity-100"
+                          title={t('app.queue.editQueueName')}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </h3>
+                    {onOpenShareDialog && (
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleEditTitle}
-                        className="h-6 w-6 opacity-60 hover:opacity-100"
-                        title={t('app.queue.editQueueName')}
+                        variant="link"
+                        onClick={onOpenShareDialog}
+                        className="text-primary hover:text-primary/80 p-0 h-auto font-normal text-sm"
                       >
-                        <Edit className="h-3 w-3" />
+                        ({t('app.queue.howToJoin')})
                       </Button>
                     )}
                   </div>
@@ -233,8 +245,8 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                   onClick={async () => {
                     if (!Array.isArray(queue) || queue.length === 0) {
                       toast({
-                        title: "Empty Queue",
-                        description: "Cannot share an empty queue",
+                        title: t('app.queue.emptyQueueTitle'),
+                        description: t('app.queue.emptyQueueMessage'),
                         variant: "destructive"
                       });
                       return;

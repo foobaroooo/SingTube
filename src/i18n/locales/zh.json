@@ -13,7 +13,7 @@
       }
     },
     "queue": {
-      "title": "歌單",
+      "title": "我的KTV包廂",
       "empty": "您的佇列是空的。請新增一些歌曲！",
       "emptyMessage": "您的歌單是空的",
       "getStarted": "搜尋並新增歌曲以開始使用！",
@@ -36,6 +36,9 @@
       "howToJoin": "如何加入？",
       "editQueueName": "編輯歌單名稱",
       "priority": "插播",
+      "emptyQueueTitle": "空的歌單",
+      "emptyQueueMessage": "無法分享空的歌單",
+      "emptyQueueShareMessage": "加入一些歌曲來分享您的卡拉OK房間",
       "tooltips": {
         "loadQueue": "載入已儲存歌單",
         "saveQueue": "儲存目前歌單",

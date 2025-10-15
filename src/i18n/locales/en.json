@@ -13,7 +13,7 @@
       }
     },
     "queue": {
-      "title": "Queue",
+      "title": "My KTV Room",
       "empty": "Your queue is empty. Add some songs!",
       "emptyMessage": "Your queue is empty",
       "getStarted": "Search and add songs to get started!",
@@ -36,6 +36,9 @@
       "howToJoin": "How to join?",
       "editQueueName": "Edit queue name",
       "priority": "Priority",
+      "emptyQueueTitle": "Empty Queue",
+      "emptyQueueMessage": "Cannot share an empty queue",
+      "emptyQueueShareMessage": "Add some songs to share your karaoke room",
       "tooltips": {
         "loadQueue": "Load saved queue",
         "saveQueue": "Save current queue",

@@ -226,7 +226,7 @@ const Index = () => {
     // Auto-save queue if it's the first song and queue isn't saved yet
     if (!currentQueueId && !currentQueueName && queue.length === 0) {
       try {
-        const autoSaveName = `My Queue ${new Date().toLocaleDateString()}`;
+        const autoSaveName = `${t('app.queue.title')} ${new Date().toLocaleDateString()}`;
         const success = await saveQueue(autoSaveName, newQueue);
         if (success) {
           // Get the newly saved queue to get its ID
@@ -289,7 +289,7 @@ const Index = () => {
     // Auto-save queue if it's the first song and queue isn't saved yet
     if (!currentQueueId && !currentQueueName && queue.length === 0) {
       try {
-        const autoSaveName = `My Queue ${new Date().toLocaleDateString()}`;
+        const autoSaveName = `${t('app.queue.title')} ${new Date().toLocaleDateString()}`;
         const success = await saveQueue(autoSaveName, newQueue);
         if (success) {
           // Get the newly saved queue to get its ID
@@ -457,8 +457,8 @@ const Index = () => {
   const handleOpenShareDialog = async () => {
     if (!Array.isArray(queue) || queue.length === 0) {
       toast({
-        title: "Empty Queue",
-        description: "Add some songs to share your karaoke room",
+        title: t('app.queue.emptyQueueTitle'),
+        description: t('app.queue.emptyQueueShareMessage'),
         variant: "destructive"
       });
       return;
@@ -988,26 +988,6 @@ const Index = () => {
           {/* Queue */}
           {showQueueSection && (
             <div className="flex flex-col min-h-0">
-              <div className="mb-3 lg:mb-4">
-                <h2 className="text-lg lg:text-xl font-semibold text-foreground">
-                  {t('app.queue.title')} 
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={handleOpenShareDialog}
-                    className="text-sm font-normal p-0 h-auto ml-2 underline-offset-4 hover:underline transition-all duration-200 ease-out"
-                    style={{ 
-                      background: 'linear-gradient(135deg, hsl(280 100% 70%), hsl(320 100% 70%))',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-({t('app.queue.howToJoin')})
-                  </Button>
-                </h2>
-              </div>
             <QueueSection
               queue={queue}
               onRemove={removeFromQueue}
@@ -1027,6 +1007,7 @@ const Index = () => {
               queueName={currentQueueName}
               queueId={currentQueueId}
               onUpdateQueueName={handleUpdateQueueName}
+              onOpenShareDialog={handleOpenShareDialog}
             />
             </div>
           )}
