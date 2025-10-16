@@ -1,4 +1,12 @@
-Options -MultiViews
 RewriteEngine On
+
+# Handle API requests - don't rewrite them
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ - [L]
+
+# Handle existing files and directories
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ index.html [QR,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redirect all other requests to index.html
+RewriteRule . /index.html [L]
