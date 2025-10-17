@@ -75,10 +75,15 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                 <Button 
                   size="sm" 
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     onAddToQueue(song);
                   }}
-                  className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3"
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                 >
                   <Plus className="w-3 h-3 md:hidden" />
                   <span className="hidden md:inline">{t('app.queue.addToQueue')}</span>
@@ -88,10 +93,15 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                     size="sm" 
                     variant="outline"
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       onAddToFront(song);
                     }}
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3"
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                   >
                     <span className="hidden md:inline">{t('app.queue.priority')}</span>
                     <span className="md:hidden">!</span>
@@ -140,8 +150,16 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
         <div className="flex gap-2">
           <Button 
             size="sm" 
-            onClick={() => onAddToQueue(song)}
-            className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAddToQueue(song);
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground touch-manipulation"
           >
             {t('app.queue.addToQueue')}
           </Button>
@@ -149,8 +167,16 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
             <Button 
               size="sm" 
               variant="outline"
-              onClick={() => onAddToFront(song)}
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToFront(song);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground touch-manipulation"
             >
               {t('app.queue.priority')}
             </Button>
