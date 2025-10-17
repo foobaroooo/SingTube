@@ -75,13 +75,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                 <Button 
                   size="sm" 
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     onAddToQueue(song);
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
                   }}
                   className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                 >
@@ -93,13 +88,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                     size="sm" 
                     variant="outline"
                     onClick={(e) => {
-                      e.preventDefault();
                       e.stopPropagation();
                       onAddToFront(song);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
                     }}
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                   >
@@ -151,13 +141,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
           <Button 
             size="sm" 
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               onAddToQueue(song);
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
             }}
             className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground touch-manipulation"
           >
@@ -168,13 +153,8 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
               size="sm" 
               variant="outline"
               onClick={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 onAddToFront(song);
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
               }}
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground touch-manipulation"
             >

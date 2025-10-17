@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Mic, Clock, Loader2, X, MoreHorizontal } from "lucide-react";
-import { getSearchHistoryFromAnalytics, type SearchHistory } from "@/services/apiService";
+import { getSearchHistory, type SearchHistory } from "@/services/apiService";
 
 interface SearchSectionProps {
   onSearch: (query: string, gender: string) => void;
@@ -25,7 +25,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   const loadHistory = async () => {
     try {
       console.log('📋 Loading search history...');
-      const history = await getSearchHistoryFromAnalytics(10); // Get recent 10 searches
+      const history = await getSearchHistory(); // Get recent searches (already limited to 50 in PHP)
       console.log('📋 Raw history from API:', history);
       const historyToSet = history.slice(0, 5);
       setSearchHistory(historyToSet); // Show only last 5 searches in UI
