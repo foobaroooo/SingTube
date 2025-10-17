@@ -344,22 +344,7 @@ const Room = () => {
               refreshHistory={refreshHistory}
             />
 
-            {/* Current Song */}
-            {currentSong && (
-              <CurrentSong
-                song={currentSong}
-                isPlaying={isPlaying}
-                onPlayPause={() => setIsPlaying(!isPlaying)}
-                onNext={nextSong}
-                onPrevious={previousSong}
-                canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
-                canGoPrevious={currentIndex > 0}
-                autoAdvance={autoAdvance}
-                onAutoAdvanceChange={setAutoAdvance}
-                onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
-                onShowMobilePreview={() => setShowMobilePreview(true)}
-              />
-            )}
+{/* CurrentSong component hidden in room view to save space */}
 
             {/* Search Results */}
             {activeView === 'search' && (
@@ -395,7 +380,7 @@ const Room = () => {
             )}
           </div>
 
-          {/* Right Column - Queue */}
+          {/* Right Column - Queue (onOpenShareDialog removed - guests shouldn't see "How to join?") */}
           <QueueSection
             queue={queue}
             onRemove={removeFromQueue}
@@ -410,7 +395,6 @@ const Room = () => {
             onToggleMaximize={() => setIsQueueMaximized(!isQueueMaximized)}
             queueName={currentQueueName}
             queueId={currentQueueId}
-            onOpenShareDialog={() => setShareDialogOpen(true)}
           />
         </div>
       </div>
