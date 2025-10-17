@@ -216,7 +216,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                       <Button
                         variant="link"
                         onClick={onOpenShareDialog}
-                        className="text-primary hover:text-primary/80 p-0 h-auto font-normal text-sm"
+                        className="text-primary hover:text-primary/80 p-0 h-auto font-normal text-lg"
                       >
                         ({t('app.queue.howToJoin')})
                       </Button>
