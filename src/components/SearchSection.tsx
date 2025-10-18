@@ -24,20 +24,20 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
   const loadHistory = async () => {
     try {
-      console.log('📋 Loading search history...');
+      // console.log('📋 Loading search history...');
       const history = await getSearchHistory(); // Get recent searches (already limited to 50 in PHP)
-      console.log('📋 Raw history from API:', history);
+      // console.log('📋 Raw history from API:', history);
       const historyToSet = history.slice(0, 5);
       setSearchHistory(historyToSet); // Show only last 5 searches in UI
-      console.log('📋 Search history set:', historyToSet);
+      // console.log('📋 Search history set:', historyToSet);
       
       // Debug: Check what's actually in the state after setting
-      setTimeout(() => {
-        console.log('📋 Checking searchHistory state after setting...');
-        console.log('📋 searchHistory length:', historyToSet.length);
-        console.log('📋 searchHistory content:', historyToSet);
-        console.log('📋 Array.isArray(searchHistory):', Array.isArray(historyToSet));
-      }, 100);
+      // setTimeout(() => {
+      //   console.log('📋 Checking searchHistory state after setting...');
+      //   console.log('📋 searchHistory length:', historyToSet.length);
+      //   console.log('📋 searchHistory content:', historyToSet);
+      //   console.log('📋 Array.isArray(searchHistory):', Array.isArray(historyToSet));
+      // }, 100);
     } catch (error) {
       console.error('Failed to load search history:', error);
     }
@@ -48,7 +48,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   }, []);
 
   useEffect(() => {
-    console.log('🔄 Refresh history triggered, refreshHistory:', refreshHistory);
+    // console.log('🔄 Refresh history triggered, refreshHistory:', refreshHistory);
     loadHistory();
   }, [refreshHistory]);
 
@@ -118,21 +118,21 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
         {/* Recent Searches - Optimized for mobile */}
         {(() => {
-          console.log('📋 RENDER: Checking searchHistory for display...', {
-            isArray: Array.isArray(searchHistory),
-            length: searchHistory.length,
-            content: searchHistory,
-            firstItem: searchHistory[0],
-            itemsToRender: (Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3)
-          });
+          // console.log('📋 RENDER: Checking searchHistory for display...', {
+          //   isArray: Array.isArray(searchHistory),
+          //   length: searchHistory.length,
+          //   content: searchHistory,
+          //   firstItem: searchHistory[0],
+          //   itemsToRender: (Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3)
+          // });
           const shouldShow = Array.isArray(searchHistory) && searchHistory.length > 0;
-          console.log('📋 RENDER: Should show search history?', shouldShow);
+          // console.log('📋 RENDER: Should show search history?', shouldShow);
           return shouldShow;
         })() && (
           <div className="mt-2">
             <div className="flex flex-wrap gap-1 items-center">
                 {(Array.isArray(searchHistory) ? searchHistory : []).slice(0, mobileOptimized ? 2 : 3).map((history, index) => {
-                  console.log(`📋 RENDER: Mapping history item ${index}:`, history);
+                  // console.log(`📋 RENDER: Mapping history item ${index}:`, history);
                   return (
                 <Badge
                   key={`${history.query}-${history.gender}-${history.id}`}
@@ -205,14 +205,14 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
 
       {/* Search History */}
       {(() => {
-        console.log('📋 NON-COMPACT RENDER: Checking searchHistory for display...', {
-          isArray: Array.isArray(searchHistory),
-          length: searchHistory.length,
-          content: searchHistory,
-          firstItem: searchHistory[0]
-        });
+        // console.log('📋 NON-COMPACT RENDER: Checking searchHistory for display...', {
+        //   isArray: Array.isArray(searchHistory),
+        //   length: searchHistory.length,
+        //   content: searchHistory,
+        //   firstItem: searchHistory[0]
+        // });
         const shouldShow = Array.isArray(searchHistory) && searchHistory.length > 0;
-        console.log('📋 NON-COMPACT RENDER: Should show search history?', shouldShow);
+        // console.log('📋 NON-COMPACT RENDER: Should show search history?', shouldShow);
         return shouldShow;
       })() && (
         <div className="mt-3 pt-3 border-t border-border">
@@ -222,7 +222,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
           </div>
           <div className="flex flex-wrap gap-2 items-center">
               {(Array.isArray(searchHistory) ? searchHistory : []).map((history, index) => {
-                console.log(`📋 NON-COMPACT RENDER: Mapping history item ${index}:`, history);
+                // console.log(`📋 NON-COMPACT RENDER: Mapping history item ${index}:`, history);
                 return (
               <Badge
                 key={`${history.query}-${history.gender}-${history.id}`}
