@@ -74,8 +74,14 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
               <div className="flex gap-1 md:gap-2">
                 <Button 
                   size="sm" 
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                    // Immediate action on touch start for better mobile responsiveness
+                    onAddToQueue(song);
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
+                    // Fallback for desktop/non-touch devices
                     onAddToQueue(song);
                   }}
                   className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
@@ -87,8 +93,14 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                   <Button 
                     size="sm" 
                     variant="outline"
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      // Immediate action on touch start for better mobile responsiveness
+                      onAddToFront(song);
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      // Fallback for desktop/non-touch devices
                       onAddToFront(song);
                     }}
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
@@ -140,8 +152,14 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
         <div className="flex gap-2">
           <Button 
             size="sm" 
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              // Immediate action on touch start for better mobile responsiveness
+              onAddToQueue(song);
+            }}
             onClick={(e) => {
               e.stopPropagation();
+              // Fallback for desktop/non-touch devices
               onAddToQueue(song);
             }}
             className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground touch-manipulation"
@@ -152,8 +170,14 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
             <Button 
               size="sm" 
               variant="outline"
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                // Immediate action on touch start for better mobile responsiveness
+                onAddToFront(song);
+              }}
               onClick={(e) => {
                 e.stopPropagation();
+                // Fallback for desktop/non-touch devices
                 onAddToFront(song);
               }}
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground touch-manipulation"
