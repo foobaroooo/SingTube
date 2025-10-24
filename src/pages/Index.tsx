@@ -50,6 +50,7 @@ const Index = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareDialogData, setShareDialogData] = useState<{ url: string; name: string }>({ url: "", name: "" });
+  const [lastLocalUpdate, setLastLocalUpdate] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -148,9 +149,9 @@ const Index = () => {
   useEffect(() => {
     const hostRoomGuid = localStorage.getItem('singtube_host_room_guid');
     const hostRoomId = localStorage.getItem('singtube_host_room_id');
-    
+
     // console.log('🔄 Sync check:', { hostRoomGuid, isHost, hasQueue: queue.length > 0 });
-    
+
     if (!hostRoomGuid || !isHost) {
       // console.log('❌ Sync disabled:', { hasGuid: !!hostRoomGuid, isHost });
       return; // Only sync if we're the host and have a room
@@ -160,23 +161,33 @@ const Index = () => {
 
     const syncInterval = setInterval(async () => {
       try {
+        // Skip sync if recent local update (prevents race condition with database writes)
+        const timeSinceLastUpdate = Date.now() - lastLocalUpdate;
+        if (timeSinceLastUpdate < 5000) {
+          // console.log('⏸️ Skipping sync - recent local update:', timeSinceLastUpdate, 'ms ago');
+          return;
+        }
+
         // console.log('🔍 Syncing with shared queue...');
         const sharedQueue = await getSharedQueue(hostRoomGuid);
         if (sharedQueue && sharedQueue.songs) {
-          // console.log('📊 Queue comparison:', { 
-          //   shared: sharedQueue.songs.length, 
+          // console.log('📊 Queue comparison:', {
+          //   shared: sharedQueue.songs.length,
           //   local: queue.length,
           //   sharedSongs: sharedQueue.songs.map(s => s.title + ' by ' + s.addedBy)
           // });
-          
-          // Check if the shared queue has more songs than our local queue
-          if (sharedQueue.songs.length > queue.length) {
-            const newSongs = sharedQueue.songs.slice(queue.length);
+
+          // SMART MERGE: Only accept NEW songs (added by guests)
+          // This prevents overwriting host's removals/reorders
+          const currentIds = new Set(queue.map(s => s.id));
+          const newSongs = sharedQueue.songs.filter(s => !currentIds.has(s.id));
+
+          if (newSongs.length > 0) {
             // console.log('🎵 New songs detected:', newSongs.map(s => s.title + ' by ' + s.addedBy));
-            
-            // Add new songs to local queue
-            setQueue(sharedQueue.songs);
-            
+
+            // Add new songs to the end of the current queue
+            setQueue([...queue, ...newSongs]);
+
             // Show notification for each new song
             newSongs.forEach(song => {
               if (song.addedBy && song.addedBy !== userName) {
@@ -187,11 +198,7 @@ const Index = () => {
               }
             });
           }
-          // Also sync if songs were removed or reordered
-          else if (JSON.stringify(sharedQueue.songs) !== JSON.stringify(queue)) {
-            // console.log('🔄 Queue structure changed, syncing...');
-            setQueue(sharedQueue.songs);
-          }
+          // Note: We no longer do full queue replacement to preserve host's changes
         } else {
           // console.log('❌ No shared queue found or empty');
         }
@@ -204,7 +211,7 @@ const Index = () => {
       // console.log('🛑 Stopping sync interval');
       clearInterval(syncInterval);
     };
-  }, [isHost, queue.length, userName, toast]); // Changed queue to queue.length to avoid infinite loops
+  }, [isHost, queue, userName, toast, lastLocalUpdate]); // Include full queue and lastLocalUpdate
 
   const handleSearch = async (query: string, gender: string, pageToken?: string) => {
     if (!query.trim()) {
@@ -416,14 +423,17 @@ const Index = () => {
   const removeFromQueue = async (index: number) => {
     const songToRemove = Array.isArray(queue) && queue[index] ? queue[index] : null;
     const newQueue = Array.isArray(queue) ? queue.filter((_, i) => i !== index) : [];
+
+    // Mark the time of this local update to prevent sync race condition
+    setLastLocalUpdate(Date.now());
     setQueue(newQueue);
-    
+
     if (index === currentIndex) {
       setCurrentIndex(-1);
     } else if (index < currentIndex) {
       setCurrentIndex(prev => prev - 1);
     }
-    
+
     // Auto-update saved queue if this is a saved queue
     if (currentQueueId && currentQueueName) {
       try {
@@ -455,11 +465,14 @@ const Index = () => {
 
   const reorderQueue = async (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex || !Array.isArray(queue)) return;
-    
+
+    // Mark the time of this local update to prevent sync race condition
+    setLastLocalUpdate(Date.now());
+
     const newQueue = [...queue];
     const [removed] = newQueue.splice(fromIndex, 1);
     newQueue.splice(toIndex, 0, removed);
-    
+
     // Update current index if needed
     let newCurrentIndex = currentIndex;
     if (currentIndex === fromIndex) {
@@ -469,10 +482,10 @@ const Index = () => {
     } else if (fromIndex > currentIndex && toIndex <= currentIndex) {
       newCurrentIndex = currentIndex + 1;
     }
-    
+
     setQueue(newQueue);
     setCurrentIndex(newCurrentIndex);
-    
+
     // Auto-update saved queue if this is a saved queue
     if (currentQueueId && currentQueueName) {
       try {

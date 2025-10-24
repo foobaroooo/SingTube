@@ -195,50 +195,7 @@ const Room = () => {
     await trackSongPlay(song);
   };
 
-  const removeFromQueue = (index: number) => {
-    const newQueue = queue.filter((_, i) => i !== index);
-    setQueue(newQueue);
-    
-    if (currentIndex > index) {
-      setCurrentIndex(prev => prev - 1);
-    } else if (currentIndex === index) {
-      if (newQueue.length === 0) {
-        setCurrentIndex(-1);
-      } else if (index >= newQueue.length) {
-        setCurrentIndex(newQueue.length - 1);
-      }
-    }
-
-    // Update the shared queue in database
-    if (currentQueueId && currentQueueName) {
-      updateQueue(currentQueueId, currentQueueName, newQueue).catch(error => {
-        console.error('Failed to update shared queue:', error);
-      });
-    }
-  };
-
-  const reorderQueue = (fromIndex: number, toIndex: number) => {
-    const newQueue = [...queue];
-    const [movedItem] = newQueue.splice(fromIndex, 1);
-    newQueue.splice(toIndex, 0, movedItem);
-    setQueue(newQueue);
-
-    // Update current index if needed
-    if (currentIndex === fromIndex) {
-      setCurrentIndex(toIndex);
-    } else if (currentIndex > fromIndex && currentIndex <= toIndex) {
-      setCurrentIndex(prev => prev - 1);
-    } else if (currentIndex < fromIndex && currentIndex >= toIndex) {
-      setCurrentIndex(prev => prev + 1);
-    }
-
-    // Update the shared queue in database
-    if (currentQueueId && currentQueueName) {
-      updateQueue(currentQueueId, currentQueueName, newQueue).catch(error => {
-        console.error('Failed to update shared queue:', error);
-      });
-    }
-  };
+  // Guests cannot remove or reorder songs - only hosts can do that
 
   const selectSong = (index: number) => {
     setCurrentIndex(index);
@@ -380,11 +337,9 @@ const Room = () => {
             )}
           </div>
 
-          {/* Right Column - Queue (onOpenShareDialog removed - guests shouldn't see "How to join?") */}
+          {/* Right Column - Queue (guests cannot remove/reorder songs) */}
           <QueueSection
             queue={queue}
-            onRemove={removeFromQueue}
-            onReorder={reorderQueue}
             onSelect={selectSong}
             onDoubleClickPlay={handleDoubleClickPlay}
             currentIndex={currentIndex}

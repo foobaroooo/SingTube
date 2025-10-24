@@ -15,8 +15,8 @@ import { useUser } from "@/contexts/UserContext";
 
 interface QueueSectionProps {
   queue: Song[];
-  onRemove: (index: number) => void;
-  onReorder: (fromIndex: number, toIndex: number) => void;
+  onRemove?: (index: number) => void;
+  onReorder?: (fromIndex: number, toIndex: number) => void;
   onSelect: (index: number) => void;
   onPlay?: () => void;
   onPause?: () => void;
@@ -70,7 +70,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+    if (draggedIndex !== null && draggedIndex !== dropIndex && onReorder) {
       onReorder(draggedIndex, dropIndex);
     }
     setDraggedIndex(null);
@@ -83,12 +83,14 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
   };
 
   const handleRemoveWithFadeOut = (index: number) => {
+    if (!onRemove) return;
+
     const song = queue[index];
     const itemKey = `${song.id}-${index}`;
-    
+
     // Start fade-out animation
     setFadingOutItems(prev => new Set(prev).add(itemKey));
-    
+
     // Remove item after animation completes
     setTimeout(() => {
       onRemove(index);
@@ -271,17 +273,17 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
               const isAddedByOther = song.addedBy && song.addedBy !== userName && song.addedBy !== "Unknown";
               
               return (
-                <div 
+                <div
                   key={itemKey}
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
+                  draggable={!!onReorder}
+                  onDragStart={onReorder ? (e) => handleDragStart(e, index) : undefined}
+                  onDragOver={onReorder ? (e) => handleDragOver(e, index) : undefined}
+                  onDragLeave={onReorder ? handleDragLeave : undefined}
+                  onDrop={onReorder ? (e) => handleDrop(e, index) : undefined}
+                  onDragEnd={onReorder ? handleDragEnd : undefined}
                   className={`group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out
-                    ${index === currentIndex 
-                      ? 'bg-primary/10 border-primary' 
+                    ${index === currentIndex
+                      ? 'bg-primary/10 border-primary'
                       : 'bg-secondary/50 border-border hover:bg-secondary'
                     }
                     ${draggedIndex === index ? 'opacity-50' : ''}
@@ -297,7 +299,9 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                     }`}>
                       {index + 1}
                     </span>
-                    <GripVertical className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                    {onReorder && (
+                      <GripVertical className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground opacity-60 group-hover:opacity-100 transition-smooth cursor-grab active:cursor-grabbing" />
+                    )}
                   </div>
                   
                   <img 
@@ -334,19 +338,21 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                       )}
                     </div>
                   </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveWithFadeOut(index);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
-                    title={t('app.queue.tooltips.removeFromQueue')}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+
+                  {onRemove && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveWithFadeOut(index);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive hover:text-destructive-foreground"
+                      title={t('app.queue.tooltips.removeFromQueue')}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               );
             })
