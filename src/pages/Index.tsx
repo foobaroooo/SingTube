@@ -71,11 +71,11 @@ const Index = () => {
             setCurrentIndex(0);
             setCurrentQueueName(sharedQueue.name);
             setCurrentQueueId(sharedQueue.id);
-            setActiveView('queue'); // Switch to queue view to show the shared playlist
-            
+            setActiveView('search'); // Guests can only search and add songs
+
             toast({
-              title: "Shared Queue Loaded",
-              description: `Loaded "${sharedQueue.name}" with ${sharedQueue.songs.length} songs`,
+              title: "Joined Karaoke Room",
+              description: `You can search and add songs to "${sharedQueue.name}"`,
             });
             
             // Clean up URL to remove share parameter
@@ -144,6 +144,13 @@ const Index = () => {
       saveCurrentQueue(queue, currentIndex, currentQueueName);
     }
   }, [queue, currentIndex, currentQueueName]);
+
+  // Ensure guests always stay on search view (they can't access queue)
+  useEffect(() => {
+    if (!isHost && activeView === 'queue') {
+      setActiveView('search');
+    }
+  }, [isHost, activeView]);
 
   // Real-time sync for host when users add songs from their phones
   useEffect(() => {
@@ -861,7 +868,8 @@ const Index = () => {
   // Determine layout based on active view
   const hasResults = Array.isArray(searchResults) && searchResults.length > 0;
   const showSearchResults = activeView === 'search' && (hasSearched || isSearchLoading);
-  const showQueueSection = activeView === 'queue';
+  // Only hosts can see the queue - guests can only search and add songs
+  const showQueueSection = activeView === 'queue' && isHost;
   
   // Single column layout for consistency across all devices
   const gridConfig = {
@@ -1219,44 +1227,46 @@ const Index = () => {
                 </Button>
               </div>
               
-              {/* View toggle */}
-              <div className="flex bg-muted rounded-full p-1">
-                <Button
-                  variant={activeView === 'search' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setActiveView('search')}
-                  className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
-                    activeView === 'search' 
-                      ? 'bg-gradient-primary text-white shadow-md' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Search className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{t('app.actions.search')}</span>
-                  <span className="sm:hidden">{t('app.actions.search')}</span>
-                </Button>
-                <Button
-                  variant={activeView === 'queue' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setActiveView('queue')}
-                  className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
-                    activeView === 'queue' 
-                      ? 'bg-gradient-primary text-white shadow-md' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <List className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{t('app.queue.title')}</span>
-                  <span className="sm:hidden">{t('app.queue.title')}</span>
-                  {Array.isArray(queue) && queue.length > 0 && (
-                    <Badge variant="secondary" className={`ml-1 text-xs ${
-                      activeView === 'queue' ? 'bg-background/20 text-white' : 'bg-background/20'
-                    }`}>
-                      {queue.length}
-                    </Badge>
-                  )}
-                </Button>
-              </div>
+              {/* View toggle - Only show for hosts */}
+              {isHost && (
+                <div className="flex bg-muted rounded-full p-1">
+                  <Button
+                    variant={activeView === 'search' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveView('search')}
+                    className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
+                      activeView === 'search'
+                        ? 'bg-gradient-primary text-white shadow-md'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">{t('app.actions.search')}</span>
+                    <span className="sm:hidden">{t('app.actions.search')}</span>
+                  </Button>
+                  <Button
+                    variant={activeView === 'queue' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveView('queue')}
+                    className={`flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-1 sm:py-2 transition-all text-xs sm:text-sm ${
+                      activeView === 'queue'
+                        ? 'bg-gradient-primary text-white shadow-md'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <List className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">{t('app.queue.title')}</span>
+                    <span className="sm:hidden">{t('app.queue.title')}</span>
+                    {Array.isArray(queue) && queue.length > 0 && (
+                      <Badge variant="secondary" className={`ml-1 text-xs ${
+                        activeView === 'queue' ? 'bg-background/20 text-white' : 'bg-background/20'
+                      }`}>
+                        {queue.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

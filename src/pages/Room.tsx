@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useUser } from "@/contexts/UserContext";
 import { SearchSection } from "@/components/SearchSection";
 import { SongCard, Song } from "@/components/SongCard";
-import { CurrentSong } from "@/components/CurrentSong";
-import { QueueSection } from "@/components/QueueSection";
 import { ShareQRDialog } from "@/components/ShareQRDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +22,6 @@ import {
   type SavedQueue 
 } from "@/services/apiService";
 import { searchYouTubeVideos } from "@/services/apiService";
-import { Maximize2 } from "lucide-react";
 
 const Room = () => {
   const { guid } = useParams<{ guid: string }>();
@@ -43,12 +40,10 @@ const Room = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [activeView, setActiveView] = useState<'search' | 'queue'>('queue');
   const [showTutorial, setShowTutorial] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareDialogData, setShareDialogData] = useState<{ url: string; name: string }>({ url: "", name: "" });
-  const [isQueueMaximized, setIsQueueMaximized] = useState(false);
   const [isRoomLoading, setIsRoomLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -81,11 +76,10 @@ const Room = () => {
           setCurrentIndex(0);
           setCurrentQueueName(sharedQueue.name);
           setCurrentQueueId(sharedQueue.id);
-          setActiveView('queue');
-          
+
           toast({
             title: "Welcome to the Room!",
-            description: `Joined "${sharedQueue.name}" with ${sharedQueue.songs.length} songs`,
+            description: `You can search and add songs to "${sharedQueue.name}"`,
           });
         } else {
           toast({
@@ -130,8 +124,7 @@ const Room = () => {
       const result = await searchYouTubeVideos(query, gender, 25);
       setSearchResults(result.songs);
       setNextPageToken(result.nextPageToken);
-      setActiveView('search');
-      
+
       // Track search
       await trackSearch(query, gender);
       setRefreshHistory(prev => !prev);
@@ -223,8 +216,7 @@ const Room = () => {
       setCurrentIndex(index);
     }
     setIsPlaying(true);
-    setActiveView('queue');
-    
+
     if (queue[index]) {
       await trackSongPlay(queue[index]);
     }
@@ -280,77 +272,62 @@ const Room = () => {
           </h1>
           <div className="flex items-center gap-2">
             <LanguageToggle />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsQueueMaximized(!isQueueMaximized)}
-              className="md:hidden"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Search Section */}
-            <SearchSection 
-              onSearch={handleSearch}
-              isLoading={isSearchLoading}
-              refreshHistory={refreshHistory}
-            />
-
-{/* CurrentSong component hidden in room view to save space */}
-
-            {/* Search Results */}
-            {activeView === 'search' && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">{t('app.search.resultsTitle')}</h2>
-                <div className="space-y-3 max-h-96 overflow-y-auto" ref={scrollContainerRef}>
-                  {searchResults.map((song, index) => (
-                    <SongCard
-                      key={`${song.id}-${index}`}
-                      song={song}
-                      onAddToQueue={addToQueue}
-                      onAddToFront={addToFront}
-                      showPlayButton
-                      compact
-                    />
-                  ))}
-                  {isLoadingMore && (
-                    <div className="flex justify-center p-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  )}
-                  {nextPageToken && !isLoadingMore && (
-                    <Button 
-                      variant="outline" 
-                      onClick={loadMoreResults}
-                      className="w-full"
-                    >
-                      Load More Results
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Queue (guests cannot remove/reorder songs) */}
-          <QueueSection
-            queue={queue}
-            onSelect={selectSong}
-            onDoubleClickPlay={handleDoubleClickPlay}
-            currentIndex={currentIndex}
-            isPlaying={isPlaying}
-            canGoNext={Array.isArray(queue) && currentIndex < queue.length - 1}
-            canGoPrevious={currentIndex > 0}
-            isMaximized={isQueueMaximized}
-            onToggleMaximize={() => setIsQueueMaximized(!isQueueMaximized)}
-            queueName={currentQueueName}
-            queueId={currentQueueId}
+        {/* Single Column - Guests can only search and add songs */}
+        <div className="space-y-6 max-w-4xl mx-auto">
+          {/* Search Section */}
+          <SearchSection
+            onSearch={handleSearch}
+            isLoading={isSearchLoading}
+            refreshHistory={refreshHistory}
           />
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">{t('app.search.resultsTitle')}</h2>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto" ref={scrollContainerRef}>
+                {searchResults.map((song, index) => (
+                  <SongCard
+                    key={`${song.id}-${index}`}
+                    song={song}
+                    onAddToQueue={addToQueue}
+                    onAddToFront={addToFront}
+                    showPlayButton
+                    compact
+                  />
+                ))}
+                {isLoadingMore && (
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  </div>
+                )}
+                {nextPageToken && !isLoadingMore && (
+                  <Button
+                    variant="outline"
+                    onClick={loadMoreResults}
+                    className="w-full"
+                  >
+                    Load More Results
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Welcome message when no search results */}
+          {searchResults.length === 0 && !isSearchLoading && (
+            <div className="text-center py-12">
+              <p className="text-lg text-muted-foreground">
+                {t('app.searchResults.searchPrompt')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Search and add songs to the karaoke queue
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
