@@ -17,7 +17,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mic2, X, EyeOff, Search, Expand, Shrink, List, AlertCircle, SkipBack, SkipForward, Play, Pause } from "lucide-react";
+import { Mic2, X, EyeOff, Search, Expand, Shrink, List, AlertCircle, SkipBack, SkipForward, Play, Pause, ScrollText } from "lucide-react";
 import heroImage from "@/assets/karaoke-hero.jpg";
 
 const Index = () => {
@@ -1150,6 +1150,15 @@ const Index = () => {
               <span>©</span>
               <span className="hidden sm:inline">{t('app.copyright.usage')}</span>
               <span className="sm:hidden">SingTube</span>
+              <a
+                href="/CHANGELOG.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 hover:text-primary transition-colors"
+                title="View Changelog"
+              >
+                <ScrollText className="w-3.5 h-3.5" />
+              </a>
             </div>
             
             {/* Combined playback controls and view toggle */}
