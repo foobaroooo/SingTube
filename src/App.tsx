@@ -9,6 +9,7 @@ import TopSearch from "./pages/TopSearch";
 import TopSongs from "./pages/TopSongs";
 import Join from "./pages/Join";
 import Room from "./pages/Room";
+import SocketTest from "./pages/SocketTest";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/top-songs" element={<TopSongs />} />
             <Route path="/join/:guid" element={<Join />} />
             <Route path="/room/:guid" element={<Room />} />
+            <Route path="/socket-test" element={<SocketTest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

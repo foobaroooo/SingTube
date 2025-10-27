@@ -266,7 +266,7 @@ export const searchYouTubeVideos = async (
 // Queue Management API
 export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> => {
   try {
-    await axios.post(`${API_BASE_URL}/queues.php`, {
+    await axios.post(`${API_BASE_URL}/api/queues`, {
       name,
       songs,
     });
@@ -279,8 +279,7 @@ export const saveQueue = async (name: string, songs: Song[]): Promise<boolean> =
 
 export const updateQueue = async (id: number, name: string, songs: Song[]): Promise<boolean> => {
   try {
-    await axios.put(`${API_BASE_URL}/queues.php`, {
-      id,
+    await axios.put(`${API_BASE_URL}/api/queues/${id}`, {
       name,
       songs,
     });
@@ -293,7 +292,7 @@ export const updateQueue = async (id: number, name: string, songs: Song[]): Prom
 
 export const getSavedQueues = async (): Promise<SavedQueue[]> => {
   try {
-    const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/queues.php`);
+    const response = await axios.get<SavedQueue[]>(`${API_BASE_URL}/api/queues`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get saved queues error:', error);
@@ -303,7 +302,7 @@ export const getSavedQueues = async (): Promise<SavedQueue[]> => {
 
 export const getSharedQueue = async (guid: string): Promise<SavedQueue | null> => {
   try {
-    const response = await axios.get<SavedQueue>(`${API_BASE_URL}/queues.php?guid=${guid}`);
+    const response = await axios.get<SavedQueue>(`${API_BASE_URL}/api/queues/${guid}`);
     return response.data;
   } catch (error) {
     console.error('Get shared queue error:', error);
@@ -313,7 +312,7 @@ export const getSharedQueue = async (guid: string): Promise<SavedQueue | null> =
 
 export const deleteQueue = async (id: number): Promise<boolean> => {
   try {
-    await axios.delete(`${API_BASE_URL}/queues.php?id=${id}`);
+    await axios.delete(`${API_BASE_URL}/api/queues/${id}`);
     return true;
   } catch (error) {
     console.error('Delete queue error:', error);
@@ -321,24 +320,28 @@ export const deleteQueue = async (id: number): Promise<boolean> => {
   }
 };
 
-// Search History API
+// Search History API (now handled by trackSearch)
 export const saveSearchHistory = async (query: string, gender: string = 'all'): Promise<boolean> => {
-  try {
-    await axios.post(`${API_BASE_URL}/history.php`, {
-      query,
-      gender,
-    });
-    return true;
-  } catch (error) {
-    console.error('Save search history error:', error);
-    return false;
-  }
+  // This is now handled by trackSearch
+  return trackSearch(query, gender);
 };
 
 export const getSearchHistory = async (): Promise<SearchHistory[]> => {
   try {
-    const response = await axios.get<SearchHistory[]>(`${API_BASE_URL}/history.php`);
-    return Array.isArray(response.data) ? response.data : [];
+    const response = await axios.get(`${API_BASE_URL}/api/history/top?limit=50`);
+
+    if (!Array.isArray(response.data)) {
+      return [];
+    }
+
+    // Convert to SearchHistory format
+    return response.data.map((item: any) => ({
+      id: item.id || 0,
+      query: item.query,
+      gender: item.gender,
+      searchCount: item.search_count || item.searchCount,
+      lastSearched: item.last_searched || item.lastSearched
+    }));
   } catch (error) {
     console.error('Get search history error:', error);
     return [];
@@ -346,29 +349,23 @@ export const getSearchHistory = async (): Promise<SearchHistory[]> => {
 };
 
 export const deleteSearchHistory = async (id: number): Promise<boolean> => {
-  try {
-    await axios.delete(`${API_BASE_URL}/history.php`, {
-      data: { id }
-    });
-    return true;
-  } catch (error) {
-    console.error('Delete search history error:', error);
-    return false;
-  }
+  // Not implemented on new backend yet - return false for now
+  console.warn('Delete search history not yet implemented on new backend');
+  return false;
 };
 
 // Analytics API
 export const trackSearch = async (query: string, gender: string = 'all'): Promise<boolean> => {
   // Import deduplication utility dynamically to avoid circular imports
   const { shouldTrackSearch } = await import('@/utils/trackingUtils');
-  
+
   // Check if we should track this search (prevents React double-mount duplicates)
   if (!shouldTrackSearch(query, gender)) {
     return true; // Return true since it's not an error, just a duplicate
   }
 
   try {
-    await axios.post(`${API_BASE_URL}/analytics.php?action=track_search`, {
+    await axios.post(`${API_BASE_URL}/api/history/track`, {
       query,
       gender,
     });
@@ -382,15 +379,15 @@ export const trackSearch = async (query: string, gender: string = 'all'): Promis
 export const trackSongPlay = async (song: Song): Promise<boolean> => {
   // Import deduplication utility dynamically to avoid circular imports
   const { shouldTrackSongPlay } = await import('@/utils/trackingUtils');
-  
+
   // Check if we should track this song play (prevents React double-mount duplicates)
   if (!shouldTrackSongPlay(song)) {
     return true; // Return true since it's not an error, just a duplicate
   }
 
   try {
-    await axios.post(`${API_BASE_URL}/analytics.php?action=track_play`, {
-      youtube_id: song.id,
+    await axios.post(`${API_BASE_URL}/api/analytics/track-play`, {
+      youtubeId: song.id,
       title: song.title,
       artist: song.artist,
       duration: song.duration,
@@ -423,7 +420,7 @@ export interface TopKeyword {
 
 export const getTopSongs = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopSong[]> => {
   try {
-    const response = await axios.get<TopSong[]>(`${API_BASE_URL}/analytics.php?type=top_songs&period=${period}&limit=${limit}`);
+    const response = await axios.get<TopSong[]>(`${API_BASE_URL}/api/analytics/top-songs?limit=${limit}`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get top songs error:', error);
@@ -433,7 +430,7 @@ export const getTopSongs = async (period: 'week' | 'month' | 'all' = 'week', lim
 
 export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopKeyword[]> => {
   try {
-    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/analytics.php?type=top_keywords&period=${period}&limit=${limit}`);
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get top keywords error:', error);
@@ -444,7 +441,7 @@ export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', 
 // Get search history from analytics (replaces the old getSearchHistory)
 export const getSearchHistoryFromAnalytics = async (limit: number = 50): Promise<SearchHistory[]> => {
   try {
-    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/analytics.php?type=top_keywords&period=all&limit=${limit}`);
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}`);
     
     if (!response.data || !Array.isArray(response.data)) {
       console.error('Invalid response data format:', response.data);

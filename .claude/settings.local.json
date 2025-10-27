@@ -16,7 +16,8 @@
       "Bash(pkill:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npm run lint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run server:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
 import { searchYouTubeVideos, saveCurrentQueue, loadCurrentQueue, updateQueue, getSharedQueue, saveQueue, getSavedQueues, trackSearch, trackSongPlay } from "@/services/apiService";
+import { socketService } from "@/services/socketService";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ const Index = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareDialogData, setShareDialogData] = useState<{ url: string; name: string }>({ url: "", name: "" });
-  const [lastLocalUpdate, setLastLocalUpdate] = useState<number>(0);
+  const [roomGuid, setRoomGuid] = useState<string | null>(null); // WebSocket room GUID
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -67,17 +68,19 @@ const Index = () => {
         try {
           const sharedQueue = await getSharedQueue(shareGuid);
           if (sharedQueue) {
-            setQueue(sharedQueue.songs);
-            setCurrentIndex(0);
             setCurrentQueueName(sharedQueue.name);
             setCurrentQueueId(sharedQueue.id);
             setActiveView('search'); // Guests can only search and add songs
+            setIsHost(false); // Guest mode
+
+            // Set room GUID to trigger WebSocket connection
+            setRoomGuid(shareGuid);
 
             toast({
               title: "Joined Karaoke Room",
               description: `You can search and add songs to "${sharedQueue.name}"`,
             });
-            
+
             // Clean up URL to remove share parameter
             window.history.replaceState({}, '', window.location.pathname);
             return;
@@ -125,9 +128,19 @@ const Index = () => {
       // Set user as host if not joining via shared link
       if (!shareGuid) {
         setIsHost(true);
+
+        // Check if we have an existing room to reconnect to
+        const existingRoomGuid = localStorage.getItem('singtube_host_room_guid');
+        const existingRoomId = localStorage.getItem('singtube_host_room_id');
+
+        if (existingRoomGuid && existingRoomId) {
+          console.log('🔄 Reconnecting to existing room:', existingRoomGuid);
+          setRoomGuid(existingRoomGuid);
+          setCurrentQueueId(parseInt(existingRoomId));
+        }
       }
     };
-    
+
     loadInitialQueue();
     
     // Check if tutorial should be shown
@@ -152,73 +165,80 @@ const Index = () => {
     }
   }, [isHost, activeView]);
 
-  // Real-time sync for host when users add songs from their phones
+  // WebSocket Connection and Real-time Sync
   useEffect(() => {
-    const hostRoomGuid = localStorage.getItem('singtube_host_room_guid');
-    const hostRoomId = localStorage.getItem('singtube_host_room_id');
-
-    // console.log('🔄 Sync check:', { hostRoomGuid, isHost, hasQueue: queue.length > 0 });
-
-    if (!hostRoomGuid || !isHost) {
-      // console.log('❌ Sync disabled:', { hasGuid: !!hostRoomGuid, isHost });
-      return; // Only sync if we're the host and have a room
+    if (!roomGuid || !userName) {
+      return; // Need both roomGuid and userName to connect
     }
 
-    // console.log('✅ Starting real-time sync for host with GUID:', hostRoomGuid);
+    console.log('🔌 Connecting to WebSocket room:', roomGuid);
 
-    const syncInterval = setInterval(async () => {
-      try {
-        // Skip sync if recent local update (prevents race condition with database writes)
-        const timeSinceLastUpdate = Date.now() - lastLocalUpdate;
-        if (timeSinceLastUpdate < 5000) {
-          // console.log('⏸️ Skipping sync - recent local update:', timeSinceLastUpdate, 'ms ago');
-          return;
+    // Connect to Socket.IO
+    socketService.connect();
+    socketService.joinRoom(roomGuid, userName, isHost);
+
+    // Listen for initial queue state
+    socketService.onQueueState((state) => {
+      console.log('📊 Received queue state:', state.songs.length, 'songs');
+      setQueue(state.songs);
+      setCurrentQueueName(state.name);
+      setCurrentQueueId(state.id);
+    });
+
+    // Listen for queue updates from other users
+    socketService.onQueueUpdated((payload) => {
+      console.log('🔄 Queue updated:', payload.action, 'by', payload.updatedBy);
+      setQueue(payload.songs);
+
+      // Show toast notification
+      if (payload.updatedBy !== userName) {
+        if (payload.action === 'add' && payload.song) {
+          toast({
+            title: "New Song Added!",
+            description: `"${payload.song.title}" added by ${payload.updatedBy}`,
+          });
+        } else if (payload.action === 'remove' && payload.removedSong) {
+          toast({
+            title: "Song Removed",
+            description: `"${payload.removedSong.title}" removed by ${payload.updatedBy}`,
+          });
+        } else if (payload.action === 'reorder') {
+          toast({
+            title: "Queue Reordered",
+            description: `Queue updated by ${payload.updatedBy}`,
+          });
         }
-
-        // console.log('🔍 Syncing with shared queue...');
-        const sharedQueue = await getSharedQueue(hostRoomGuid);
-        if (sharedQueue && sharedQueue.songs) {
-          // console.log('📊 Queue comparison:', {
-          //   shared: sharedQueue.songs.length,
-          //   local: queue.length,
-          //   sharedSongs: sharedQueue.songs.map(s => s.title + ' by ' + s.addedBy)
-          // });
-
-          // SMART MERGE: Only accept NEW songs (added by guests)
-          // This prevents overwriting host's removals/reorders
-          const currentIds = new Set(queue.map(s => s.id));
-          const newSongs = sharedQueue.songs.filter(s => !currentIds.has(s.id));
-
-          if (newSongs.length > 0) {
-            // console.log('🎵 New songs detected:', newSongs.map(s => s.title + ' by ' + s.addedBy));
-
-            // Add new songs to the end of the current queue
-            setQueue([...queue, ...newSongs]);
-
-            // Show notification for each new song
-            newSongs.forEach(song => {
-              if (song.addedBy && song.addedBy !== userName) {
-                toast({
-                  title: "New Song Added!",
-                  description: `"${song.title}" added by ${song.addedBy}`,
-                });
-              }
-            });
-          }
-          // Note: We no longer do full queue replacement to preserve host's changes
-        } else {
-          // console.log('❌ No shared queue found or empty');
-        }
-      } catch (error) {
-        console.error('❌ Failed to sync with shared queue:', error);
       }
-    }, 3000); // Sync every 3 seconds
+    });
 
+    // Listen for user join/leave events
+    socketService.onUserJoined((payload) => {
+      console.log('👤 User joined:', payload.userName);
+      if (payload.userName !== userName) {
+        toast({
+          title: "User Joined",
+          description: `${payload.userName} joined the room`,
+        });
+      }
+    });
+
+    socketService.onUserLeft((payload) => {
+      console.log('👋 User left:', payload.userName);
+      if (payload.userName !== userName) {
+        toast({
+          title: "User Left",
+          description: `${payload.userName} left the room`,
+        });
+      }
+    });
+
+    // Cleanup on unmount
     return () => {
-      // console.log('🛑 Stopping sync interval');
-      clearInterval(syncInterval);
+      console.log('🔌 Disconnecting from WebSocket');
+      socketService.leaveRoom();
+      socketService.removeAllListeners();
     };
-  }, [isHost, queue, userName, toast, lastLocalUpdate]); // Include full queue and lastLocalUpdate
+  }, [roomGuid, userName, isHost, toast]);
 
   const handleSearch = async (query: string, gender: string, pageToken?: string) => {
     if (!query.trim()) {
@@ -303,216 +323,82 @@ const Index = () => {
   };
 
   const addToQueue = async (song: Song) => {
-    const songWithUser = { ...song, addedBy: userName || "Unknown" };
-    const newQueue = [...queue, songWithUser];
-    setQueue(newQueue);
-    
-    // Auto-save queue if it's the first song and queue isn't saved yet
-    if (!currentQueueId && !currentQueueName && queue.length === 0) {
-      try {
-        const autoSaveName = `${t('app.queue.title')} ${new Date().toLocaleDateString()}`;
-        const success = await saveQueue(autoSaveName, newQueue);
-        if (success) {
-          // Get the newly saved queue to get its ID
-          const savedQueues = await getSavedQueues();
-          const savedQueue = savedQueues.find(q => q.name === autoSaveName);
-          if (savedQueue) {
-            setCurrentQueueName(autoSaveName);
-            setCurrentQueueId(savedQueue.id);
-            toast({
-              title: "Queue Auto-Saved",
-              description: `Created "${autoSaveName}" and added ${song.title}`,
-            });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to auto-save new queue:', error);
-      }
-    }
-    
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
-      try {
-        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
-        if (success) {
-          toast({
-            title: "Song Added",
-            description: `${song.title} added to "${currentQueueName}" and saved`,
-          });
-        } else {
-          toast({
-            title: "Song Added",
-            description: `${song.title} added to queue (save failed)`,
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error('Failed to update saved queue:', error);
-        toast({
-          title: "Song Added",
-          description: `${song.title} added to queue (save failed)`,
-          variant: "destructive"
-        });
-      }
-    } else {
+    if (!roomGuid) {
+      console.error('No room GUID - cannot add song');
       toast({
-        title: "Song Added",
-        description: `${song.title} added to queue`,
+        title: "Error",
+        description: "Not connected to a room",
+        variant: "destructive"
       });
+      return;
     }
+
+    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+
+    // Use WebSocket to add song
+    socketService.addSong(roomGuid, songWithUser);
+
+    // Local optimistic update (will be confirmed by WebSocket event)
+    toast({
+      title: "Adding Song",
+      description: `Adding "${song.title}" to queue...`,
+    });
   };
 
   const addToFront = async (song: Song) => {
-    const songWithUser = { ...song, addedBy: userName || "Unknown" };
-    const newQueue = [songWithUser, ...queue];
-    setQueue(newQueue);
-    if (currentIndex >= 0) {
-      setCurrentIndex(prev => prev + 1);
-    }
-    
-    // Auto-save queue if it's the first song and queue isn't saved yet
-    if (!currentQueueId && !currentQueueName && queue.length === 0) {
-      try {
-        const autoSaveName = `${t('app.queue.title')} ${new Date().toLocaleDateString()}`;
-        const success = await saveQueue(autoSaveName, newQueue);
-        if (success) {
-          // Get the newly saved queue to get its ID
-          const savedQueues = await getSavedQueues();
-          const savedQueue = savedQueues.find(q => q.name === autoSaveName);
-          if (savedQueue) {
-            setCurrentQueueName(autoSaveName);
-            setCurrentQueueId(savedQueue.id);
-            toast({
-              title: "Queue Auto-Saved",
-              description: `Created "${autoSaveName}" and added ${song.title} to front`,
-            });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to auto-save new queue:', error);
-      }
-    }
-    
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
-      try {
-        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
-        if (success) {
-          toast({
-            title: "Priority Added",
-            description: `${song.title} added to front of "${currentQueueName}" and saved`,
-          });
-        } else {
-          toast({
-            title: "Priority Added",
-            description: `${song.title} added to front of queue (save failed)`,
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error('Failed to update saved queue:', error);
-        toast({
-          title: "Priority Added",
-          description: `${song.title} added to front of queue (save failed)`,
-          variant: "destructive"
-        });
-      }
-    } else {
-      toast({
-        title: "Priority Added",
-        description: `${song.title} added to front of queue`,
-      });
-    }
+    // For now, add to front = add to queue (WebSocket doesn't have separate "add to front")
+    // The server will add it to the end, but we can improve this later
+    await addToQueue(song);
   };
 
   const removeFromQueue = async (index: number) => {
-    const songToRemove = Array.isArray(queue) && queue[index] ? queue[index] : null;
-    const newQueue = Array.isArray(queue) ? queue.filter((_, i) => i !== index) : [];
-
-    // Mark the time of this local update to prevent sync race condition
-    setLastLocalUpdate(Date.now());
-    setQueue(newQueue);
-
-    if (index === currentIndex) {
-      setCurrentIndex(-1);
-    } else if (index < currentIndex) {
-      setCurrentIndex(prev => prev - 1);
+    if (!roomGuid) {
+      console.error('No room GUID - cannot remove song');
+      return;
     }
 
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
-      try {
-        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
-        if (success && songToRemove) {
-          toast({
-            title: "Song Removed",
-            description: `${songToRemove.title} removed from "${currentQueueName}" and saved`,
-          });
-        } else if (!success && songToRemove) {
-          toast({
-            title: "Song Removed",
-            description: `${songToRemove.title} removed from queue (save failed)`,
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error('Failed to update saved queue after removal:', error);
-        if (songToRemove) {
-          toast({
-            title: "Song Removed",
-            description: `${songToRemove.title} removed from queue (save failed)`,
-            variant: "destructive"
-          });
-        }
-      }
+    if (!isHost) {
+      toast({
+        title: "Permission Denied",
+        description: "Only the host can remove songs",
+        variant: "destructive"
+      });
+      return;
     }
+
+    const songToRemove = queue[index];
+    if (!songToRemove) return;
+
+    // Use WebSocket to remove song
+    socketService.removeSong(roomGuid, index);
+
+    toast({
+      title: "Removing Song",
+      description: `Removing "${songToRemove.title}"...`,
+    });
   };
 
   const reorderQueue = async (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex || !Array.isArray(queue)) return;
 
-    // Mark the time of this local update to prevent sync race condition
-    setLastLocalUpdate(Date.now());
-
-    const newQueue = [...queue];
-    const [removed] = newQueue.splice(fromIndex, 1);
-    newQueue.splice(toIndex, 0, removed);
-
-    // Update current index if needed
-    let newCurrentIndex = currentIndex;
-    if (currentIndex === fromIndex) {
-      newCurrentIndex = toIndex;
-    } else if (fromIndex < currentIndex && toIndex >= currentIndex) {
-      newCurrentIndex = currentIndex - 1;
-    } else if (fromIndex > currentIndex && toIndex <= currentIndex) {
-      newCurrentIndex = currentIndex + 1;
+    if (!roomGuid) {
+      console.error('No room GUID - cannot reorder queue');
+      return;
     }
 
-    setQueue(newQueue);
-    setCurrentIndex(newCurrentIndex);
-
-    // Auto-update saved queue if this is a saved queue
-    if (currentQueueId && currentQueueName) {
-      try {
-        const success = await updateQueue(currentQueueId, currentQueueName, newQueue);
-        if (!success) {
-          toast({
-            title: "Reorder Failed",
-            description: `Failed to save queue changes to "${currentQueueName}"`,
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error('Failed to update saved queue after reorder:', error);
-        toast({
-          title: "Reorder Failed",
-          description: `Failed to save queue changes to "${currentQueueName}"`,
-          variant: "destructive"
-        });
-      }
+    if (!isHost) {
+      toast({
+        title: "Permission Denied",
+        description: "Only the host can reorder songs",
+        variant: "destructive"
+      });
+      return;
     }
+
+    // Use WebSocket to reorder queue
+    socketService.reorderQueue(roomGuid, fromIndex, toIndex);
+
+    // Note: The queue will be updated via WebSocket event
   };
 
   const selectSong = (index: number) => {
@@ -576,15 +462,20 @@ const Index = () => {
           const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
           setShareDialogData({ url: shareUrl, name: tempQueue.name });
           setShareDialogOpen(true);
-          
+
           // Store the GUID for real-time sync
           localStorage.setItem('singtube_host_room_guid', newQueue.guid);
           localStorage.setItem('singtube_host_room_id', newQueue.id.toString());
-          
+
           // Set user as host when they create a room
           setIsHost(true);
-          
-          // console.log('🏠 Host room GUID stored:', newQueue.guid);
+
+          // Set room GUID to trigger WebSocket connection
+          setRoomGuid(newQueue.guid);
+          setCurrentQueueName(newQueue.name);
+          setCurrentQueueId(newQueue.id);
+
+          console.log('🏠 Host room created with GUID:', newQueue.guid);
         } else {
           throw new Error("Failed to get GUID for sharing");
         }
