@@ -126,6 +126,19 @@ class SocketService {
   }
 
   /**
+   * Add a song to the front of the queue
+   */
+  addToFront(guid: string, song: Song): void {
+    if (!this.socket) {
+      console.error('Socket not connected');
+      return;
+    }
+
+    this.socket.emit('add-to-front', { guid, song });
+    console.log('⏭️ Song added to front:', song.title);
+  }
+
+  /**
    * Remove a song from the queue (host only)
    */
   removeSong(guid: string, songIndex: number): void {

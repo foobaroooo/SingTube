@@ -11,17 +11,17 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { MobilePreviewOverlay } from "@/components/MobilePreviewOverlay";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  getSharedQueue, 
-  saveQueue, 
-  trackSongPlay, 
-  trackSearch, 
+import {
+  getSharedQueue,
+  saveQueue,
+  trackSongPlay,
+  trackSearch,
   saveCurrentQueue,
   loadCurrentQueue,
-  updateQueue,
-  type SavedQueue 
+  type SavedQueue
 } from "@/services/apiService";
 import { searchYouTubeVideos } from "@/services/apiService";
+import { socketService } from "@/services/socketService";
 
 const Room = () => {
   const { guid } = useParams<{ guid: string }>();
@@ -107,6 +107,81 @@ const Room = () => {
     loadRoom();
   }, [guid, navigate, setUserName, toast]);
 
+  // WebSocket Connection and Real-time Sync
+  useEffect(() => {
+    if (!guid || !userName || isRoomLoading) {
+      return;
+    }
+
+    console.log('🔌 Connecting to WebSocket for room:', guid);
+
+    // Connect to WebSocket
+    socketService.connect();
+
+    // Join room as guest (isHost = false)
+    socketService.joinRoom(guid, userName, false);
+
+    // Listen for initial queue state
+    socketService.onQueueState((state) => {
+      console.log('📊 Received queue state:', state);
+      setQueue(state.songs);
+      setCurrentQueueName(state.name);
+      setCurrentQueueId(state.id);
+    });
+
+    // Listen for queue updates from host/other guests
+    socketService.onQueueUpdated((payload) => {
+      console.log('🔄 Queue updated:', payload);
+      setQueue(payload.songs);
+
+      // Show toast notification when others add songs
+      if (payload.updatedBy !== userName) {
+        if (payload.action === 'add' && payload.song) {
+          toast({
+            title: "New Song Added!",
+            description: `"${payload.song.title}" added by ${payload.updatedBy}`,
+          });
+        } else if (payload.action === 'add-to-front' && payload.song) {
+          toast({
+            title: "Song Added to Front!",
+            description: `"${payload.song.title}" added by ${payload.updatedBy}`,
+          });
+        } else if (payload.action === 'remove') {
+          toast({
+            title: "Song Removed",
+            description: `Host removed a song from queue`,
+          });
+        }
+      }
+    });
+
+    // Listen for user join/leave events
+    socketService.onUserJoined((payload) => {
+      console.log('👤 User joined:', payload);
+      if (payload.userName !== userName) {
+        toast({
+          title: "User Joined",
+          description: `${payload.userName} joined the room`,
+        });
+      }
+    });
+
+    socketService.onUserLeft((payload) => {
+      console.log('👋 User left:', payload);
+      toast({
+        title: "User Left",
+        description: `${payload.userName} left the room`,
+      });
+    });
+
+    // Cleanup on unmount
+    return () => {
+      console.log('🔌 Disconnecting from WebSocket');
+      socketService.leaveRoom();
+      socketService.removeAllListeners();
+    };
+  }, [guid, userName, isRoomLoading, toast]);
+
   // Auto-save queue changes
   useEffect(() => {
     if (queue.length > 0 && currentQueueId && currentQueueName) {
@@ -142,47 +217,46 @@ const Room = () => {
   };
 
   const addToQueue = async (song: Song) => {
-    const songWithUser = { ...song, addedBy: userName || "Unknown" };
-    const newQueue = [...queue, songWithUser];
-    setQueue(newQueue);
-    
-    // Update the shared queue in database
-    if (currentQueueId && currentQueueName) {
-      try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
-      } catch (error) {
-        console.error('Failed to update shared queue:', error);
-      }
+    if (!guid) {
+      toast({
+        title: "Error",
+        description: "Not connected to a room",
+        variant: "destructive"
+      });
+      return;
     }
 
+    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+
+    // Send via WebSocket for real-time sync
+    socketService.addSong(guid, songWithUser);
+
     toast({
-      title: "Added to Queue",
-      description: `"${song.title}" added to queue`
+      title: "Adding Song",
+      description: `Adding "${song.title}" to queue...`
     });
 
     await trackSongPlay(song);
   };
 
   const addToFront = async (song: Song) => {
-    const songWithUser = { ...song, addedBy: userName || "Unknown" };
-    const newQueue = [songWithUser, ...queue];
-    setQueue(newQueue);
-    if (currentIndex >= 0) {
-      setCurrentIndex(prev => prev + 1);
+    if (!guid) {
+      toast({
+        title: "Error",
+        description: "Not connected to a room",
+        variant: "destructive"
+      });
+      return;
     }
 
-    // Update the shared queue in database
-    if (currentQueueId && currentQueueName) {
-      try {
-        await updateQueue(currentQueueId, currentQueueName, newQueue);
-      } catch (error) {
-        console.error('Failed to update shared queue:', error);
-      }
-    }
+    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+
+    // Send via WebSocket for real-time sync
+    socketService.addToFront(guid, songWithUser);
 
     toast({
-      title: "Added to Front",
-      description: `"${song.title}" added to front of queue`
+      title: "Adding to Front",
+      description: `Adding "${song.title}" to front of queue...`
     });
 
     await trackSongPlay(song);

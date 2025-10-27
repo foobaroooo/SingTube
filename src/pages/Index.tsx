@@ -137,6 +137,35 @@ const Index = () => {
           console.log('🔄 Reconnecting to existing room:', existingRoomGuid);
           setRoomGuid(existingRoomGuid);
           setCurrentQueueId(parseInt(existingRoomId));
+        } else {
+          // Auto-create a room for the host to enable WebSocket sync
+          console.log('🏗️ Auto-creating room for host...');
+          const autoCreateRoom = async () => {
+            try {
+              const defaultQueueName = 'My Karaoke Room';
+              const saveResponse = await saveQueue(defaultQueueName, savedData.songs || []);
+
+              if (saveResponse) {
+                const savedQueues = await getSavedQueues();
+                const newQueue = savedQueues.sort((a, b) =>
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                )[0];
+
+                if (newQueue && newQueue.guid) {
+                  console.log('✅ Room auto-created with GUID:', newQueue.guid);
+                  localStorage.setItem('singtube_host_room_guid', newQueue.guid);
+                  localStorage.setItem('singtube_host_room_id', newQueue.id.toString());
+                  setRoomGuid(newQueue.guid);
+                  setCurrentQueueId(newQueue.id);
+                  setCurrentQueueName(defaultQueueName);
+                }
+              }
+            } catch (error) {
+              console.error('Failed to auto-create room:', error);
+            }
+          };
+
+          autoCreateRoom();
         }
       }
     };
@@ -167,15 +196,18 @@ const Index = () => {
 
   // WebSocket Connection and Real-time Sync
   useEffect(() => {
-    if (!roomGuid || !userName) {
-      return; // Need both roomGuid and userName to connect
+    if (!roomGuid) {
+      return; // Need roomGuid to connect
     }
 
-    console.log('🔌 Connecting to WebSocket room:', roomGuid);
+    // Use a default userName for hosts if not set
+    const effectiveUserName = userName || (isHost ? 'Host' : 'Guest');
+
+    console.log('🔌 Connecting to WebSocket room:', roomGuid, 'as', effectiveUserName);
 
     // Connect to Socket.IO
     socketService.connect();
-    socketService.joinRoom(roomGuid, userName, isHost);
+    socketService.joinRoom(roomGuid, effectiveUserName, isHost);
 
     // Listen for initial queue state
     socketService.onQueueState((state) => {
@@ -191,10 +223,15 @@ const Index = () => {
       setQueue(payload.songs);
 
       // Show toast notification
-      if (payload.updatedBy !== userName) {
+      if (payload.updatedBy !== effectiveUserName) {
         if (payload.action === 'add' && payload.song) {
           toast({
             title: "New Song Added!",
+            description: `"${payload.song.title}" added by ${payload.updatedBy}`,
+          });
+        } else if (payload.action === 'add-to-front' && payload.song) {
+          toast({
+            title: "Song Added to Front!",
             description: `"${payload.song.title}" added by ${payload.updatedBy}`,
           });
         } else if (payload.action === 'remove' && payload.removedSong) {
@@ -214,7 +251,7 @@ const Index = () => {
     // Listen for user join/leave events
     socketService.onUserJoined((payload) => {
       console.log('👤 User joined:', payload.userName);
-      if (payload.userName !== userName) {
+      if (payload.userName !== effectiveUserName) {
         toast({
           title: "User Joined",
           description: `${payload.userName} joined the room`,
@@ -224,7 +261,7 @@ const Index = () => {
 
     socketService.onUserLeft((payload) => {
       console.log('👋 User left:', payload.userName);
-      if (payload.userName !== userName) {
+      if (payload.userName !== effectiveUserName) {
         toast({
           title: "User Left",
           description: `${payload.userName} left the room`,
@@ -333,7 +370,8 @@ const Index = () => {
       return;
     }
 
-    const songWithUser = { ...song, addedBy: userName || "Unknown" };
+    const effectiveUserName = userName || (isHost ? 'Host' : 'Guest');
+    const songWithUser = { ...song, addedBy: effectiveUserName };
 
     // Use WebSocket to add song
     socketService.addSong(roomGuid, songWithUser);
@@ -343,12 +381,35 @@ const Index = () => {
       title: "Adding Song",
       description: `Adding "${song.title}" to queue...`,
     });
+
+    // Track song play for analytics
+    await trackSongPlay(song);
   };
 
   const addToFront = async (song: Song) => {
-    // For now, add to front = add to queue (WebSocket doesn't have separate "add to front")
-    // The server will add it to the end, but we can improve this later
-    await addToQueue(song);
+    if (!roomGuid) {
+      console.error('No room GUID - cannot add song');
+      toast({
+        title: "Error",
+        description: "Not connected to a room",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const effectiveUserName = userName || (isHost ? 'Host' : 'Guest');
+    const songWithUser = { ...song, addedBy: effectiveUserName };
+
+    // Use WebSocket to add song to front
+    socketService.addToFront(roomGuid, songWithUser);
+
+    toast({
+      title: "Adding to Front",
+      description: `Adding "${song.title}" to front of queue...`,
+    });
+
+    // Track song play for analytics
+    await trackSongPlay(song);
   };
 
   const removeFromQueue = async (index: number) => {
@@ -440,34 +501,44 @@ const Index = () => {
       });
       return;
     }
-    
-    // Create a temporary queue object with current queue data
-    const tempQueue = {
-      name: currentQueueName || "My Karaoke Room",
-      songs: queue
-    };
-    
+
+    const queueName = currentQueueName || "My Karaoke Room";
+
     try {
-      // Save the queue temporarily to get a GUID for sharing
-      const saveResponse = await saveQueue(tempQueue.name, tempQueue.songs);
+      // If room already exists, just open the share dialog
+      if (roomGuid && currentQueueId) {
+        console.log('📤 Opening share dialog for existing room:', roomGuid);
+
+        // Update the queue in the database (in case it changed)
+        await updateQueue(currentQueueId, queueName, queue);
+
+        const shareUrl = `${window.location.origin}/join/${roomGuid}`;
+        setShareDialogData({ url: shareUrl, name: queueName });
+        setShareDialogOpen(true);
+        return;
+      }
+
+      // If no room exists yet, create one
+      console.log('🏗️ Creating new room for sharing...');
+      const saveResponse = await saveQueue(queueName, queue);
+
       if (saveResponse) {
         // Get the GUID from the latest saved queues
         const savedQueues = await getSavedQueues();
-        // Find the most recently created queue (should be ours)
-        const newQueue = savedQueues.sort((a, b) => 
+        const newQueue = savedQueues.sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )[0];
-        
+
         if (newQueue && newQueue.guid) {
           const shareUrl = `${window.location.origin}/join/${newQueue.guid}`;
-          setShareDialogData({ url: shareUrl, name: tempQueue.name });
+          setShareDialogData({ url: shareUrl, name: queueName });
           setShareDialogOpen(true);
 
           // Store the GUID for real-time sync
           localStorage.setItem('singtube_host_room_guid', newQueue.guid);
           localStorage.setItem('singtube_host_room_id', newQueue.id.toString());
 
-          // Set user as host when they create a room
+          // Set user as host
           setIsHost(true);
 
           // Set room GUID to trigger WebSocket connection
@@ -475,7 +546,7 @@ const Index = () => {
           setCurrentQueueName(newQueue.name);
           setCurrentQueueId(newQueue.id);
 
-          console.log('🏠 Host room created with GUID:', newQueue.guid);
+          console.log('✅ Room created with GUID:', newQueue.guid);
         } else {
           throw new Error("Failed to get GUID for sharing");
         }

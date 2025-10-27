@@ -363,6 +363,36 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Add song to front of queue
+  socket.on('add-to-front', ({ guid, song }) => {
+    console.log(`Song added to front of ${guid} by ${socket.userData?.userName}:`, song.title);
+
+    try {
+      const queue = db.prepare('SELECT * FROM saved_queues WHERE guid = ?').get(guid);
+      if (!queue) {
+        socket.emit('error', { message: 'Queue not found' });
+        return;
+      }
+
+      const songs = JSON.parse(queue.songs);
+      songs.unshift(song); // Add to front
+
+      db.prepare('UPDATE saved_queues SET songs = ?, updated_at = CURRENT_TIMESTAMP WHERE guid = ?')
+        .run(JSON.stringify(songs), guid);
+
+      // Broadcast to all clients in the room
+      io.to(guid).emit('queue-updated', {
+        songs,
+        updatedBy: socket.userData?.userName || 'Unknown',
+        action: 'add-to-front',
+        song
+      });
+    } catch (error) {
+      console.error('Error adding song to front:', error);
+      socket.emit('error', { message: 'Failed to add song to front' });
+    }
+  });
+
   // Remove song from queue (host only)
   socket.on('remove-song', ({ guid, songIndex }) => {
     if (!socket.userData?.isHost) {
