@@ -4,6 +4,5 @@
 node_modules/.bin/acorn
 /node_modules
 /dist
-api/singtube.db-wal
-api/singtube.db-shm
-api/singtube.db-shm
+*.db-wal
+*.db-shm
