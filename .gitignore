@@ -8,3 +8,4 @@ node_modules/.bin/acorn
 *.db-wal
 *.db-shm
 backup-*.db
+.env.staging

@@ -9,7 +9,8 @@
     "dev:all": "npm run server & npm run dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "build:prod": "vite build --mode production",
+    "build:staging": "vite build --mode staging",
+    "build:production": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server/index.js"
