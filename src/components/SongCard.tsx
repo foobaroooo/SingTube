@@ -20,9 +20,10 @@ interface SongCardProps {
   showPlayButton?: boolean;
   compact?: boolean;
   onPreview?: (song: Song) => void;
+  disabled?: boolean;
 }
 
-export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, compact = false, onPreview }: SongCardProps) => {
+export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, compact = false, onPreview, disabled = false }: SongCardProps) => {
   const { t } = useTranslation();
   
   const handlePlayYouTube = () => {
@@ -72,17 +73,22 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                 {song.duration}
               </span>
               <div className="flex gap-1 md:gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
+                  disabled={disabled}
                   onTouchStart={(e) => {
                     e.stopPropagation();
-                    // Immediate action on touch start for better mobile responsiveness
-                    onAddToQueue(song);
+                    if (!disabled) {
+                      // Immediate action on touch start for better mobile responsiveness
+                      onAddToQueue(song);
+                    }
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Fallback for desktop/non-touch devices
-                    onAddToQueue(song);
+                    if (!disabled) {
+                      // Fallback for desktop/non-touch devices
+                      onAddToQueue(song);
+                    }
                   }}
                   className="bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                 >
@@ -90,18 +96,23 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
                   <span className="hidden md:inline">{t('app.queue.addToQueue')}</span>
                 </Button>
                 {onAddToFront && (
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
+                    disabled={disabled}
                     onTouchStart={(e) => {
                       e.stopPropagation();
-                      // Immediate action on touch start for better mobile responsiveness
-                      onAddToFront(song);
+                      if (!disabled) {
+                        // Immediate action on touch start for better mobile responsiveness
+                        onAddToFront(song);
+                      }
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Fallback for desktop/non-touch devices
-                      onAddToFront(song);
+                      if (!disabled) {
+                        // Fallback for desktop/non-touch devices
+                        onAddToFront(song);
+                      }
                     }}
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm px-2 md:px-3 touch-manipulation"
                   >
@@ -150,35 +161,45 @@ export const SongCard = ({ song, onAddToQueue, onAddToFront, showPlayButton, com
         </p>
         
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
+            disabled={disabled}
             onTouchStart={(e) => {
               e.stopPropagation();
-              // Immediate action on touch start for better mobile responsiveness
-              onAddToQueue(song);
+              if (!disabled) {
+                // Immediate action on touch start for better mobile responsiveness
+                onAddToQueue(song);
+              }
             }}
             onClick={(e) => {
               e.stopPropagation();
-              // Fallback for desktop/non-touch devices
-              onAddToQueue(song);
+              if (!disabled) {
+                // Fallback for desktop/non-touch devices
+                onAddToQueue(song);
+              }
             }}
             className="flex-1 bg-gradient-primary hover:shadow-neon transition-bounce text-primary-foreground touch-manipulation"
           >
             {t('app.queue.addToQueue')}
           </Button>
           {onAddToFront && (
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
+              disabled={disabled}
               onTouchStart={(e) => {
                 e.stopPropagation();
-                // Immediate action on touch start for better mobile responsiveness
-                onAddToFront(song);
+                if (!disabled) {
+                  // Immediate action on touch start for better mobile responsiveness
+                  onAddToFront(song);
+                }
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                // Fallback for desktop/non-touch devices
-                onAddToFront(song);
+                if (!disabled) {
+                  // Fallback for desktop/non-touch devices
+                  onAddToFront(song);
+                }
               }}
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground touch-manipulation"
             >

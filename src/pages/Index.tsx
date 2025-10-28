@@ -158,13 +158,23 @@ const Index = () => {
                   setRoomGuid(newQueue.guid);
                   setCurrentQueueId(newQueue.id);
                   setCurrentQueueName(defaultQueueName);
+                } else {
+                  console.error('Failed to get GUID from created room');
                 }
+              } else {
+                console.error('Failed to save initial queue');
               }
             } catch (error) {
               console.error('Failed to auto-create room:', error);
+              toast({
+                title: "Room Creation Failed",
+                description: "Could not create karaoke room. Please refresh the page.",
+                variant: "destructive"
+              });
             }
           };
 
+          // Call async function immediately
           autoCreateRoom();
         }
       }
@@ -1019,6 +1029,14 @@ const Index = () => {
                 </div>
               ) : (
                 <>
+                  {!roomGuid && (
+                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/50 rounded-md">
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        Setting up your karaoke room... Please wait a moment before adding songs.
+                      </p>
+                    </div>
+                  )}
                   <div ref={scrollContainerRef} className="grid gap-4 flex-1 overflow-y-auto">
                     {(Array.isArray(searchResults) ? searchResults : []).map(song => (
                       <SongCard
@@ -1028,6 +1046,7 @@ const Index = () => {
                         onAddToFront={addToFront}
                         showPlayButton
                         compact
+                        disabled={!roomGuid}
                       />
                     ))}
                   </div>
