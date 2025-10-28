@@ -1,8 +1,10 @@
 .env
 .env.development
+.env.production
 .DS_Store
 node_modules/.bin/acorn
 /node_modules
 /dist
 *.db-wal
 *.db-shm
+backup-*.db
