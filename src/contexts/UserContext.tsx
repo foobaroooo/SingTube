@@ -11,7 +11,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userName, setUserNameState] = useState<string | null>(null);
-  const [isHost, setIsHost] = useState<boolean>(false);
+  const [isHost, setIsHost] = useState<boolean>(true); // Default to host mode - shows queue/room page
 
   useEffect(() => {
     // Load user name from localStorage on mount
