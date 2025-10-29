@@ -4,8 +4,12 @@
     "slogan": "The Missing Karaoke Player for YouTube",
     "search": {
       "placeholder": "Search YouTube karaoke songs...",
+      "title": "Search Karaoke Songs",
       "resultsTitle": "Search Results",
       "noResults": "No songs found for your search.",
+      "searching": "Searching...",
+      "recentSearches": "Recent Searches",
+      "removeFromHistory": "Remove from history",
       "gender": {
         "all": "All",
         "male": "Male",

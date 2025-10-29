@@ -108,7 +108,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               <Search className="w-4 h-4" />
             )}
             {mobileOptimized && !isLoading && (
-              <span className="ml-1 hidden sm:inline">Search</span>
+              <span className="ml-1 hidden sm:inline">{t('app.actions.search')}</span>
             )}
           </Button>
           
@@ -146,7 +146,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                   <button
                     onClick={(e) => handleDeleteHistory(e, history.id)}
                     className="hover:bg-destructive/20 rounded-full p-0.5 transition-colors flex-shrink-0"
-                    title="Remove from history"
+                    title={t('app.search.removeFromHistory')}
                   >
                     <X className="w-2 h-2" />
                   </button>
@@ -174,7 +174,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
       <div className="flex items-center gap-3 mb-3">
         <Mic className="w-6 h-6 text-primary" />
         <h2 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          Search Karaoke Songs
+          {t('app.search.title')}
         </h2>
       </div>
       
@@ -199,7 +199,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
           ) : (
             <Search className="w-5 h-5 mr-2" />
           )}
-          {isLoading ? 'Searching...' : 'Search'}
+          {isLoading ? t('app.search.searching') : t('app.actions.search')}
         </Button>
       </div>
 
@@ -218,7 +218,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
         <div className="mt-3 pt-3 border-t border-border">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Recent Searches</span>
+            <span className="text-sm text-muted-foreground">{t('app.search.recentSearches')}</span>
           </div>
           <div className="flex flex-wrap gap-2 items-center">
               {(Array.isArray(searchHistory) ? searchHistory : []).map((history, index) => {
@@ -241,7 +241,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                 <button
                   onClick={(e) => handleDeleteHistory(e, history.id)}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
-                  title="Remove from history"
+                  title={t('app.search.removeFromHistory')}
                 >
                   <X className="w-3 h-3" />
                 </button>

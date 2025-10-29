@@ -4,8 +4,12 @@
     "slogan": "你的KTV舞台，你是主角",
     "search": {
       "placeholder": "搜尋 YouTube 卡拉OK歌曲...",
+      "title": "搜尋卡拉OK歌曲",
       "resultsTitle": "搜尋結果",
       "noResults": "找不到符合搜尋條件的歌曲。",
+      "searching": "搜尋中...",
+      "recentSearches": "最近搜尋",
+      "removeFromHistory": "從歷史記錄中移除",
       "gender": {
         "all": "全部",
         "male": "男歌手",
