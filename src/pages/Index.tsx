@@ -839,7 +839,7 @@ const Index = () => {
   
   // Determine layout based on active view
   const hasResults = Array.isArray(searchResults) && searchResults.length > 0;
-  const showSearchResults = activeView === 'search' && (hasSearched || isSearchLoading);
+  const showSearchResults = activeView === 'search';
   // Only hosts can see the queue - guests can only search and add songs
   const showQueueSection = activeView === 'queue' && isHost;
   
