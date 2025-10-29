@@ -128,6 +128,8 @@ sudo systemctl reload nginx
 
 ```bash
 # Copy built frontend to web root
+# Replace 'cp' with 
+# scp -i ~/.ssh/id_singtube -r dist/* root@24.144.81.34:/var/www/singtube/
 sudo mkdir -p /var/www/singtube
 sudo cp -r dist/* /var/www/singtube/
 
