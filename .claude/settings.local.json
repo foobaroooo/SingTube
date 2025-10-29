@@ -18,7 +18,9 @@
       "Bash(npm run lint:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run server:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(pm2 restart:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
