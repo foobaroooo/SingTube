@@ -397,9 +397,6 @@ const Room = () => {
               <p className="text-lg text-muted-foreground">
                 {t('app.searchResults.searchPrompt')}
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Search and add songs to the karaoke queue
-              </p>
             </div>
           )}
         </div>

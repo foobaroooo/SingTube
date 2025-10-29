@@ -91,7 +91,7 @@
     },
     "searchResults": {
       "noResults": "No results found. Try a different search term.",
-      "searchPrompt": "Search for your favorite Chinese karaoke songs"
+      "searchPrompt": "Search and add your favorite karaoke songs to the queue"
     },
     "dialogs": {
       "loadQueue": {

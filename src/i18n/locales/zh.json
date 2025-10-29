@@ -91,7 +91,7 @@
     },
     "searchResults": {
       "noResults": "找不到結果。請嘗試不同的搜尋詞。",
-      "searchPrompt": "搜尋您最愛的中文卡拉OK歌曲"
+      "searchPrompt": "搜尋您最愛的卡拉OK歌曲 "
     },
     "dialogs": {
       "loadQueue": {
