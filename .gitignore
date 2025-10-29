@@ -9,3 +9,9 @@ node_modules/.bin/acorn
 *.db-shm
 backup-*.db
 .env.staging
+
+# Test files
+*-test.db
+*-test.db-wal
+*-test.db-shm
+coverage/

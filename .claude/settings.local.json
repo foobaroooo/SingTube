@@ -20,7 +20,10 @@
       "Bash(npm run server:*)",
       "Bash(chmod:*)",
       "Bash(pm2 restart:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm test)",
+      "Bash(npx husky init)",
+      "Bash(npm run test:watch:*)"
     ],
     "deny": [],
     "ask": []
