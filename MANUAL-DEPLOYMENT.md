@@ -18,7 +18,7 @@ This guide provides **clear, step-by-step manual deployment** without automation
 ### Step 1: SSH into Your Droplet
 
 ```bash
-ssh -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
 ```
 
 ### Step 2: Update System
@@ -184,8 +184,8 @@ ufw status
 
 | Type | Hostname | Value | TTL |
 |------|----------|-------|-----|
-| A | @ | YOUR_DROPLET_IP | 3600 |
-| A | www | YOUR_DROPLET_IP | 3600 |
+| A | @ | 24.144.81.34 | 3600 |
+| A | www | 24.144.81.34 | 3600 |
 
 **Wait 5-60 minutes** for DNS propagation.
 
@@ -240,27 +240,27 @@ ls -la dist/index.html
 
 ```bash
 # Upload dist folder (frontend)
-scp -i ~/.ssh/id_singtube -r dist/* root@YOUR_DROPLET_IP:/var/www/singtube/dist/
+scp -i ~/.ssh/id_singtube -r dist/* root@24.144.81.34:/var/www/singtube/dist/
 
 # Upload server folder (Node.js backend)
-scp -i ~/.ssh/id_singtube -r server root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube -r server root@24.144.81.34:/var/www/singtube/
 
 # Upload api folder (database/API)
-scp -i ~/.ssh/id_singtube -r api root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube -r api root@24.144.81.34:/var/www/singtube/
 
 # Upload package files
-scp -i ~/.ssh/id_singtube package.json package-lock.json root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/www/singtube/
 
 # Upload environment file
-scp -i ~/.ssh/id_singtube .env.production root@YOUR_DROPLET_IP:/var/www/singtube/.env
+scp -i ~/.ssh/id_singtube .env.production root@24.144.81.34:/var/www/singtube/.env
 ```
 
-**Note**: Replace `YOUR_DROPLET_IP` with your actual IP (e.g., `24.144.81.34`)
+**Note**: Replace `24.144.81.34` with your actual IP (e.g., `24.144.81.34`)
 
 ### Step 3: SSH into Server
 
 ```bash
-ssh -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
 ```
 
 ### Step 4: Install Dependencies
@@ -298,7 +298,7 @@ chown -R root:www-data /var/www/singtube/api
 
 ```bash
 # Start server
-pm2 start server/index.js --name singtube-socket
+pm2 start server/index.js --name singtube-server
 
 # Save PM2 configuration
 pm2 save
@@ -311,7 +311,7 @@ pm2 startup
 Verify it's running:
 ```bash
 pm2 status
-pm2 logs singtube-socket --lines 20
+pm2 logs singtube-server --lines 20
 ```
 
 Should see:
@@ -340,23 +340,23 @@ cd /Users/richard/Sites/localhost/AI/claude-code/SingTube
 npm run build:production
 
 # 2. Upload new dist files
-scp -i ~/.ssh/id_singtube -r dist/* root@YOUR_DROPLET_IP:/var/www/singtube/dist/
+scp -i ~/.ssh/id_singtube -r dist/* root@24.144.81.34:/var/www/singtube/dist/
 
 # 3. If you changed server code, upload that too:
-scp -i ~/.ssh/id_singtube -r server root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube -r server root@24.144.81.34:/var/www/singtube/
 
 # 4. If you changed api code:
-scp -i ~/.ssh/id_singtube -r api root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube -r api root@24.144.81.34:/var/www/singtube/
 
 # 5. If you changed dependencies (package.json):
-scp -i ~/.ssh/id_singtube package.json package-lock.json root@YOUR_DROPLET_IP:/var/www/singtube/
+scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/www/singtube/
 ```
 
 ### On Server:
 
 ```bash
 # SSH in
-ssh -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
 
 # If dependencies changed:
 cd /var/www/singtube
@@ -366,10 +366,10 @@ npm install --production
 chown -R www-data:www-data /var/www/singtube/dist
 
 # Restart Node.js server
-pm2 restart singtube-socket
+pm2 restart singtube-server
 
 # Check logs
-pm2 logs singtube-socket --lines 20
+pm2 logs singtube-server --lines 20
 ```
 
 **That's it!** Your updates are live.
@@ -461,7 +461,7 @@ lsof -i :3000
 
 # If it's another PM2 process:
 pm2 delete all
-pm2 start server/index.js --name singtube-socket
+pm2 start server/index.js --name singtube-server
 ```
 
 ---
@@ -472,8 +472,8 @@ pm2 start server/index.js --name singtube-socket
 
 **Fix**:
 1. Go to DigitalOcean → Networking → Domains
-2. Add A record: `@` → `YOUR_DROPLET_IP`
-3. Add A record: `www` → `YOUR_DROPLET_IP`
+2. Add A record: `@` → `24.144.81.34`
+3. Add A record: `www` → `24.144.81.34`
 4. Wait 10-30 minutes
 5. Test: `dig singtube.app`
 
@@ -495,21 +495,20 @@ pm2 start server/index.js --name singtube-socket
 
 ```bash
 # PM2 logs
-pm2 logs singtube-socket
-pm2 logs singtube-socket --lines 50
+pm2 logs singtube-server
+pm2 logs singtube-server --lines 50
 
 # Nginx access log
 tail -f /var/log/nginx/access.log
 
 # Nginx error log
 tail -f /var/log/nginx/error.log
-```
 
 ### Restart Services
 
 ```bash
 # Restart Node.js
-pm2 restart singtube-socket
+pm2 restart singtube-server
 
 # Restart Nginx
 systemctl restart nginx
@@ -539,7 +538,7 @@ cd /var/www/singtube/api
 sqlite3 singtube.db ".backup singtube-backup-$(date +%Y%m%d).db"
 
 # Download backup to local machine
-scp -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP:/var/www/singtube/api/singtube-backup-*.db ~/Desktop/
+scp -i ~/.ssh/id_singtube root@24.144.81.34:/var/www/singtube/api/singtube-backup-*.db ~/Desktop/
 ```
 
 ---
@@ -564,7 +563,7 @@ scp -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP:/var/www/singtube/api/singtube-ba
 - [ ] Upload dist: `scp -r dist/* ...`
 - [ ] SSH into server
 - [ ] Set permissions if needed
-- [ ] Restart PM2: `pm2 restart singtube-socket`
+- [ ] Restart PM2: `pm2 restart singtube-server`
 - [ ] Check logs: `pm2 logs`
 
 ---
@@ -581,7 +580,7 @@ scp -i ~/.ssh/id_singtube root@YOUR_DROPLET_IP:/var/www/singtube/api/singtube-ba
 
 If you encounter issues:
 
-1. **Check PM2 logs**: `pm2 logs singtube-socket`
+1. **Check PM2 logs**: `pm2 logs singtube-server`
 2. **Check Nginx logs**: `tail -f /var/log/nginx/error.log`
 3. **Verify DNS**: `dig singtube.app`
 4. **Test locally first**: Make sure it works on `http://localhost:8080` before deploying
