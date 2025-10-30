@@ -2,6 +2,94 @@
 
 All notable changes to SingTube will be documented in this file.
 
+## [2.1.0] - 2025-01-30
+
+### Bug Fixes
+
+- **Search History Sorting**: Fixed search history to show most recent searches first (was incorrectly sorting by popularity)
+- **Empty State Display**: Restored "no search" prompt that appears on initial page load
+- **Default View**: Room/queue page now displays by default for hosts (instead of search page)
+- **Add to Queue Button**: Fixed race condition where "Add to Queue" buttons were enabled before room initialization
+
+### New Features
+
+#### Testing Infrastructure
+- Added comprehensive unit testing with Vitest
+- Implemented automated pre-commit hooks with Husky
+- Created 10 test cases for search history API
+- Tests run automatically on file changes with watch mode
+- Tests verify critical sorting behavior (recent searches appear first)
+
+#### Internationalization Improvements
+- Added Chinese translations for search section
+- Translated button labels, tooltips, and UI text
+- Complete bilingual support for search interface
+
+#### Documentation
+- Created comprehensive MANUAL-DEPLOYMENT.md guide
+- Added step-by-step DigitalOcean deployment instructions
+- Documented common deployment issues and solutions
+- Added database backup strategies
+
+### Technical Improvements
+
+- **Database Testing**: Tests ensure SQLite timestamp precision works correctly
+- **Git Hooks**: Pre-commit testing prevents broken code from being committed
+- **Deployment Process**: Streamlined production deployment workflow
+- **Server Organization**: Consolidated deployment paths to `/var/www/singtube/`
+
+### Files Changed
+
+#### New Files
+- `server/index.test.js` - Comprehensive test suite for search history API
+- `vitest.config.js` - Vitest testing configuration
+- `.husky/pre-commit` - Git pre-commit hook for automated testing
+- `MANUAL-DEPLOYMENT.md` - Production deployment guide
+- `TESTING.md` - Testing documentation
+
+#### Modified Files
+- `server/index.js` - Fixed SQL query for search history sorting (line 223)
+- `src/i18n/locales/en.json` - Added search section translations
+- `src/i18n/locales/zh.json` - Added Chinese search translations
+- `src/components/SearchSection.tsx` - Applied i18n translations
+- `src/pages/Index.tsx` - Fixed empty state display, default view behavior
+- `src/contexts/UserContext.tsx` - Changed default `isHost` to `true`
+
+### Dependencies Added
+
+```json
+{
+  "vitest": "^4.0.5",
+  "supertest": "^7.1.4",
+  "husky": "^9.1.7",
+  "@types/supertest": "^6.0.3"
+}
+```
+
+### Configuration Changes
+
+- **Test Scripts**: Added `test`, `test:watch`, `test:ui`, `test:coverage`
+- **Git Hooks**: Pre-commit hook runs test suite automatically
+- **Production Path**: Standardized to `/var/www/singtube/`
+
+### Running Tests
+
+```bash
+# Run tests once
+npm test
+
+# Run tests in watch mode (auto-run on file changes)
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
+---
+
 ## [2.0.0] - 2025-01-26
 
 ### Major Features
