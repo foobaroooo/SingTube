@@ -47,7 +47,7 @@ No explanations, no numbering, no additional text. Just the song titles and arti
 
     // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
