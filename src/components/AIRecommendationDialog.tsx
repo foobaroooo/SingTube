@@ -56,23 +56,23 @@ export const AIRecommendationDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:w-[90vw] sm:max-w-[600px] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Sparkles className="w-6 h-6 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             AI Song Recommendations
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Search History Display */}
-          <div className="bg-secondary/30 p-4 rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">Based on your recent searches:</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="bg-secondary/30 p-3 sm:p-4 rounded-lg">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2">Based on your recent searches:</p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {searchHistory.slice(0, 5).map((song, index) => (
                 <div
                   key={index}
-                  className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                  className="bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm"
                 >
                   {song}
                 </div>
@@ -82,25 +82,25 @@ export const AIRecommendationDialog = ({
 
           {/* Initial State - Show Get Recommendations Button */}
           {!hasSearched && (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center py-4 sm:py-6">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-2">
                 Get personalized karaoke song recommendations powered by AI
               </p>
               <Button
                 onClick={handleGetRecommendations}
                 disabled={isLoading}
-                className="bg-gradient-primary hover:shadow-neon transition-bounce"
-                size="lg"
+                className="bg-gradient-primary hover:shadow-neon transition-bounce w-full sm:w-auto"
+                size="default"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Getting Recommendations...
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
+                    <span className="text-sm sm:text-base">Getting Recommendations...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Get AI Recommendations
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <span className="text-sm sm:text-base">Get AI Recommendations</span>
                   </>
                 )}
               </Button>
@@ -137,29 +137,30 @@ export const AIRecommendationDialog = ({
 
           {/* Recommendations List */}
           {recommendations.length > 0 && !isLoading && (
-            <div className="space-y-3">
-              <p className="text-sm font-medium">Here are some songs you might enjoy:</p>
+            <div className="space-y-2 sm:space-y-3">
+              <p className="text-xs sm:text-sm font-medium">Here are some songs you might enjoy:</p>
               {recommendations.map((song, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-colors"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-colors"
                 >
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Music className="w-5 h-5 text-primary" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Music className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-base truncate">{song.title}</h4>
-                    <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
+                    <h4 className="font-semibold text-sm sm:text-base truncate">{song.title}</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{song.artist}</p>
                   </div>
                   {onAddToQueue && (
                     <Button
                       size="sm"
                       onClick={() => handleAddSong(song)}
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3"
                     >
-                      Add to Queue
+                      <span className="hidden sm:inline">Add to Queue</span>
+                      <span className="sm:hidden">Add</span>
                     </Button>
                   )}
                 </div>
@@ -168,12 +169,12 @@ export const AIRecommendationDialog = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={handleClose}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 border-t">
+            <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
               Close
             </Button>
             {recommendations.length > 0 && (
-              <Button onClick={handleGetRecommendations} variant="ghost">
+              <Button onClick={handleGetRecommendations} variant="ghost" className="w-full sm:w-auto">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Get More
               </Button>
