@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mic, Clock, Loader2, X, MoreHorizontal } from "lucide-react";
+import { Search, Mic, Clock, Loader2, X, MoreHorizontal, Sparkles } from "lucide-react";
 import { getSearchHistory, type SearchHistory } from "@/services/apiService";
+import { AIRecommendationDialog } from "@/components/AIRecommendationDialog";
+import { useAIRecommendationTrigger } from "@/hooks/useAIRecommendationTrigger";
 
 interface SearchSectionProps {
   onSearch: (query: string, gender: string) => void;
@@ -21,6 +23,14 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
+  const [searchCount, setSearchCount] = useState(0);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+
+  // AI recommendation trigger logic
+  const { shouldShow: shouldShowAIPrompt, dismiss: dismissAIPrompt } = useAIRecommendationTrigger({
+    searchCount,
+    roomGuid: undefined, // Can pass room GUID if available
+  });
 
   const loadHistory = async () => {
     try {
@@ -55,7 +65,16 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
   const handleSearch = () => {
     if (searchQuery.trim()) {
       onSearch(searchQuery, "all");
+      setSearchCount(prev => prev + 1); // Track search count for AI trigger
     }
+  };
+
+  const handleAIRecommendationYes = () => {
+    setAiDialogOpen(true);
+  };
+
+  const handleAIRecommendationLater = () => {
+    dismissAIPrompt();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -165,6 +184,48 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             </div>
           </div>
         )}
+
+        {/* AI Recommendation Prompt */}
+        {shouldShowAIPrompt && searchHistory.length >= 3 && (
+          <div className="mt-3 p-3 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium mb-2">
+                  ✨ Want AI to recommend songs based on your searches?
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleAIRecommendationYes}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Yes, Show Me!
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleAIRecommendationLater}
+                  >
+                    Maybe Later
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Recommendation Dialog */}
+        <AIRecommendationDialog
+          isOpen={aiDialogOpen}
+          onClose={() => setAiDialogOpen(false)}
+          searchHistory={searchHistory.map(h => h.query)}
+          onAddToQueue={(title, artist) => {
+            // Trigger search for the recommended song
+            onSearch(`${title} ${artist}`, "all");
+            setAiDialogOpen(false);
+          }}
+        />
       </div>
     );
   }
@@ -260,6 +321,46 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
           </div>
         </div>
       )}
+
+      {/* AI Recommendation Prompt - Non-compact Mode */}
+      {shouldShowAIPrompt && searchHistory.length >= 3 && (
+        <div className="mt-3 p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-medium mb-3">
+                ✨ Want AI to recommend songs based on your searches?
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleAIRecommendationYes}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Yes, Show Me!
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleAIRecommendationLater}
+                >
+                  Maybe Later
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Recommendation Dialog - Non-compact Mode */}
+      <AIRecommendationDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAiDialogOpen(false)}
+        searchHistory={searchHistory.map(h => h.query)}
+        onAddToQueue={(title, artist) => {
+          // Trigger search for the recommended song
+          onSearch(`${title} ${artist}`, "all");
+          setAiDialogOpen(false);
+        }}
+      />
     </div>
   );
 };
