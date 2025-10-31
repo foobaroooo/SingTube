@@ -16,9 +16,10 @@ interface SearchSectionProps {
   compact?: boolean;
   extraButton?: React.ReactNode;
   mobileOptimized?: boolean;
+  onSearchAndAdd?: (title: string, artist: string) => Promise<void>;
 }
 
-export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false, extraButton, mobileOptimized = false }: SearchSectionProps) => {
+export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = false, compact = false, extraButton, mobileOptimized = false, onSearchAndAdd }: SearchSectionProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -220,10 +221,16 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
           isOpen={aiDialogOpen}
           onClose={() => setAiDialogOpen(false)}
           searchHistory={searchHistory.map(h => h.query)}
-          onAddToQueue={(title, artist) => {
-            // Trigger search for the recommended song
-            onSearch(`${title} ${artist}`, "all");
-            setAiDialogOpen(false);
+          onAddToQueue={async (title, artist) => {
+            if (onSearchAndAdd) {
+              // Search for the song and add to queue automatically
+              await onSearchAndAdd(title, artist);
+              setAiDialogOpen(false);
+            } else {
+              // Fallback: just search for the song
+              onSearch(`${title} ${artist}`, "all");
+              setAiDialogOpen(false);
+            }
           }}
         />
       </div>
@@ -355,10 +362,16 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
         isOpen={aiDialogOpen}
         onClose={() => setAiDialogOpen(false)}
         searchHistory={searchHistory.map(h => h.query)}
-        onAddToQueue={(title, artist) => {
-          // Trigger search for the recommended song
-          onSearch(`${title} ${artist}`, "all");
-          setAiDialogOpen(false);
+        onAddToQueue={async (title, artist) => {
+          if (onSearchAndAdd) {
+            // Search for the song and add to queue automatically
+            await onSearchAndAdd(title, artist);
+            setAiDialogOpen(false);
+          } else {
+            // Fallback: just search for the song
+            onSearch(`${title} ${artist}`, "all");
+            setAiDialogOpen(false);
+          }
         }}
       />
     </div>

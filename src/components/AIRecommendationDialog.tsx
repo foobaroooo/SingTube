@@ -9,7 +9,7 @@ interface AIRecommendationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   searchHistory: string[];
-  onAddToQueue?: (title: string, artist: string) => void;
+  onAddToQueue?: (title: string, artist: string) => Promise<void>;
 }
 
 export const AIRecommendationDialog = ({
@@ -23,6 +23,7 @@ export const AIRecommendationDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [addingIndex, setAddingIndex] = useState<number | null>(null);
 
   const handleGetRecommendations = async () => {
     setIsLoading(true);
@@ -48,9 +49,14 @@ export const AIRecommendationDialog = ({
     onClose();
   };
 
-  const handleAddSong = (song: SongRecommendation) => {
+  const handleAddSong = async (song: SongRecommendation, index: number) => {
     if (onAddToQueue) {
-      onAddToQueue(song.title, song.artist);
+      setAddingIndex(index);
+      try {
+        await onAddToQueue(song.title, song.artist);
+      } finally {
+        setAddingIndex(null);
+      }
     }
   };
 
@@ -156,11 +162,20 @@ export const AIRecommendationDialog = ({
                   {onAddToQueue && (
                     <Button
                       size="sm"
-                      onClick={() => handleAddSong(song)}
+                      onClick={() => handleAddSong(song, index)}
+                      disabled={addingIndex === index}
                       className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3"
                     >
-                      <span className="hidden sm:inline">Add to Queue</span>
-                      <span className="sm:hidden">Add</span>
+                      {addingIndex === index ? (
+                        <>
+                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                        </>
+                      ) : (
+                        <>
+                          <span className="hidden sm:inline">Add to Queue</span>
+                          <span className="sm:hidden">Add</span>
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

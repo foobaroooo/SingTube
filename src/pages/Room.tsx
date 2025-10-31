@@ -216,6 +216,40 @@ const Room = () => {
     }
   };
 
+  // Search for a song by title and artist, then automatically add the first result to queue
+  const handleSearchAndAdd = async (title: string, artist: string) => {
+    const query = `${title} ${artist} karaoke`;
+
+    try {
+      // Search YouTube for the song
+      const result = await searchYouTubeVideos(query, "all", 1); // Get only first result
+
+      if (result.songs.length > 0) {
+        const song = result.songs[0];
+        // Add the first result to queue
+        await addToQueue(song);
+
+        toast({
+          title: "Song Added",
+          description: `"${song.title}" has been added to the queue`,
+        });
+      } else {
+        toast({
+          title: "Song Not Found",
+          description: `Could not find "${title}" by ${artist}`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Search and add error:', error);
+      toast({
+        title: "Failed to Add Song",
+        description: "Unable to search for the song. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const addToQueue = async (song: Song) => {
     if (!guid) {
       toast({
@@ -356,6 +390,7 @@ const Room = () => {
             onSearch={handleSearch}
             isLoading={isSearchLoading}
             refreshHistory={refreshHistory}
+            onSearchAndAdd={handleSearchAndAdd}
           />
 
           {/* Search Results */}
