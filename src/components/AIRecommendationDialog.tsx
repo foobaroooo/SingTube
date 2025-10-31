@@ -66,14 +66,14 @@ export const AIRecommendationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-2xl">
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            AI Song Recommendations
+            {t('app.ai.recommendations.title')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 sm:space-y-4">
           {/* Search History Display */}
           <div className="bg-secondary/30 p-3 sm:p-4 rounded-lg">
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2">Based on your recent searches:</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{t('app.ai.recommendations.basedOnSearches')}</p>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {searchHistory.slice(0, 5).map((song, index) => (
                 <div
@@ -90,7 +90,7 @@ export const AIRecommendationDialog = ({
           {!hasSearched && (
             <div className="text-center py-4 sm:py-6">
               <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-2">
-                Get personalized karaoke song recommendations powered by AI
+                {t('app.ai.recommendations.description')}
               </p>
               <Button
                 onClick={handleGetRecommendations}
@@ -101,12 +101,12 @@ export const AIRecommendationDialog = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
-                    <span className="text-sm sm:text-base">Getting Recommendations...</span>
+                    <span className="text-sm sm:text-base">{t('app.ai.recommendations.gettingRecommendations')}</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    <span className="text-sm sm:text-base">Get AI Recommendations</span>
+                    <span className="text-sm sm:text-base">{t('app.ai.recommendations.getRecommendations')}</span>
                   </>
                 )}
               </Button>
@@ -117,7 +117,7 @@ export const AIRecommendationDialog = ({
           {isLoading && hasSearched && (
             <div className="text-center py-8">
               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">AI is thinking...</p>
+              <p className="text-muted-foreground">{t('app.ai.recommendations.thinking')}</p>
             </div>
           )}
 
@@ -144,7 +144,7 @@ export const AIRecommendationDialog = ({
           {/* Recommendations List */}
           {recommendations.length > 0 && !isLoading && (
             <div className="space-y-2 sm:space-y-3">
-              <p className="text-xs sm:text-sm font-medium">Here are some songs you might enjoy:</p>
+              <p className="text-xs sm:text-sm font-medium">{t('app.ai.recommendations.enjoyPrompt')}</p>
               {recommendations.map((song, index) => (
                 <div
                   key={index}
@@ -172,8 +172,8 @@ export const AIRecommendationDialog = ({
                         </>
                       ) : (
                         <>
-                          <span className="hidden sm:inline">Add to Queue</span>
-                          <span className="sm:hidden">Add</span>
+                          <span className="hidden sm:inline">{t('app.ai.recommendations.addToQueue')}</span>
+                          <span className="sm:hidden">{t('app.ai.recommendations.addToQueueShort')}</span>
                         </>
                       )}
                     </Button>
@@ -186,12 +186,12 @@ export const AIRecommendationDialog = ({
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 border-t">
             <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
-              Close
+              {t('app.ai.recommendations.close')}
             </Button>
             {recommendations.length > 0 && (
               <Button onClick={handleGetRecommendations} variant="ghost" className="w-full sm:w-auto">
                 <Sparkles className="w-4 h-4 mr-2" />
-                Get More
+                {t('app.ai.recommendations.getMore')}
               </Button>
             )}
           </div>

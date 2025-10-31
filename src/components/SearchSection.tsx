@@ -187,7 +187,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               <button
                 onClick={() => setAiDialogOpen(true)}
                 className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
-                title="Get AI Song Recommendations"
+                title={t('app.ai.recommendations.tooltip')}
               >
                 <Sparkles className="w-3 h-3" />
               </button>
@@ -202,7 +202,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium mb-2">
-                  ✨ Want AI to recommend songs based on your searches?
+                  ✨ {t('app.ai.recommendations.prompt')}
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -210,14 +210,14 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                     onClick={handleAIRecommendationYes}
                     className="bg-primary hover:bg-primary/90"
                   >
-                    Yes, Show Me!
+                    {t('app.ai.recommendations.yesShowMe')}
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleAIRecommendationLater}
                   >
-                    Maybe Later
+                    {t('app.ai.recommendations.maybeLater')}
                   </Button>
                 </div>
               </div>
@@ -339,7 +339,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             <button
               onClick={() => setAiDialogOpen(true)}
               className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
-              title="Get AI Song Recommendations"
+              title={t('app.ai.recommendations.tooltip')}
             >
               <Sparkles className="w-4 h-4" />
             </button>
@@ -354,20 +354,20 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             <Sparkles className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-base font-medium mb-3">
-                ✨ Want AI to recommend songs based on your searches?
+                ✨ {t('app.ai.recommendations.prompt')}
               </p>
               <div className="flex gap-3">
                 <Button
                   onClick={handleAIRecommendationYes}
                   className="bg-primary hover:bg-primary/90"
                 >
-                  Yes, Show Me!
+                  {t('app.ai.recommendations.yesShowMe')}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={handleAIRecommendationLater}
                 >
-                  Maybe Later
+                  {t('app.ai.recommendations.maybeLater')}
                 </Button>
               </div>
             </div>

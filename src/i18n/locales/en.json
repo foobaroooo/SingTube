@@ -214,6 +214,25 @@
       },
       "podium": "Top 3 Most Played",
       "fullRankings": "Complete Rankings"
+    },
+    "ai": {
+      "recommendations": {
+        "title": "AI Song Recommendations",
+        "tooltip": "Get AI Song Recommendations",
+        "basedOnSearches": "Based on your recent searches:",
+        "description": "Get personalized karaoke song recommendations powered by AI",
+        "gettingRecommendations": "Getting Recommendations...",
+        "getRecommendations": "Get AI Recommendations",
+        "thinking": "AI is thinking...",
+        "enjoyPrompt": "Here are some songs you might enjoy:",
+        "addToQueue": "Add to Queue",
+        "addToQueueShort": "Add",
+        "close": "Close",
+        "getMore": "Get More",
+        "prompt": "Want AI to recommend songs based on your searches?",
+        "yesShowMe": "Yes, Show Me!",
+        "maybeLater": "Maybe Later"
+      }
     }
   }
 }

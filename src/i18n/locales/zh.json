@@ -214,6 +214,25 @@
       },
       "podium": "播放次數前三名",
       "fullRankings": "完整排行榜"
+    },
+    "ai": {
+      "recommendations": {
+        "title": "AI 智能推薦歌曲",
+        "tooltip": "獲取 AI 智能推薦",
+        "basedOnSearches": "根據您最近的搜尋：",
+        "description": "讓 AI 根據您的喜好推薦個性化的卡拉OK歌曲",
+        "gettingRecommendations": "正在獲取推薦...",
+        "getRecommendations": "獲取 AI 推薦",
+        "thinking": "AI 正在思考中...",
+        "enjoyPrompt": "這些歌曲您可能會喜歡：",
+        "addToQueue": "加入歌單",
+        "addToQueueShort": "加入",
+        "close": "關閉",
+        "getMore": "獲取更多",
+        "prompt": "想讓 AI 根據您的搜尋推薦歌曲嗎？",
+        "yesShowMe": "好的，顯示推薦！",
+        "maybeLater": "稍後再說"
+      }
     }
   }
 }
