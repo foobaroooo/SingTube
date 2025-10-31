@@ -182,6 +182,15 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               >
                 <MoreHorizontal className="w-3 h-3" />
               </button>
+
+              {/* AI recommendation icon button */}
+              <button
+                onClick={() => setAiDialogOpen(true)}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
+                title="Get AI Song Recommendations"
+              >
+                <Sparkles className="w-3 h-3" />
+              </button>
             </div>
           </div>
         )}
@@ -225,11 +234,11 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             if (onSearchAndAdd) {
               // Search for the song and add to queue automatically
               await onSearchAndAdd(title, artist);
-              setAiDialogOpen(false);
+              // Dialog stays open for users to add more songs
             } else {
               // Fallback: just search for the song
               onSearch(`${title} ${artist}`, "all");
-              setAiDialogOpen(false);
+              // Dialog stays open for users to add more songs
             }
           }}
         />
@@ -325,6 +334,15 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
+
+            {/* AI recommendation icon button */}
+            <button
+              onClick={() => setAiDialogOpen(true)}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
+              title="Get AI Song Recommendations"
+            >
+              <Sparkles className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -366,11 +384,11 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
           if (onSearchAndAdd) {
             // Search for the song and add to queue automatically
             await onSearchAndAdd(title, artist);
-            setAiDialogOpen(false);
+            // Dialog stays open for users to add more songs
           } else {
             // Fallback: just search for the song
             onSearch(`${title} ${artist}`, "all");
-            setAiDialogOpen(false);
+            // Dialog stays open for users to add more songs
           }
         }}
       />
