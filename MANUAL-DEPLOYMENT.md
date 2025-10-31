@@ -345,11 +345,15 @@ scp -i ~/.ssh/id_singtube -r dist/* root@24.144.81.34:/var/www/singtube/dist/
 # 3. If you changed server code, upload that too:
 scp -i ~/.ssh/id_singtube -r server root@24.144.81.34:/var/www/singtube/
 
-# 4. If you changed api code:
+# 4. If you changed api code (*** WARNING: THIS ALSO COPIES DATABASE FILES!!! ***):
 scp -i ~/.ssh/id_singtube -r api root@24.144.81.34:/var/www/singtube/
 
 # 5. If you changed dependencies (package.json):
 scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/www/singtube/
+
+# 6. If .env.production made changes
+scp -i ~/.ssh/id_singtube .env.production root@24.144.81.34:/var/www/singtube/.env
+
 ```
 
 ### On Server:
