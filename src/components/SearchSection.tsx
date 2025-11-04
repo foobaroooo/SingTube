@@ -188,6 +188,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
                 onClick={() => setAiDialogOpen(true)}
                 className="relative inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full bg-primary hover:bg-primary/90 transition-colors text-primary-foreground shadow-md"
                 title={t('app.ai.recommendations.tooltip')}
+                data-tutorial="ai-button"
               >
                 <Sparkles className="w-3 h-3" />
                 <span className="text-xs font-medium">AI</span>
@@ -346,6 +347,7 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               onClick={() => setAiDialogOpen(true)}
               className="relative inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 transition-colors text-primary-foreground shadow-md"
               title={t('app.ai.recommendations.tooltip')}
+              data-tutorial="ai-button"
             >
               <Sparkles className="w-4 h-4" />
               <span className="text-sm font-medium">AI</span>

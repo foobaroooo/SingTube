@@ -317,10 +317,10 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
             </p>
           </div>
         </div>
-        
-        <div className="flex justify-center gap-3 mt-4">
-          <Button 
-            variant="outline" 
+
+        <div className="flex justify-center gap-3 mt-4" data-tutorial="playback-controls">
+          <Button
+            variant="outline"
             size="icon"
             onClick={onPrevious}
             disabled={!canGoPrevious}
@@ -328,17 +328,17 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
           >
             <SkipBack className="w-4 h-4" />
           </Button>
-          
-          <Button 
+
+          <Button
             onClick={handlePlayYouTube}
             className="bg-gradient-primary hover:shadow-neon transition-bounce px-6"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             {t('app.actions.openInYoutube')}
           </Button>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             size="icon"
             onClick={onNext}
             disabled={!canGoNext}

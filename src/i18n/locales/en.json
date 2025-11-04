@@ -128,39 +128,35 @@
     "tutorial": {
       "welcome": {
         "title": "Welcome to SingTube!",
-        "description": "Let's take a quick tour of your personal karaoke stage. We'll show you how to search for songs, manage your queue, and make the most of all the features."
+        "description": "Let's take a quick tour of your AI-powered karaoke stage. We'll show you the key features to get you singing in no time!"
       },
-      "searchInput": {
-        "title": "Search Input",
-        "description": "This is where you type your search! Enter song titles, artist names, or have any keywords. You can search in English, Chinese, or have any language. Try typing something like '周杰伦' or 'Jay Chou'."
+      "search": {
+        "title": "Search for Songs",
+        "description": "Enter song titles or artist names in any language. Press Enter or click the search button to find karaoke tracks on YouTube. Try '周杰伦' or 'Jay Chou'!"
       },
-      "searchButton": {
-        "title": "Search Button",
-        "description": "Click this button to start searching for songs! You can also press Enter after typing in the search box. The search will find karaoke versions and instrumental tracks."
+      "aiButton": {
+        "title": "AI Recommendations",
+        "description": "Get personalized song suggestions! Click the AI button to discover new karaoke tracks based on your search history and preferences."
       },
-      "language": {
-        "title": "Language Toggle",
-        "description": "Switch between English and Chinese interface at any time. Click the EN/中文 button in the top right to change the language instantly."
+      "howToJoin": {
+        "title": "Share & Join Rooms",
+        "description": "Create a collaborative karaoke room! Click the Share button in your queue to invite friends. They can join and add songs to the shared queue in real-time."
+      },
+      "playButton": {
+        "title": "Playback Controls",
+        "description": "Control your karaoke session with play/pause, skip forward, or go back buttons. Double-click any song in your queue to jump to it instantly."
+      },
+      "searchResults": {
+        "title": "Search Results",
+        "description": "Browse your search results here! Click 'Add' to add songs to your queue. Preview any song before adding it to see if it's the right version."
       },
       "queue": {
-        "title": "Your Song Queue",
-        "description": "This is where your selected songs live! Add songs from search results, reorder them by dragging, and see what's currently playing. Double-click any song to start playing it immediately."
-      },
-      "controls": {
-        "title": "Playback Controls",
-        "description": "Control your karaoke session with these buttons. Play/pause the current song, skip to the next track, or go back to the previous one."
-      },
-      "management": {
-        "title": "Queue Management",
-        "description": "Save your queues for later, load previously saved playlists, and share your favorite collections with friends. These tools help you organize your karaoke sessions."
-      },
-      "maximize": {
-        "title": "Maximize Display",
-        "description": "Need more space? Click the maximize button to expand your queue to full screen. Perfect for when you have a long playlist or want to focus on queue management."
+        "title": "Your KTV Room",
+        "description": "Your song queue! Drag to reorder songs, click the X to remove them. Save, load, or share your queue using the buttons at the top."
       },
       "complete": {
         "title": "You're All Set!",
-        "description": "That's it! You're ready to start your karaoke journey. Search for songs, build your queue, and enjoy singing your heart out. Have fun! 🎤"
+        "description": "That's it! Start searching for songs, let AI help you discover new tracks, and sing your heart out. Have fun! 🎤"
       },
       "icons": {
         "load": "Load Queue",

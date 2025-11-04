@@ -1222,7 +1222,7 @@ const Index = () => {
             {/* Combined playback controls and view toggle */}
             <div className="flex items-center gap-3 sm:gap-4">
               {/* Playback controls */}
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2" data-tutorial="playback-controls">
                 <Button 
                   onClick={previousSong}
                   disabled={currentIndex <= 0}
@@ -1268,6 +1268,7 @@ const Index = () => {
                         ? 'bg-gradient-primary text-white shadow-md'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
+                    data-tutorial="search-results"
                   >
                     <Search className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">{t('app.actions.search')}</span>
@@ -1282,6 +1283,7 @@ const Index = () => {
                         ? 'bg-gradient-primary text-white shadow-md'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
+                    data-tutorial="queue-section"
                   >
                     <List className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">{t('app.queue.title')}</span>

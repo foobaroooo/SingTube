@@ -3,20 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  X, 
-  Search, 
-  Music, 
-  Globe, 
-  Maximize2, 
-  FolderOpen, 
-  Save, 
-  Share2,
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Search,
+  Music,
+  Sparkles,
+  Users,
   Play,
-  SkipForward,
-  SkipBack
+  List
 } from 'lucide-react';
 
 interface TutorialStep {
@@ -44,53 +40,46 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
       icon: <Music className="w-8 h-8 text-primary" />
     },
     {
-      id: 'search-input',
-      titleKey: 'app.tutorial.searchInput.title',
-      descriptionKey: 'app.tutorial.searchInput.description',
+      id: 'search',
+      titleKey: 'app.tutorial.search.title',
+      descriptionKey: 'app.tutorial.search.description',
       icon: <Search className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="search-input"]'
+      highlightSelector: '[data-tutorial="search-section"]'
     },
     {
-      id: 'search-button',
-      titleKey: 'app.tutorial.searchButton.title',
-      descriptionKey: 'app.tutorial.searchButton.description',
-      icon: <Search className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="search-button"]'
+      id: 'ai-button',
+      titleKey: 'app.tutorial.aiButton.title',
+      descriptionKey: 'app.tutorial.aiButton.description',
+      icon: <Sparkles className="w-6 h-6 text-primary" />,
+      highlightSelector: '[data-tutorial="ai-button"]'
     },
     {
-      id: 'language',
-      titleKey: 'app.tutorial.language.title',
-      descriptionKey: 'app.tutorial.language.description',
-      icon: <Globe className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="language-button"]'
+      id: 'how-to-join',
+      titleKey: 'app.tutorial.howToJoin.title',
+      descriptionKey: 'app.tutorial.howToJoin.description',
+      icon: <Users className="w-6 h-6 text-primary" />,
+      highlightSelector: '[data-tutorial="how-to-join"]'
     },
     {
-      id: 'queue-basics',
-      titleKey: 'app.tutorial.queue.title',
-      descriptionKey: 'app.tutorial.queue.description',
-      icon: <Music className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="queue-section"]'
-    },
-    {
-      id: 'queue-controls',
-      titleKey: 'app.tutorial.controls.title',
-      descriptionKey: 'app.tutorial.controls.description',
+      id: 'play-button',
+      titleKey: 'app.tutorial.playButton.title',
+      descriptionKey: 'app.tutorial.playButton.description',
       icon: <Play className="w-6 h-6 text-primary" />,
       highlightSelector: '[data-tutorial="playback-controls"]'
     },
     {
-      id: 'queue-management',
-      titleKey: 'app.tutorial.management.title',
-      descriptionKey: 'app.tutorial.management.description',
-      icon: <FolderOpen className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="queue-actions"]'
+      id: 'search-results',
+      titleKey: 'app.tutorial.searchResults.title',
+      descriptionKey: 'app.tutorial.searchResults.description',
+      icon: <List className="w-6 h-6 text-primary" />,
+      highlightSelector: '[data-tutorial="search-results"]'
     },
     {
-      id: 'maximize',
-      titleKey: 'app.tutorial.maximize.title',
-      descriptionKey: 'app.tutorial.maximize.description',
-      icon: <Maximize2 className="w-6 h-6 text-primary" />,
-      highlightSelector: '[data-tutorial="maximize-button"]'
+      id: 'queue',
+      titleKey: 'app.tutorial.queue.title',
+      descriptionKey: 'app.tutorial.queue.description',
+      icon: <Music className="w-6 h-6 text-primary" />,
+      highlightSelector: '[data-tutorial="queue-section"]'
     },
     {
       id: 'complete',
@@ -139,17 +128,21 @@ export const OnboardingTutorial = ({ isOpen, onClose }: OnboardingTutorialProps)
 
     // Add a small delay to ensure DOM is ready
     const timer = setTimeout(() => {
-      const element = document.querySelector(currentTutorialStep.highlightSelector);
-      console.log('Tutorial step:', currentStep, 'Looking for:', currentTutorialStep.highlightSelector, 'Found:', element);
-      
-      if (element) {
+      // Use querySelectorAll to highlight all matching elements (handles mobile + desktop)
+      const elements = document.querySelectorAll(currentTutorialStep.highlightSelector);
+      console.log('Tutorial step:', currentStep, 'Looking for:', currentTutorialStep.highlightSelector, 'Found:', elements.length, 'elements');
+
+      if (elements.length > 0) {
         // Remove any existing highlights first
         document.querySelectorAll('.tutorial-highlight').forEach(el => {
           el.classList.remove('tutorial-highlight');
         });
-        
-        element.classList.add('tutorial-highlight');
-        console.log('Added highlight to:', element);
+
+        // Add highlight to all matching elements
+        elements.forEach(element => {
+          element.classList.add('tutorial-highlight');
+          console.log('Added highlight to:', element);
+        });
       } else {
         console.warn('Element not found for selector:', currentTutorialStep.highlightSelector);
       }

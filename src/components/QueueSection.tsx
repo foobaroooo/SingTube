@@ -172,7 +172,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
       {isMaximized && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onToggleMaximize} />
       )}
-      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`} data-tutorial="queue-section">
+      <Card className={`bg-card border-border shadow-card ${isMaximized ? 'fixed inset-4 z-50 flex flex-col max-w-4xl mx-auto' : 'flex flex-col max-h-screen'}`}>
         <CardHeader>
           {/* Mobile Layout: Title on top row, controls below */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
@@ -219,6 +219,7 @@ export const QueueSection = ({ queue, onRemove, onReorder, onSelect, onPlay, onP
                         variant="link"
                         onClick={onOpenShareDialog}
                         className="text-primary hover:text-primary/80 p-0 h-auto font-normal text-lg"
+                        data-tutorial="how-to-join"
                       >
                         ({t('app.queue.howToJoin')})
                       </Button>
