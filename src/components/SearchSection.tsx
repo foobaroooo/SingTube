@@ -186,10 +186,16 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
               {/* AI recommendation icon button */}
               <button
                 onClick={() => setAiDialogOpen(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
+                className="relative inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full bg-primary hover:bg-primary/90 transition-colors text-primary-foreground shadow-md"
                 title={t('app.ai.recommendations.tooltip')}
               >
                 <Sparkles className="w-3 h-3" />
+                <span className="text-xs font-medium">AI</span>
+                {/* NEW badge */}
+                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
               </button>
             </div>
           </div>
@@ -338,10 +344,16 @@ export const SearchSection = ({ onSearch, isLoading = false, refreshHistory = fa
             {/* AI recommendation icon button */}
             <button
               onClick={() => setAiDialogOpen(true)}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors text-primary hover:text-primary border border-primary/20 hover:border-primary/40"
+              className="relative inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 transition-colors text-primary-foreground shadow-md"
               title={t('app.ai.recommendations.tooltip')}
             >
               <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-medium">AI</span>
+              {/* NEW badge */}
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              </span>
             </button>
           </div>
         </div>
