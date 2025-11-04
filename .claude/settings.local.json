@@ -23,7 +23,8 @@
       "Bash(python3:*)",
       "Bash(npm test)",
       "Bash(npx husky init)",
-      "Bash(npm run test:watch:*)"
+      "Bash(npm run test:watch:*)",
+      "Bash(node server/index.js:*)"
     ],
     "deny": [],
     "ask": []

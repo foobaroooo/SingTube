@@ -300,7 +300,7 @@ export const CurrentSong = ({ currentSong, onNext, onPrevious, canGoNext, canGoP
               key={iframeKey}
               width="100%"
               height="100%"
-              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?enablejsapi=1&origin=${window.location.origin}&rel=0&showinfo=0&modestbranding=1&controls=1&fs=1&playsinline=1&widget_referrer=${window.location.origin}`}
+              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?enablejsapi=1&origin=${window.location.origin}&rel=0&showinfo=0&enablecastapi=1&modestbranding=1&controls=1&fs=1&playsinline=1&widget_referrer=${window.location.origin}`}
               title={currentSong.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

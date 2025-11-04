@@ -905,7 +905,7 @@ const Index = () => {
           <div className="block lg:hidden space-y-3">
             {/* Mobile Top Row: Logo + Essential Controls */}
             <div className="flex items-center justify-between">
-              <div 
+              <div
                 className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleLogoClick}
               >
@@ -914,6 +914,9 @@ const Index = () => {
                   <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
                     {t('app.title')} <sup className="text-xs font-semibold text-white -top-3 relative">Beta</sup>
                   </h1>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {t('app.slogan')}
+                  </p>
                 </div>
               </div>
               
