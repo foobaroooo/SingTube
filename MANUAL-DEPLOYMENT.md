@@ -92,23 +92,125 @@ chown -R www-data:www-data /var/www/singtube
 
 ### Step 7b: Set Environment Variables (IMPORTANT - Security)
 
-🔒 **NEVER upload `.env` files to your server!** Set environment variables directly:
+🔒 **CRITICAL:** Never upload `.env` files to your server! Choose one of the following secure methods:
+
+---
+
+#### **Method 1: System Environment Variables (Most Secure - RECOMMENDED)**
+
+Set environment variables permanently in the shell profile:
 
 ```bash
-# Create environment file for PM2
+# Edit root's bash profile
+nano ~/.bashrc
+```
+
+Add these lines at the end (replace with your actual keys):
+
+```bash
+# SingTube API Keys (SERVER-SIDE ONLY)
+export OPENAI_API_KEY="sk-proj-your-actual-openai-key-here"
+export VITE_YOUTUBE_API_KEY="AIzaSy-your-actual-youtube-key-here"
+
+# SingTube Configuration
+export VITE_API_BASE_URL="https://singtube.app"
+export VITE_SOCKET_URL="https://singtube.app"
+export PORT="3000"
+export NODE_ENV="production"
+```
+
+**Save**: `Ctrl+X`, `Y`, `Enter`
+
+**Load the new environment variables:**
+```bash
+source ~/.bashrc
+```
+
+**Verify they're set:**
+```bash
+echo $OPENAI_API_KEY  # Should show your key
+echo $PORT            # Should show 3000
+```
+
+**Why this is secure:**
+- Environment variables are only in memory, not in files
+- Not accessible via web server
+- Persists across server reboots
+- Only root user has access
+
+---
+
+#### **Method 2: PM2 Ecosystem File (Good for Multiple Environments)**
+
+Create a PM2 ecosystem file for managing environment variables:
+
+```bash
+nano /var/www/singtube/ecosystem.config.cjs
+```
+
+Paste this configuration:
+
+```javascript
+module.exports = {
+  apps: [{
+    name: 'singtube-server',
+    script: './server/index.js',
+    cwd: '/var/www/singtube',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+      OPENAI_API_KEY: 'sk-proj-your-actual-openai-key-here',
+      VITE_API_BASE_URL: 'https://singtube.app',
+      VITE_SOCKET_URL: 'https://singtube.app',
+      VITE_YOUTUBE_API_KEY: 'AIzaSy-your-actual-youtube-key-here'
+    }
+  }]
+};
+```
+
+**Save**: `Ctrl+X`, `Y`, `Enter`
+
+**Set file permissions (only root can read):**
+```bash
+chmod 600 /var/www/singtube/ecosystem.config.cjs
+chown root:root /var/www/singtube/ecosystem.config.cjs
+```
+
+**Start with ecosystem file (see Step 6):**
+```bash
+pm2 start ecosystem.config.cjs --env production
+```
+
+**Benefits:**
+- Clean configuration management
+- Easy to switch between environments
+- Version control friendly (can commit template with placeholder keys)
+
+---
+
+#### **Method 3: Local .env File (Simple but Less Secure)**
+
+Only use this if you can't use Method 1 or 2:
+
+```bash
+# Create environment file
 nano /var/www/singtube/.env
 ```
 
-Paste this configuration (replace with your actual keys):
+Paste this configuration:
 
 ```bash
-# API Keys (SERVER-SIDE ONLY - Never expose these!)
-OPENAI_API_KEY=your-openai-api-key-here
+# API Keys (SERVER-SIDE ONLY)
+OPENAI_API_KEY=sk-proj-your-actual-openai-key-here
+VITE_YOUTUBE_API_KEY=AIzaSy-your-actual-youtube-key-here
 
-# Frontend Configuration (embedded in Vite build)
+# Frontend Configuration
 VITE_API_BASE_URL=https://singtube.app
 VITE_SOCKET_URL=https://singtube.app
-VITE_YOUTUBE_API_KEY=your-youtube-api-key-here
 
 # Backend Configuration
 PORT=3000
@@ -117,16 +219,33 @@ NODE_ENV=production
 
 **Save**: `Ctrl+X`, `Y`, `Enter`
 
-**Set file permissions (make it readable only by root):**
+**CRITICAL - Set strict file permissions:**
 ```bash
 chmod 600 /var/www/singtube/.env
 chown root:root /var/www/singtube/.env
 ```
 
-**⚠️ CRITICAL SECURITY NOTES:**
-- `OPENAI_API_KEY` is **NOT** prefixed with `VITE_` - this keeps it server-side only
-- Never use `VITE_OPENAI_API_KEY` - it will expose your key in the built JavaScript!
-- The `.env` file should only be readable by root (chmod 600)
+**Verify permissions (should show `-rw-------` for root):**
+```bash
+ls -la /var/www/singtube/.env
+```
+
+---
+
+### 🔒 Security Checklist for All Methods:
+
+- [ ] **NEVER** use `VITE_OPENAI_API_KEY` (removes VITE_ prefix)
+- [ ] Use `OPENAI_API_KEY` (no VITE_ prefix) - keeps it server-side only
+- [ ] Never upload `.env` files from local machine to server
+- [ ] Verify key is NOT in build: `grep -r "sk-proj" dist/` (should be empty)
+- [ ] Restrict file permissions: `chmod 600` on any config files
+- [ ] Only set environment variables via SSH (never via web interface)
+- [ ] Use different API keys for development and production
+
+**Why `OPENAI_API_KEY` must NOT have `VITE_` prefix:**
+- Vite embeds ALL `VITE_*` variables into your JavaScript bundle at build time
+- Anyone can view your JavaScript source and steal the key
+- `OPENAI_API_KEY` stays on the server and is NEVER sent to browsers
 
 ### Step 8: Configure Nginx
 
@@ -333,17 +452,16 @@ chown -R root:www-data /var/www/singtube/api
 
 ### Step 6: Start Node.js Server with PM2
 
+Choose the method that matches how you set environment variables in Step 7b:
+
+#### **If using Method 1 (System Environment Variables):**
+
 ```bash
 cd /var/www/singtube
 
-# Start server with environment file
-pm2 start server/index.js --name singtube-server --env-file /var/www/singtube/.env
-
-# Alternative: Start with environment variables directly
-# pm2 start server/index.js --name singtube-server \
-#   --env OPENAI_API_KEY="your-key" \
-#   --env PORT=3000 \
-#   --env NODE_ENV=production
+# Environment variables are already loaded from ~/.bashrc
+# Just start PM2 normally
+pm2 start server/index.js --name singtube-server
 
 # Save PM2 configuration
 pm2 save
@@ -353,10 +471,56 @@ pm2 startup
 # Copy and run the command it outputs
 ```
 
-**Verify environment variables are loaded:**
+#### **If using Method 2 (PM2 Ecosystem File):**
+
 ```bash
-pm2 env 0  # Shows environment variables for process 0
+cd /var/www/singtube
+
+# Start with ecosystem file
+pm2 start ecosystem.config.cjs --env production
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 to start on boot
+pm2 startup
+# Copy and run the command it outputs
 ```
+
+#### **If using Method 3 (Local .env File):**
+
+```bash
+cd /var/www/singtube
+
+# Start server with .env file
+pm2 start server/index.js --name singtube-server --env-file /var/www/singtube/.env
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 to start on boot
+pm2 startup
+# Copy and run the command it outputs
+```
+
+#### **Verify Environment Variables Are Loaded:**
+
+```bash
+# Check PM2 environment
+pm2 env 0 | grep OPENAI_API_KEY
+
+# Should show your key (if using Method 1 or 3)
+# If using Method 2, check the ecosystem file
+
+# Alternative: Check if server can access the key
+pm2 logs singtube-server --lines 50
+# Look for successful startup message
+```
+
+**⚠️ IMPORTANT:** If you see "OPENAI_API_KEY is not configured" in logs:
+1. Verify environment variables are set: `echo $OPENAI_API_KEY`
+2. Restart PM2: `pm2 restart singtube-server --update-env`
+3. Check PM2 env: `pm2 env 0`
 
 Verify it's running:
 ```bash
@@ -403,8 +567,7 @@ scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/
 
 # 6. If environment variables changed:
 # ⚠️ DO NOT UPLOAD .env FILES!
-# SSH into server and edit /var/www/singtube/.env manually
-# OR use PM2 env variables when restarting (see below)
+# SSH into server and update environment variables (see below)
 ```
 
 ### On Server:
@@ -420,8 +583,29 @@ npm install --production
 # Fix permissions (if needed)
 chown -R www-data:www-data /var/www/singtube/dist
 
+# If environment variables changed, choose your method:
+
+# Method 1 - If using ~/.bashrc:
+nano ~/.bashrc
+# Update the export statements
+source ~/.bashrc
+pm2 restart singtube-server --update-env
+
+# Method 2 - If using ecosystem.config.cjs:
+nano /var/www/singtube/ecosystem.config.cjs
+# Update the env_production section
+pm2 reload ecosystem.config.cjs --env production
+
+# Method 3 - If using .env file:
+nano /var/www/singtube/.env
+# Update the variables
+pm2 restart singtube-server --update-env
+
 # Restart Node.js server
-pm2 restart singtube-server
+pm2 restart singtube-server --update-env
+
+# Verify environment loaded
+pm2 env 0 | grep OPENAI
 
 # Check logs
 pm2 logs singtube-server --lines 20
@@ -459,7 +643,46 @@ Then rebuild and reupload.
 
 **Cause**: `OPENAI_API_KEY` environment variable is not set or not loaded by the server
 
-**Fix**:
+**Fix - Choose based on your environment variable method:**
+
+**If using System Environment Variables (Method 1):**
+```bash
+# SSH into server
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
+
+# Check if variable exists
+echo $OPENAI_API_KEY
+
+# If empty, add to ~/.bashrc
+nano ~/.bashrc
+# Add: export OPENAI_API_KEY="sk-proj-your-actual-key-here"
+source ~/.bashrc
+
+# Restart PM2
+pm2 restart singtube-server --update-env
+
+# Verify
+echo $OPENAI_API_KEY
+pm2 env 0 | grep OPENAI
+```
+
+**If using PM2 Ecosystem File (Method 2):**
+```bash
+# SSH into server
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
+
+# Edit ecosystem file
+nano /var/www/singtube/ecosystem.config.cjs
+# Add OPENAI_API_KEY to env_production section
+
+# Reload PM2 with new config
+pm2 reload ecosystem.config.cjs --env production
+
+# Verify
+pm2 env 0 | grep OPENAI
+```
+
+**If using .env File (Method 3):**
 ```bash
 # SSH into server
 ssh -i ~/.ssh/id_singtube root@24.144.81.34
@@ -467,11 +690,15 @@ ssh -i ~/.ssh/id_singtube root@24.144.81.34
 # Check if .env file exists
 cat /var/www/singtube/.env
 
-# If missing, create it:
+# If missing, create it
 nano /var/www/singtube/.env
-# Add: OPENAI_API_KEY=your-actual-key-here
+# Add: OPENAI_API_KEY=sk-proj-your-actual-key-here
 
-# Restart PM2 with env file
+# Set strict permissions
+chmod 600 /var/www/singtube/.env
+chown root:root /var/www/singtube/.env
+
+# Restart PM2
 cd /var/www/singtube
 pm2 restart singtube-server --update-env
 
@@ -656,14 +883,18 @@ scp -i ~/.ssh/id_singtube root@24.144.81.34:/var/www/singtube/api/singtube-backu
 - [ ] Install Node.js 18
 - [ ] Install PM2, Nginx
 - [ ] Configure Nginx
-- [ ] **Set environment variables** (create `/var/www/singtube/.env` with `OPENAI_API_KEY`)
+- [ ] **Set environment variables** (choose Method 1, 2, or 3 from Step 7b)
+  - [ ] Method 1: Export in `~/.bashrc` (most secure, recommended)
+  - [ ] Method 2: PM2 ecosystem file (good for multiple environments)
+  - [ ] Method 3: Local `.env` file (simple but less secure)
 - [ ] Setup DNS records
 - [ ] Get SSL certificate
-- [ ] Upload files via SCP (DO NOT upload .env files)
+- [ ] Upload files via SCP (**DO NOT upload .env files!**)
 - [ ] Install npm dependencies
 - [ ] Set permissions
-- [ ] Start PM2 with env file
-- [ ] **Verify**: `grep -r "sk-proj" /var/www/singtube/dist/` returns nothing
+- [ ] Start PM2 with appropriate method
+- [ ] **Verify environment**: `pm2 env 0 | grep OPENAI_API_KEY` shows your key
+- [ ] **Verify security**: `grep -r "sk-proj" /var/www/singtube/dist/` returns nothing
 
 ### Every Update:
 - [ ] Build locally: `npm run build:production`
@@ -716,29 +947,163 @@ Frontend (Browser)
 
 ### 🛡️ Additional Security Measures
 
+**1. Secure Environment Variable Files**
+
 ```bash
-# 1. Restrict .env file permissions
+# If using Method 3 (.env file):
 chmod 600 /var/www/singtube/.env
 chown root:root /var/www/singtube/.env
 
-# 2. Update CORS in server/index.js (production only)
-# Change from:
+# If using Method 2 (ecosystem file):
+chmod 600 /var/www/singtube/ecosystem.config.cjs
+chown root:root /var/www/singtube/ecosystem.config.cjs
+
+# Verify no one else can read them:
+ls -la /var/www/singtube/.env
+# Should show: -rw------- 1 root root
+```
+
+**2. Restrict SSH Access**
+
+```bash
+# Disable password authentication (key-only)
+nano /etc/ssh/sshd_config
+
+# Ensure these lines exist:
+PasswordAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin prohibit-password
+
+# Restart SSH
+systemctl restart sshd
+```
+
+**3. Update CORS in Production**
+
+```bash
+# Edit server code
+nano /var/www/singtube/server/index.js
+
+# Change CORS from:
 #   origin: ["http://localhost:8080", "http://localhost:5173"]
 # To:
 #   origin: ["https://singtube.app"]
 
-# 3. Add rate limiting for AI endpoint (optional but recommended)
-# Prevents abuse and controls OpenAI costs
+# Then restart:
+pm2 restart singtube-server
 ```
 
-### 📊 Monitor Your Costs
+**4. Enable Firewall (Already done in Step 9)**
 
-1. **OpenAI Usage Dashboard**: https://platform.openai.com/usage
-2. **Set spending limits** in OpenAI dashboard
-3. **Monitor PM2 logs** for unusual AI request patterns:
-   ```bash
-   pm2 logs singtube-server | grep "ai/recommendations"
-   ```
+```bash
+# Verify firewall is active
+ufw status
+
+# Should show:
+# - 22/tcp (OpenSSH) - ALLOW
+# - 80,443/tcp (Nginx Full) - ALLOW
+# - 3000/tcp should NOT be open (internal only)
+```
+
+**5. Hide Environment Variables from Process List**
+
+```bash
+# Prevent other users from seeing env vars in 'ps aux'
+# This is why Method 1 (export in ~/.bashrc) is most secure
+
+# Check what's visible:
+ps aux | grep node
+# Should NOT show your API keys
+```
+
+**6. Add Rate Limiting for AI Endpoint (Optional but Recommended)**
+
+Install rate limiting package:
+```bash
+cd /var/www/singtube
+npm install express-rate-limit
+```
+
+Add to `server/index.js` (before AI endpoint):
+```javascript
+import rateLimit from 'express-rate-limit';
+
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per 15 minutes
+  message: 'Too many AI requests, please try again later'
+});
+
+app.post('/api/ai/recommendations', aiLimiter, async (req, res) => {
+  // ... existing code
+});
+```
+
+This prevents abuse and controls OpenAI costs.
+
+### 📊 Monitor Your Costs & Usage
+
+**1. OpenAI Usage Dashboard**
+
+Visit: https://platform.openai.com/usage
+- Set up spending limits
+- Enable email alerts for high usage
+- Review usage daily during first week
+
+**2. Set Spending Limits**
+
+In OpenAI Dashboard:
+- Go to Settings → Limits
+- Set hard limit (e.g., $10/month)
+- Set soft limit for notifications (e.g., $5/month)
+
+**3. Monitor PM2 Logs for AI Requests**
+
+```bash
+# Real-time monitoring
+pm2 logs singtube-server | grep "ai/recommendations"
+
+# Count AI requests today
+pm2 logs singtube-server --lines 10000 | grep "ai/recommendations" | wc -l
+
+# Save logs to file for analysis
+pm2 logs singtube-server --lines 10000 --raw > ~/singtube-logs.txt
+grep "ai/recommendations" ~/singtube-logs.txt
+```
+
+**4. Check Environment Variables Are Secure**
+
+```bash
+# Verify OPENAI_API_KEY is NOT in built files
+grep -r "sk-proj" /var/www/singtube/dist/
+# Should return NOTHING
+
+# Verify it IS available to the server
+pm2 env 0 | grep OPENAI_API_KEY
+# Should show your key
+
+# Check file permissions
+ls -la ~/.bashrc  # If using Method 1
+ls -la /var/www/singtube/ecosystem.config.cjs  # If using Method 2
+ls -la /var/www/singtube/.env  # If using Method 3
+# Should show only root can read
+```
+
+**5. Regular Security Audits**
+
+```bash
+# Check for exposed secrets in web-accessible directories
+find /var/www/singtube/dist -name "*.js" -exec grep -l "sk-proj" {} \;
+# Should return nothing
+
+# Verify nginx isn't serving sensitive files
+curl https://singtube.app/.env
+# Should return 404 or 403, NOT your actual .env file
+
+# Check who can read sensitive files
+ls -la /var/www/singtube/.env
+# Only root should have access
+```
 
 ---
 
