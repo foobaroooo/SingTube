@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -6,6 +7,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import OpenAI from 'openai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -256,6 +258,97 @@ app.get('/api/analytics/top-songs', (req, res) => {
   } catch (error) {
     console.error('Error fetching top songs:', error);
     res.status(500).json({ error: 'Failed to fetch top songs' });
+  }
+});
+
+// AI Recommendations endpoint (secure server-side)
+app.post('/api/ai/recommendations', async (req, res) => {
+  try {
+    const { searchHistory, count = 5 } = req.body;
+
+    // Validate input
+    if (!searchHistory || !Array.isArray(searchHistory) || searchHistory.length === 0) {
+      return res.status(400).json({ error: 'Search history is required and must be a non-empty array' });
+    }
+
+    // Validate API key exists (server-side only)
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not configured in server environment');
+      return res.status(503).json({ error: 'AI recommendations service is not configured' });
+    }
+
+    // Initialize OpenAI client (server-side - secure)
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    // Create optimized prompt
+    const songList = searchHistory.join(', ');
+    const prompt = `Based on these karaoke songs that a user has searched for: ${songList}
+
+Recommend ${count} similar popular karaoke songs that they might enjoy singing.
+
+IMPORTANT: Return ONLY the song recommendations in this exact format, one per line:
+Title - Artist
+Title - Artist
+Title - Artist
+
+No explanations, no numbering, no additional text. Just the song titles and artists separated by " - ".`;
+
+    // Call OpenAI API (server-side only)
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful karaoke song recommendation assistant. You provide accurate, popular karaoke song recommendations based on user preferences.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 200,
+    });
+
+    // Parse response
+    const content = response.choices[0]?.message?.content?.trim();
+    if (!content) {
+      return res.status(500).json({ error: 'Empty response from AI service' });
+    }
+
+    // Parse song recommendations
+    const recommendations = [];
+    const lines = content.split('\n').filter(line => line.trim());
+
+    for (const line of lines) {
+      const parts = line.split(' - ');
+      if (parts.length >= 2) {
+        const title = parts[0].trim();
+        const artist = parts.slice(1).join(' - ').trim();
+
+        if (title && artist) {
+          recommendations.push({ title, artist });
+        }
+      }
+    }
+
+    if (recommendations.length === 0) {
+      return res.status(500).json({ error: 'Failed to parse song recommendations' });
+    }
+
+    res.json(recommendations.slice(0, count));
+  } catch (error) {
+    console.error('AI recommendation error:', error);
+
+    if (error.status === 401) {
+      return res.status(503).json({ error: 'AI service authentication failed' });
+    } else if (error.status === 429) {
+      return res.status(429).json({ error: 'AI service rate limit reached. Please try again later.' });
+    }
+
+    res.status(500).json({ error: 'Failed to get AI recommendations. Please try again later.' });
   }
 });
 
