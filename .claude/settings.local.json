@@ -25,7 +25,8 @@
       "Bash(npx husky init)",
       "Bash(npm run test:watch:*)",
       "Bash(node server/index.js:*)",
-      "Bash(pm2 stop:*)"
+      "Bash(pm2 stop:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
