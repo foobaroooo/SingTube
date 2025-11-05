@@ -90,6 +90,44 @@ mkdir -p /var/www/singtube/api
 chown -R www-data:www-data /var/www/singtube
 ```
 
+### Step 7b: Set Environment Variables (IMPORTANT - Security)
+
+🔒 **NEVER upload `.env` files to your server!** Set environment variables directly:
+
+```bash
+# Create environment file for PM2
+nano /var/www/singtube/.env
+```
+
+Paste this configuration (replace with your actual keys):
+
+```bash
+# API Keys (SERVER-SIDE ONLY - Never expose these!)
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Frontend Configuration (embedded in Vite build)
+VITE_API_BASE_URL=https://singtube.app
+VITE_SOCKET_URL=https://singtube.app
+VITE_YOUTUBE_API_KEY=your-youtube-api-key-here
+
+# Backend Configuration
+PORT=3000
+NODE_ENV=production
+```
+
+**Save**: `Ctrl+X`, `Y`, `Enter`
+
+**Set file permissions (make it readable only by root):**
+```bash
+chmod 600 /var/www/singtube/.env
+chown root:root /var/www/singtube/.env
+```
+
+**⚠️ CRITICAL SECURITY NOTES:**
+- `OPENAI_API_KEY` is **NOT** prefixed with `VITE_` - this keeps it server-side only
+- Never use `VITE_OPENAI_API_KEY` - it will expose your key in the built JavaScript!
+- The `.env` file should only be readable by root (chmod 600)
+
 ### Step 8: Configure Nginx
 
 Create Nginx configuration:
@@ -251,8 +289,7 @@ scp -i ~/.ssh/id_singtube -r api root@24.144.81.34:/var/www/singtube/
 # Upload package files
 scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/www/singtube/
 
-# Upload environment file
-scp -i ~/.ssh/id_singtube .env.production root@24.144.81.34:/var/www/singtube/.env
+# ⚠️ DO NOT UPLOAD .env FILES! Set them manually on the server instead (see Step 7b)
 ```
 
 **Note**: Replace `24.144.81.34` with your actual IP (e.g., `24.144.81.34`)
@@ -297,8 +334,16 @@ chown -R root:www-data /var/www/singtube/api
 ### Step 6: Start Node.js Server with PM2
 
 ```bash
-# Start server
-pm2 start server/index.js --name singtube-server
+cd /var/www/singtube
+
+# Start server with environment file
+pm2 start server/index.js --name singtube-server --env-file /var/www/singtube/.env
+
+# Alternative: Start with environment variables directly
+# pm2 start server/index.js --name singtube-server \
+#   --env OPENAI_API_KEY="your-key" \
+#   --env PORT=3000 \
+#   --env NODE_ENV=production
 
 # Save PM2 configuration
 pm2 save
@@ -306,6 +351,11 @@ pm2 save
 # Setup PM2 to start on boot
 pm2 startup
 # Copy and run the command it outputs
+```
+
+**Verify environment variables are loaded:**
+```bash
+pm2 env 0  # Shows environment variables for process 0
 ```
 
 Verify it's running:
@@ -351,9 +401,10 @@ scp -i ~/.ssh/id_singtube -r api root@24.144.81.34:/var/www/singtube/
 # 5. If you changed dependencies (package.json):
 scp -i ~/.ssh/id_singtube package.json package-lock.json root@24.144.81.34:/var/www/singtube/
 
-# 6. If .env.production made changes
-scp -i ~/.ssh/id_singtube .env.production root@24.144.81.34:/var/www/singtube/.env
-
+# 6. If environment variables changed:
+# ⚠️ DO NOT UPLOAD .env FILES!
+# SSH into server and edit /var/www/singtube/.env manually
+# OR use PM2 env variables when restarting (see below)
 ```
 
 ### On Server:
@@ -399,6 +450,56 @@ VITE_API_BASE_URL=https://singtube.app:3000  ❌
 ```
 
 Then rebuild and reupload.
+
+---
+
+### Issue 8: AI Recommendations Not Working
+
+**Error**: `AI recommendations service is not configured` in browser console
+
+**Cause**: `OPENAI_API_KEY` environment variable is not set or not loaded by the server
+
+**Fix**:
+```bash
+# SSH into server
+ssh -i ~/.ssh/id_singtube root@24.144.81.34
+
+# Check if .env file exists
+cat /var/www/singtube/.env
+
+# If missing, create it:
+nano /var/www/singtube/.env
+# Add: OPENAI_API_KEY=your-actual-key-here
+
+# Restart PM2 with env file
+cd /var/www/singtube
+pm2 restart singtube-server --update-env
+
+# Verify env vars are loaded
+pm2 env 0 | grep OPENAI
+```
+
+**⚠️ IMPORTANT**:
+- Use `OPENAI_API_KEY` (NOT `VITE_OPENAI_API_KEY`)
+- The key stays server-side only and never gets embedded in your JavaScript build
+- If you see the key in your built files (`dist/assets/*.js`), you're using the wrong variable name!
+
+---
+
+### Issue 9: API Key Exposed in JavaScript Build
+
+**Error**: Running `grep -r "sk-proj" dist/` shows your OpenAI key
+
+**Cause**: Used `VITE_OPENAI_API_KEY` instead of `OPENAI_API_KEY`
+
+**Fix**:
+1. **IMMEDIATELY** revoke the exposed key at https://platform.openai.com/api-keys
+2. Generate a new API key
+3. Update server `.env` file with **`OPENAI_API_KEY`** (no VITE_ prefix)
+4. Rebuild locally: `npm run build:production`
+5. Verify key is NOT in build: `grep -r "sk-proj" dist/` (should return nothing)
+6. Upload new build
+7. Restart PM2: `pm2 restart singtube-server --update-env`
 
 ---
 
@@ -555,20 +656,26 @@ scp -i ~/.ssh/id_singtube root@24.144.81.34:/var/www/singtube/api/singtube-backu
 - [ ] Install Node.js 18
 - [ ] Install PM2, Nginx
 - [ ] Configure Nginx
+- [ ] **Set environment variables** (create `/var/www/singtube/.env` with `OPENAI_API_KEY`)
 - [ ] Setup DNS records
 - [ ] Get SSL certificate
-- [ ] Upload files via SCP
+- [ ] Upload files via SCP (DO NOT upload .env files)
 - [ ] Install npm dependencies
 - [ ] Set permissions
-- [ ] Start PM2
+- [ ] Start PM2 with env file
+- [ ] **Verify**: `grep -r "sk-proj" /var/www/singtube/dist/` returns nothing
 
 ### Every Update:
 - [ ] Build locally: `npm run build:production`
+- [ ] **Verify locally**: `grep -r "sk-proj" dist/` returns nothing (no exposed keys!)
 - [ ] Upload dist: `scp -r dist/* ...`
+- [ ] Upload server (if changed): `scp -r server ...`
 - [ ] SSH into server
+- [ ] Install dependencies if package.json changed: `npm install --production`
 - [ ] Set permissions if needed
-- [ ] Restart PM2: `pm2 restart singtube-server`
-- [ ] Check logs: `pm2 logs`
+- [ ] Restart PM2: `pm2 restart singtube-server --update-env`
+- [ ] Check logs: `pm2 logs singtube-server --lines 50`
+- [ ] **Test AI features** in browser to ensure OPENAI_API_KEY is working
 
 ---
 
@@ -580,6 +687,61 @@ scp -i ~/.ssh/id_singtube root@24.144.81.34:/var/www/singtube/api/singtube-backu
 
 ---
 
+## Security Best Practices
+
+### 🔒 API Key Security
+
+**CRITICAL - OpenAI API Key Protection:**
+
+1. **NEVER use `VITE_OPENAI_API_KEY`** - this exposes your key in the JavaScript build
+2. **ALWAYS use `OPENAI_API_KEY`** (no VITE_ prefix) - keeps it server-side only
+3. **Verify before deploying**: Run `grep -r "sk-proj" dist/` - should return NOTHING
+4. **Never commit .env files** to git - already in `.gitignore`
+5. **Rotate keys regularly** - especially if you suspect exposure
+
+**How the Secure Setup Works:**
+
+```
+Frontend (Browser)
+  ↓ Calls /api/ai/recommendations
+Backend (Node.js Server)
+  ↓ Has OPENAI_API_KEY in environment
+  ↓ Calls OpenAI API securely
+  ↓ Returns recommendations
+Frontend (Browser)
+  ↓ Displays results
+```
+
+**The key NEVER reaches the browser!** ✅
+
+### 🛡️ Additional Security Measures
+
+```bash
+# 1. Restrict .env file permissions
+chmod 600 /var/www/singtube/.env
+chown root:root /var/www/singtube/.env
+
+# 2. Update CORS in server/index.js (production only)
+# Change from:
+#   origin: ["http://localhost:8080", "http://localhost:5173"]
+# To:
+#   origin: ["https://singtube.app"]
+
+# 3. Add rate limiting for AI endpoint (optional but recommended)
+# Prevents abuse and controls OpenAI costs
+```
+
+### 📊 Monitor Your Costs
+
+1. **OpenAI Usage Dashboard**: https://platform.openai.com/usage
+2. **Set spending limits** in OpenAI dashboard
+3. **Monitor PM2 logs** for unusual AI request patterns:
+   ```bash
+   pm2 logs singtube-server | grep "ai/recommendations"
+   ```
+
+---
+
 ## Support
 
 If you encounter issues:
@@ -588,5 +750,6 @@ If you encounter issues:
 2. **Check Nginx logs**: `tail -f /var/log/nginx/error.log`
 3. **Verify DNS**: `dig singtube.app`
 4. **Test locally first**: Make sure it works on `http://localhost:8080` before deploying
+5. **Security check**: Always run `grep -r "sk-proj" dist/` before uploading (should be empty!)
 
 Common issues are documented above with solutions!
