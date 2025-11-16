@@ -26,7 +26,8 @@
       "Bash(npm run test:watch:*)",
       "Bash(node server/index.js:*)",
       "Bash(pm2 stop:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npm run dev:all:*)"
     ],
     "deny": [],
     "ask": []
