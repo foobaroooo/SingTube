@@ -432,8 +432,19 @@ export const getTopSongs = async (period: 'week' | 'month' | 'all' = 'week', lim
 export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopKeyword[]> => {
   try {
     // Use 'popular' sort for top search page (most searched keywords)
-    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}&sortBy=popular`);
-    return Array.isArray(response.data) ? response.data : [];
+    const response = await axios.get(`${API_BASE_URL}/api/history/top?limit=${limit}&sortBy=popular`);
+
+    if (!Array.isArray(response.data)) {
+      return [];
+    }
+
+    // Map snake_case fields from API to camelCase for frontend
+    return response.data.map((item: any) => ({
+      query: item.query,
+      gender: item.gender,
+      searchCount: item.search_count || item.searchCount,
+      lastSearched: item.last_searched || item.lastSearched
+    }));
   } catch (error) {
     console.error('Get top keywords error:', error);
     return [];
