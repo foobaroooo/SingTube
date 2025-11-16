@@ -328,7 +328,8 @@ export const saveSearchHistory = async (query: string, gender: string = 'all'): 
 
 export const getSearchHistory = async (): Promise<SearchHistory[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/history/top?limit=50`);
+    // Use 'latest' sort for homepage search history (most recent searches)
+    const response = await axios.get(`${API_BASE_URL}/api/history/top?limit=50&sortBy=latest`);
 
     if (!Array.isArray(response.data)) {
       return [];
@@ -430,7 +431,8 @@ export const getTopSongs = async (period: 'week' | 'month' | 'all' = 'week', lim
 
 export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', limit: number = 100): Promise<TopKeyword[]> => {
   try {
-    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}`);
+    // Use 'popular' sort for top search page (most searched keywords)
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}&sortBy=popular`);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Get top keywords error:', error);
@@ -441,37 +443,32 @@ export const getTopKeywords = async (period: 'week' | 'month' | 'all' = 'week', 
 // Get search history from analytics (replaces the old getSearchHistory)
 export const getSearchHistoryFromAnalytics = async (limit: number = 50): Promise<SearchHistory[]> => {
   try {
-    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}`);
-    
+    // Use 'latest' sort for analytics search history (most recent searches)
+    const response = await axios.get<TopKeyword[]>(`${API_BASE_URL}/api/history/top?limit=${limit}&sortBy=latest`);
+
     if (!response.data || !Array.isArray(response.data)) {
       console.error('Invalid response data format:', response.data);
       return [];
     }
-    
+
     // Convert TopKeyword format to SearchHistory format for compatibility
-    const searchHistory: SearchHistory[] = response.data.map((keyword) => ({
-      id: `${keyword.query}-${keyword.gender}`, // Create a unique ID
+    const searchHistory: SearchHistory[] = response.data.map((keyword, index) => ({
+      id: index, // Use index as ID since TopKeyword doesn't have id field
       query: keyword.query,
       gender: keyword.gender,
       searchCount: keyword.searchCount,
       lastSearched: keyword.lastSearched
     }));
-    
-    // Sort by lastSearched date in descending order (most recent first)
-    const sortedHistory = searchHistory.sort((a, b) => {
-      const dateA = new Date(a.lastSearched);
-      const dateB = new Date(b.lastSearched);
-      return dateB.getTime() - dateA.getTime();
-    });
-    
-    return sortedHistory;
+
+    // Data is already sorted by API, no need to sort again
+    return searchHistory;
   } catch (error) {
     console.error('📡 Get search history from analytics error details:', {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
-    
+
     if (axios.isAxiosError(error)) {
       console.error('📡 Axios error details:', {
         status: error.response?.status,
@@ -480,7 +477,7 @@ export const getSearchHistoryFromAnalytics = async (limit: number = 50): Promise
         url: error.config?.url
       });
     }
-    
+
     return [];
   }
 };

@@ -222,7 +222,17 @@ app.post('/api/history/track', (req, res) => {
 app.get('/api/history/top', (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const history = db.prepare('SELECT query, gender, search_count, last_searched FROM search_history ORDER BY last_searched DESC LIMIT ?').all(limit);
+    const sortBy = req.query.sortBy || 'latest'; // 'latest' or 'popular'
+
+    // Determine sort order based on sortBy parameter
+    let orderClause;
+    if (sortBy === 'popular') {
+      orderClause = 'ORDER BY search_count DESC, last_searched DESC';
+    } else {
+      orderClause = 'ORDER BY last_searched DESC';
+    }
+
+    const history = db.prepare(`SELECT id, query, gender, search_count, last_searched FROM search_history ${orderClause} LIMIT ?`).all(limit);
     res.json(history);
   } catch (error) {
     console.error('Error fetching history:', error);
