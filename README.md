@@ -1,15 +1,22 @@
 # SingTube (Beta)
 
+![Dashboard](https://github.com/foobaroooo/SingTube/blob/main/public/screenshots/main.png?raw=true)
+
 **The Missing Karaoke Player for YouTube**
 
 SingTube is a modern web-based karaoke application that transforms YouTube videos into a seamless karaoke experience. Built specifically for Chinese songs with karaoke/instrumental versions, it provides queue management, auto-advance playback, and gender preference filtering.
 
 ## ✨ Features
 
-### 🎵 **Smart Search & Discovery**
+### 🎵 **Smart Search & AI Song Discovery**
 - Search YouTube for karaoke songs with gender preference filtering (male/female versions)
 - Real-time search with infinite scroll for more results
 - Search history with quick access to previous queries
+
+![Smart Search](https://github.com/foobaroooo/SingTube/blob/main/public/screenshots/search.png?raw=true)
+
+![AI Recommendation](https://github.com/foobaroooo/SingTube/blob/main/public/screenshots/AI%20recommendations.png?raw=true)
+
 
 ### 📝 **Queue Management**
 - Add songs to queue with drag-and-drop reordering
@@ -17,6 +24,9 @@ SingTube is a modern web-based karaoke application that transforms YouTube video
 - Previous/next navigation through queue
 - Auto-advance to next song when current song ends
 - Save and load custom playlists
+- Join room with QR code on your phone
+
+![QR Code to Join](https://github.com/foobaroooo/SingTube/blob/main/public/screenshots/join%20room.png?raw=true)
 
 ### 🎬 **Integrated Video Player**
 - Embedded YouTube player with full controls
@@ -36,6 +46,7 @@ SingTube is a modern web-based karaoke application that transforms YouTube video
 - Smooth animations and transitions
 - Toast notifications for user feedback
 - Maximizable queue view for better visibility
+- Mobile support!
 
 ## 🚀 Getting Started
 
